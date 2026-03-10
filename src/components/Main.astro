@@ -1,0 +1,51 @@
+---
+// Main content: MIERAS.XYZ, description, bio, email
+---
+
+<main id="main" class="main" role="main">
+  <h1 class="main__title mono">MIERAS.XYZ</h1>
+  <p class="main__tagline">Digital Designer — Rotterdam</p>
+  <div class="main__body">
+    <p>
+      Maarten Mieras is a Digital Designer with 15+ years of experience, based in Rotterdam.
+      He enjoys designing clear and intuitive digital products using agile methods.
+      Shoots film. Collects weird music. He's fun to work with and has a clear design process.
+    </p>
+    <p>
+      <a href="mailto:studio@mieras.xyz" class="main__email">studio@mieras.xyz</a>
+    </p>
+  </div>
+</main>
+
+<style scoped>
+  .main {
+    padding: var(--space-xl, 3rem) var(--space-l, 2rem);
+    max-width: 65ch;
+  }
+  .main__title {
+    font-size: var(--step-4, 2.5rem);
+    font-weight: 400;
+    margin: 0;
+    letter-spacing: 0.02em;
+  }
+  .main__tagline {
+    font-size: var(--step-0, 1rem);
+    color: var(--color-text-muted);
+    margin: var(--space-s, 1rem) 0;
+  }
+  .main__body {
+    font-size: var(--step-0, 1rem);
+    line-height: 1.6;
+  }
+  .main__body p {
+    margin: 0 0 var(--space-m, 1.5rem);
+  }
+  .main__email {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  .main__email:hover {
+    text-decoration: none;
+  }
+</style>

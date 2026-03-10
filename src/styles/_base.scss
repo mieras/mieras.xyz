@@ -1,0 +1,48 @@
+@use '../../node_modules/utopia-core-scss/src/utopia' as utopia;
+
+/* Type scale: https://utopia.fyi/type/calculator?c=360,18,1.2,1920,20,1.333,5,2,&s=0.75|0.5|0.25,1.5|2|3|4|6,s-l&g=s,l,xl,12 */
+:root {
+  @include utopia.generateTypeScale((
+    "minWidth": 360,
+    "maxWidth": 1920,
+    "minFontSize": 18,
+    "maxFontSize": 20,
+    "minTypeScale": 1.2,
+    "maxTypeScale": 1.333,
+    "positiveSteps": 5,
+    "negativeSteps": 2,
+    "prefix": "step-",
+    "relativeTo": "viewport"
+  ));
+}
+
+/* Space scale: https://utopia.fyi/space/calculator?c=360,18,1.2,1920,20,1.333,5,2,&s=0.75|0.5|0.25|0.125,1.5|2|3|4|6|7,s-l&g=s,l,xl,12 */
+:root {
+  @include utopia.generateSpaceScale((
+    "minWidth": 360,
+    "maxWidth": 1920,
+    "minSize": 18,
+    "maxSize": 20,
+    "positiveSteps": (1.5, 2, 3, 4, 6, 7),
+    "negativeSteps": (0.75, 0.5, 0.25, 0.125),
+    "customSizes": ("s-l"),
+    "prefix": "space-",
+    "relativeTo": "viewport",
+  ));
+}
+
+/* Minimal reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}

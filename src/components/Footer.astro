@@ -1,0 +1,110 @@
+---
+import { getEntry } from 'astro:content';
+
+const footerEntry = await getEntry('footer', 'footer');
+const year = new Date().getFullYear();
+const btw = footerEntry?.data?.btw ?? 'NL001619749B74';
+const kvk = footerEntry?.data?.kvk ?? '24486874';
+const bank = footerEntry?.data?.bank ?? 'NL11INGB0005505348';
+---
+
+<footer class="footer" role="contentinfo">
+  <p class="footer__copy">© {year} MIERAS</p>
+  <ul class="footer__list mono">
+    <li>
+      <span>BTW: </span>
+      <button type="button" class="footer__copy-btn" data-copy-value={btw} data-label="BTW" aria-label="Kopieer BTW-nummer">
+        {btw}
+      </button>
+    </li>
+    <li>
+      <span>KVK: </span>
+      <button type="button" class="footer__copy-btn" data-copy-value={kvk} data-label="KVK" aria-label="Kopieer KVK-nummer">
+        {kvk}
+      </button>
+    </li>
+    <li>
+      <span>BANK: </span>
+      <button type="button" class="footer__copy-btn" data-copy-value={bank} data-label="BANK" aria-label="Kopieer bankrekeningnummer">
+        {bank}
+      </button>
+    </li>
+  </ul>
+  <p class="footer__links">
+    <a href="/terms.pdf">T&C</a> (PDF)
+  </p>
+  <div id="copy-feedback" role="status" aria-live="polite" class="footer__feedback" hidden>Gekopieerd!</div>
+</footer>
+
+<script>
+  document.querySelectorAll('.footer__copy-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const value = btn.getAttribute('data-copy-value');
+      if (!value) return;
+      try {
+        await navigator.clipboard.writeText(value);
+        const feedback = document.getElementById('copy-feedback');
+        if (feedback) {
+          feedback.hidden = false;
+          feedback.textContent = 'Gekopieerd!';
+          setTimeout(() => { feedback.hidden = true; }, 2000);
+        }
+      } catch (_) {
+        // ignore
+      }
+    });
+  });
+</script>
+
+<style scoped>
+  .footer {
+    padding: var(--space-l, 2rem);
+    border-top: 1px solid var(--color-border);
+    font-size: var(--step--1, 0.875rem);
+    color: var(--color-text-muted);
+  }
+  .footer__copy {
+    margin: 0 0 var(--space-s, 1rem);
+  }
+  .footer__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .footer__list li {
+    margin-bottom: 0.25rem;
+  }
+  .footer__copy-btn {
+    background: none;
+    border: none;
+    color: var(--color-text);
+    padding: 0;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+    font: inherit;
+  }
+  .footer__copy-btn:hover {
+    color: var(--color-accent);
+  }
+  .footer__copy-btn:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+  .footer__links {
+    margin: var(--space-m, 1.5rem) 0 0;
+  }
+  .footer__links a {
+    color: var(--color-accent);
+    text-decoration: underline;
+  }
+  .footer__feedback {
+    position: fixed;
+    bottom: var(--space-m, 1.5rem);
+    right: var(--space-m, 1.5rem);
+    padding: var(--space-xs, 0.5rem) var(--space-s, 1rem);
+    background: var(--color-accent);
+    color: var(--color-bg);
+    font-size: var(--step--1, 0.875rem);
+  }
+</style>
