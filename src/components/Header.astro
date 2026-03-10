@@ -1,10 +1,18 @@
 ---
-import ThemeToggle from './ThemeToggle.astro';
-import { getCurrentWeather } from '../lib/weather';
+import ThemeToggle from "./ThemeToggle.astro";
+import { getCurrentWeather } from "../lib/weather";
 
-let tempDisplay = '--';
+interface Props {
+  /** Cargo-style: show nav links (Information, Email, IG) instead of time/weather */
+  templateStyle?: boolean;
+  contact?: string;
+}
+
+const { templateStyle = false, contact = "studio@mieras.xyz" } = Astro.props;
+
+let tempDisplay = "--";
 try {
-  const weather = await getCurrentWeather('Rotterdam');
+  const weather = await getCurrentWeather("Rotterdam");
   if (weather?.current?.temp_c != null) {
     tempDisplay = String(Math.round(weather.current.temp_c));
   }
@@ -15,23 +23,47 @@ try {
 
 <header class="header" role="banner">
   <div class="header__identity">
-    <p class="header__name">Maarten Mieras</p>
-    <p class="header__title mono">DIGITAL DESIGNER</p>
+    <a href="/" class="header__name" rel="home">mieras.xyz</a>
   </div>
-  <div class="header__meta">
-    <time id="live-time" class="mono" datetime="">00:00:00:000</time>
-    <span class="mono" aria-label="Temperatuur in Rotterdam">{tempDisplay}°C</span>
-    <span class="mono header__location">ROTTERDAM</span>
-    <ThemeToggle />
-  </div>
+  {
+    templateStyle ? (
+      <nav class="header__nav" aria-label="Hoofdnavigatie">
+        <a href="#information" class="header__link">
+          Information
+        </a>
+        <a href={`mailto:${contact}`} class="header__link">
+          Email
+        </a>
+        <a
+          href="https://www.instagram.com/mieras.xyz"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="header__link"
+        >
+          IG
+        </a>
+      </nav>
+    ) : (
+      <div class="header__meta">
+        <time id="live-time" class="mono" datetime="">
+          00:00:00:000
+        </time>
+        <span class="mono" aria-label="Temperatuur in Rotterdam">
+          {tempDisplay}°C
+        </span>
+        <span class="mono header__location">ROTTERDAM</span>
+        <ThemeToggle />
+      </div>
+    )
+  }
 </header>
 
 <script>
   function pad(n: number, len = 2) {
-    return String(n).padStart(len, '0');
+    return String(n).padStart(len, "0");
   }
   function updateTime() {
-    const el = document.getElementById('live-time');
+    const el = document.getElementById("live-time");
     if (!el) return;
     const d = new Date();
     const h = pad(d.getHours());
@@ -39,7 +71,7 @@ try {
     const s = pad(d.getSeconds());
     const ms = pad(d.getMilliseconds(), 3);
     el.textContent = `${h}:${m}:${s}:${ms}`;
-    el.setAttribute('datetime', d.toISOString());
+    el.setAttribute("datetime", d.toISOString());
   }
   updateTime();
   setInterval(updateTime, 50);
@@ -52,16 +84,36 @@ try {
     justify-content: space-between;
     align-items: baseline;
     gap: var(--space-s, 1rem);
-    padding: var(--space-m, 1.5rem) var(--space-l, 2rem);
-    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-s) var(--space-l, 2rem);
   }
   .header__name {
-    font-size: var(--step-1, 1.25rem);
+    font-size: var(--step--2, 1.25rem);
     font-weight: 500;
     margin: 0;
+    color: inherit;
+    text-decoration: none;
+  }
+  .header__name:hover {
+    text-decoration: underline;
+  }
+  .header__nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-m, 1.5rem);
+    font-size: var(--step--2, 0.875rem);
+    color: var(--color-text-muted);
+  }
+  .header__link {
+    color: inherit;
+    text-decoration: none;
+  }
+  .header__link:hover {
+    color: var(--color-text);
+    text-decoration: underline;
   }
   .header__title {
-    font-size: var(--step--1, 0.875rem);
+    font-size: var(--step--2, 0.875rem);
     margin: 0.25rem 0 0;
     letter-spacing: 0.05em;
     color: var(--color-text-muted);
@@ -71,8 +123,9 @@ try {
     flex-wrap: wrap;
     align-items: center;
     gap: var(--space-m, 1.5rem);
-    font-size: var(--step--1, 0.875rem);
+    font-size: var(--step--2, 0.875rem);
     color: var(--color-text-muted);
+    letter-spacing: 0.05em;
   }
   .header__location {
     letter-spacing: 0.05em;

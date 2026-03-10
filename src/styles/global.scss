@@ -9,6 +9,12 @@ body {
   background-color: var(--color-bg);
 }
 
+.page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
 .skip-link {
   position: absolute;
   top: 0;

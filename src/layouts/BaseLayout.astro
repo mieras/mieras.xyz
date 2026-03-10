@@ -31,7 +31,9 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://mieras.x
   </head>
   <body>
     <a href="#main" class="skip-link">Naar inhoud</a>
-    <slot />
+    <div class="page">
+      <slot />
+    </div>
     <script is:inline define:vars={{}}>
       (function() {
         const stored = localStorage.getItem('theme');
@@ -42,6 +44,17 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://mieras.x
           document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
         }
       })();
+    </script>
+    <script>
+      import Lenis from 'lenis';
+
+      const lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
+
+      function raf(time: number) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      }
+      requestAnimationFrame(raf);
     </script>
   </body>
 </html>

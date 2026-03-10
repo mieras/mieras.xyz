@@ -1,53 +1,158 @@
 ---
-import { getEntry } from 'astro:content';
+import { getEntry } from "astro:content";
 
-const footerEntry = await getEntry('footer', 'footer');
+interface Props {
+  /** Cargo-style: two columns with caption typography */
+  templateStyle?: boolean;
+}
+
+const { templateStyle = false } = Astro.props;
+
+const footerEntry = await getEntry("footer", "footer");
 const year = new Date().getFullYear();
-const btw = footerEntry?.data?.btw ?? 'NL001619749B74';
-const kvk = footerEntry?.data?.kvk ?? '24486874';
-const bank = footerEntry?.data?.bank ?? 'NL11INGB0005505348';
+const btw = footerEntry?.data?.btw ?? "NL001619749B74";
+const kvk = footerEntry?.data?.kvk ?? "24486874";
+const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
+const today = new Date().toLocaleDateString("nl-NL", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+});
 ---
 
-<footer class="footer" role="contentinfo">
-  <p class="footer__copy">© {year} MIERAS</p>
-  <ul class="footer__list mono">
-    <li>
-      <span>BTW: </span>
-      <button type="button" class="footer__copy-btn" data-copy-value={btw} data-label="BTW" aria-label="Kopieer BTW-nummer">
-        {btw}
-      </button>
-    </li>
-    <li>
-      <span>KVK: </span>
-      <button type="button" class="footer__copy-btn" data-copy-value={kvk} data-label="KVK" aria-label="Kopieer KVK-nummer">
-        {kvk}
-      </button>
-    </li>
-    <li>
-      <span>BANK: </span>
-      <button type="button" class="footer__copy-btn" data-copy-value={bank} data-label="BANK" aria-label="Kopieer bankrekeningnummer">
-        {bank}
-      </button>
-    </li>
-  </ul>
-  <p class="footer__links">
-    <a href="/terms.pdf">T&C</a> (PDF)
-  </p>
-  <div id="copy-feedback" role="status" aria-live="polite" class="footer__feedback" hidden>Gekopieerd!</div>
+<footer
+  class="footer"
+  class:list={[templateStyle && "footer--template"]}
+  role="contentinfo"
+>
+  {
+    templateStyle ? (
+      <div class="footer__cols">
+        <div class="footer__col footer__col--left">
+          <span class="footer__caption">mieras.xyz — {year}</span>
+          <br />
+          <span class="footer__caption footer__caption--date">
+            Vandaag: {today}
+          </span>
+        </div>
+        <div class="footer__col footer__col--right">
+          <span class="footer__caption">© {year} MIERAS</span>
+          <ul class="footer__list">
+            <li>
+              <span>BTW:</span>
+              <button
+                type="button"
+                class="footer__copy-btn"
+                data-copy-value={btw}
+                data-label="BTW"
+                aria-label="Kopieer BTW-nummer"
+              >
+                {btw}
+              </button>
+            </li>
+            <li>
+              <span>KVK:</span>
+              <button
+                type="button"
+                class="footer__copy-btn"
+                data-copy-value={kvk}
+                data-label="KVK"
+                aria-label="Kopieer KVK-nummer"
+              >
+                {kvk}
+              </button>
+            </li>
+            <li>
+              <span>BANK:</span>
+              <button
+                type="button"
+                class="footer__copy-btn"
+                data-copy-value={bank}
+                data-label="BANK"
+                aria-label="Kopieer bankrekeningnummer"
+              >
+                {bank}
+              </button>
+            </li>
+          </ul>
+          <p class="footer__links">
+            <a href="/terms.pdf">T&C</a> (PDF)
+          </p>
+        </div>
+      </div>
+    ) : (
+      <>
+        <p class="footer__copy">© {year} MIERAS</p>
+        <ul class="footer__list ">
+          <li>
+            <span>BTW:</span>
+            <button
+              type="button"
+              class="footer__copy-btn"
+              data-copy-value={btw}
+              data-label="BTW"
+              aria-label="Kopieer BTW-nummer"
+            >
+              {btw}
+            </button>
+          </li>
+          <li>
+            <span>KVK:</span>
+            <button
+              type="button"
+              class="footer__copy-btn"
+              data-copy-value={kvk}
+              data-label="KVK"
+              aria-label="Kopieer KVK-nummer"
+            >
+              {kvk}
+            </button>
+          </li>
+          <li>
+            <span>BANK:</span>
+            <button
+              type="button"
+              class="footer__copy-btn"
+              data-copy-value={bank}
+              data-label="BANK"
+              aria-label="Kopieer bankrekeningnummer"
+            >
+              {bank}
+            </button>
+          </li>
+        </ul>
+        <p class="footer__links">
+          <a href="/terms.pdf">T&C</a> (PDF)
+        </p>
+      </>
+    )
+  }
 </footer>
 
+<div
+  id="copy-feedback"
+  role="status"
+  aria-live="polite"
+  class="footer__feedback"
+  hidden
+>
+  Gekopieerd!
+</div>
+
 <script>
-  document.querySelectorAll('.footer__copy-btn').forEach((btn) => {
-    btn.addEventListener('click', async () => {
-      const value = btn.getAttribute('data-copy-value');
+  document.querySelectorAll(".footer__copy-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const value = btn.getAttribute("data-copy-value");
       if (!value) return;
       try {
         await navigator.clipboard.writeText(value);
-        const feedback = document.getElementById('copy-feedback');
+        const feedback = document.getElementById("copy-feedback");
         if (feedback) {
           feedback.hidden = false;
-          feedback.textContent = 'Gekopieerd!';
-          setTimeout(() => { feedback.hidden = true; }, 2000);
+          feedback.textContent = "Gekopieerd!";
+          setTimeout(() => {
+            feedback.hidden = true;
+          }, 2000);
         }
       } catch (_) {
         // ignore
@@ -60,16 +165,41 @@ const bank = footerEntry?.data?.bank ?? 'NL11INGB0005505348';
   .footer {
     padding: var(--space-l, 2rem);
     border-top: 1px solid var(--color-border);
-    font-size: var(--step--1, 0.875rem);
+    font-size: var(--step--2, 0.875rem);
+    color: var(--color-text-muted);
+    display: flex;
+    gap: var(--space-s, 1rem);
+    justify-content: space-between;
+  }
+  .footer--template .footer__cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-xl, 3rem);
+    width: 100%;
+  }
+  .footer--template .footer__col--right {
+    text-align: right;
+  }
+  .footer__caption {
+    font-family: var(--font-mono, "Geist Mono", ui-monospace, monospace);
+    font-size: var(--step--2, 0.75rem);
+    font-weight: 475;
     color: var(--color-text-muted);
   }
+  .footer__caption--date {
+    display: block;
+    margin-top: 0.25rem;
+  }
   .footer__copy {
-    margin: 0 0 var(--space-s, 1rem);
+    margin: 0;
   }
   .footer__list {
     list-style: none;
     margin: 0;
     padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-s, 1rem);
   }
   .footer__list li {
     margin-bottom: 0.25rem;
@@ -92,14 +222,14 @@ const bank = footerEntry?.data?.bank ?? 'NL11INGB0005505348';
     outline-offset: 2px;
   }
   .footer__links {
-    margin: var(--space-m, 1.5rem) 0 0;
+    margin: 0;
   }
   .footer__links a {
     color: var(--color-accent);
     text-decoration: underline;
   }
   .footer__feedback {
-    position: fixed;
+    position: absolute;
     bottom: var(--space-m, 1.5rem);
     right: var(--space-m, 1.5rem);
     padding: var(--space-xs, 0.5rem) var(--space-s, 1rem);
