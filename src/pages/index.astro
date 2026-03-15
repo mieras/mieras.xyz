@@ -1,11 +1,10 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Header from "../components/Header.astro";
-import Hero from "../components/Hero.astro";
 import Main from "../components/Main.astro";
 import Footer from "../components/Footer.astro";
 import MarqueeSection from "../components/MarqueeSection.astro";
-import { getEntry } from "astro:content";
+import { getEntry, getCollection } from "astro:content";
 
 /** Cargo-style template: stacked marquees + information layout. Set to false for original Hero layout. */
 const useTemplate = true;
@@ -13,57 +12,10 @@ const useTemplate = true;
 const mainEntry = await getEntry("main", "main");
 const contact = mainEntry?.data?.contact ?? "studio@mieras.xyz";
 
-const marquees = [
-  {
-    text: "mieras.xyz mieras.xyz mieras.xyz mieras.xyz  mieras.xyz",
-    href: "#information",
-    backgroundColor: "var(--marquee-1)",
-    light: false,
-    speed: 28,
-  },
-  {
-    text: "Rotterdam · Product design, design systems, prototyping",
-    href: "#information",
-    backgroundColor: "var(--marquee-2)",
-    light: true,
-    speed: 24,
-  },
-  {
-    text: "St Joost, ABN AMRO, Secrid, One-fit, Jungle Minds, NOS",
-    href: "#information",
-    backgroundColor: "var(--marquee-3)",
-    light: false,
-    speed: 26,
-  },
-  {
-    text: "User research, visual design, agile teams",
-    href: "#information",
-    backgroundColor: "var(--marquee-4)",
-    light: true,
-    speed: 22,
-  },
-  {
-    text: "Studio@mieras.xyz — Information & Contact",
-    href: "#information",
-    backgroundColor: "var(--marquee-5)",
-    light: true,
-    speed: 25,
-  },
-  {
-    text: "Clear and intuitive digital products — mieras.xyz",
-    href: "#information",
-    backgroundColor: "var(--marquee-6)",
-    light: true,
-    speed: 27,
-  },
-  {
-    text: "Maarten Mieras — Digital Designer, Rotterdam",
-    href: "#information",
-    backgroundColor: "var(--marquee-7)",
-    light: false,
-    speed: 23,
-  },
-];
+const marqueeEntries = await getCollection("marquee");
+const marquees = (marqueeEntries[0]?.data ?? []).sort(
+  (a: { order: number }, b: { order: number }) => a.order - b.order
+);
 ---
 
 <BaseLayout
@@ -71,21 +23,32 @@ const marquees = [
   description="Maarten Mieras is a Digital Designer with 15+ years of experience, based in Rotterdam. Clear and intuitive digital products, agile methods."
 >
   <Header templateStyle={useTemplate} contact={contact} />
-  {
-    useTemplate ? (
+  <section class="marquee-wrapper">
+    {
       marquees.map((m) => (
         <MarqueeSection
           text={m.text}
           href={m.href}
           backgroundColor={m.backgroundColor}
-          light={m.light}
+          textColor={m.textColor}
           speed={m.speed}
         />
       ))
-    ) : (
-      <Hero />
-    )
-  }
+    }
+  </section>
+
   <Main />
   <Footer templateStyle={useTemplate} />
 </BaseLayout>
+
+<style>
+  .marquee-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100svh;
+    margin-bottom: var(--space-2xl, 1rem);
+  }
+  :global(.marquee-wrapper > section) {
+    flex: 1;
+  }
+</style>

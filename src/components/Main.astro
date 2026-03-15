@@ -1,7 +1,10 @@
 ---
 import { getEntry, render } from "astro:content";
+import { marked } from "marked";
 
 const mainEntry = await getEntry("main", "main");
+const footerEntry = await getEntry("footer", "footer");
+
 if (!mainEntry) {
   throw new Error("Main content (main/main) not found.");
 }
@@ -10,73 +13,212 @@ const {
   title,
   subtitle,
   contact,
+  address,
+  instagram,
+  cvLabel,
   clientsTitle,
   clientNames,
   skillsTitle,
   skills,
+  subtitleALabel = "Music",
+  subtitleAText,
+  contentAbout,
+  services,
 } = mainEntry.data;
+
+const serviceItems = services
+  ? services
+      .split(/\n/)
+      .map((line) => line.replace(/^\s*[-*]\s*/, "").trim())
+      .filter(Boolean)
+  : skills;
+
+const btw = footerEntry?.data?.btw ?? "NL001619749B74";
+const kvk = footerEntry?.data?.kvk ?? "24486874";
+const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
 ---
 
 <main id="main" class="main" role="main">
-  <div id="information" class="main__grid">
-    <section class="main__col main__info">
-      <span class="main__caption">Contact</span>
-      <h1 class="main__title">{title}</h1>
-      <p class="main__subtitle">{subtitle}</p>
-      <div class="main__intro">
-        <Content />
+  <div id="information" class="main__wrap">
+    <div class="main__grid">
+      <!-- Row 1: col 1/2 = address + kvk/btw/bank, col 3 = studio, col 4 = music/extra -->
+      <section
+        class="main__col main__col--span-2 main__contact"
+        aria-labelledby="contact-heading"
+      >
+        <span class="main__caption" id="contact-heading">Contact</span>
+        <ul class="main__list">
+          {
+            address
+              ? address
+                  .split(/\n/)
+                  .filter(Boolean)
+                  .map((line) => <li>{line}</li>)
+              : null
+          }
+        </ul>
+        <ul class="main__list">
+          <li>
+            <a href={`mailto:${contact}`} class="main__email">{contact}</a>
+          </li>
+          {cvLabel ? <li>{cvLabel}</li> : null}
+        </ul>
+        <ul class="main__list main__list--small">
+          <li>
+            KVK:
+            <a
+              href="#"
+              class="main__copy-link"
+              data-copy-value={kvk}
+              aria-label="Kopieer KVK-nummer"
+            >
+              {kvk}
+            </a>
+          </li>
+          <li>
+            BTW:
+            <a
+              href="#"
+              class="main__copy-link"
+              data-copy-value={btw}
+              aria-label="Kopieer BTW-nummer"
+            >
+              {btw}
+            </a>
+          </li>
+          <li>
+            Bank:
+            <a
+              href="#"
+              class="main__copy-link"
+              data-copy-value={bank}
+              aria-label="Kopieer bankrekeningnummer"
+            >
+              {bank}
+            </a>
+          </li>
+        </ul>
+      </section>
+      <section class="main__col main__studio" aria-labelledby="studio-heading">
+        <span class="main__caption" id="studio-heading">Studio</span>
+        <div class="main__intro">
+          <Content />
+        </div>
+      </section>
+      <section
+        class="main__col main__subtitle-a"
+        aria-labelledby="subtitle-a-heading"
+      >
+        <span class="main__caption" id="subtitle-a-heading"
+          >{subtitleALabel}</span
+        >
+        {
+          contentAbout ? (
+            <div
+              class="main__intro main__block-text"
+              set:html={marked.parse(contentAbout) as string}
+            />
+          ) : subtitleAText ? (
+            <div class="main__intro main__block-text">
+              {subtitleAText.split(/\n\n+/).map((p) => (
+                <p>{p}</p>
+              ))}
+            </div>
+          ) : (
+            <p class="main__block-text main__block-text--muted">—</p>
+          )
+        }
+      </section>
+
+      <!-- Row 2: col 1/2 = empty, col 3 = clients, col 4 = diensten -->
+      <div class="main__col main__col--span-2 main__empty" aria-hidden="true">
       </div>
-      <p>
-        <a href={`mailto:${contact}`} class="main__email">{contact}</a>
-      </p>
-    </section>
-    <section class="main__col main__clients" aria-labelledby="clients-heading">
-      <span class="main__caption" id="clients-heading">{clientsTitle}</span>
-      <ul class="main__list">
-        {clientNames.map((name) => <li>{name}</li>)}
-      </ul>
-    </section>
-    <section class="main__col main__skills" aria-labelledby="skills-heading">
-      <span class="main__caption" id="skills-heading">{skillsTitle}</span>
-      <ul class="main__list">
-        {skills.map((skill) => <li>{skill}</li>)}
-      </ul>
-    </section>
+      <section
+        class="main__col main__clients"
+        aria-labelledby="clients-heading"
+      >
+        <span class="main__caption" id="clients-heading">{clientsTitle}</span>
+        <ul class="main__list">
+          {clientNames.map((name) => <li>{name}</li>)}
+        </ul>
+      </section>
+      <section class="main__col main__skills" aria-labelledby="skills-heading">
+        <span class="main__caption" id="skills-heading">{skillsTitle}</span>
+        <ul class="main__list">
+          {serviceItems.map((item) => <li>{item}</li>)}
+        </ul>
+      </section>
+    </div>
   </div>
 </main>
 
+<script>
+  function setupCopy(selector: string) {
+    document.querySelectorAll(selector).forEach((el) => {
+      el.addEventListener("click", async (e) => {
+        e.preventDefault();
+        const value = (el as HTMLElement).getAttribute("data-copy-value");
+        if (!value) return;
+        try {
+          await navigator.clipboard.writeText(value);
+          const feedback = document.getElementById("copy-feedback");
+          if (feedback) {
+            feedback.hidden = false;
+            feedback.textContent = "Gekopieerd!";
+            setTimeout(() => {
+              feedback.hidden = true;
+            }, 2000);
+          }
+        } catch (_) {}
+      });
+    });
+  }
+  setupCopy(".main__copy-btn");
+  setupCopy(".main__copy-link");
+</script>
+
 <style scoped>
   .main {
-    padding: var(--space-xl, 3rem) var(--space-l, 2rem);
+    min-height: 90svh;
+    padding: var(--space-2xs, 3rem) var(--space-xs, 2rem);
     flex: 1;
+  }
+  .main__wrap {
+    max-width: 90rem;
   }
   .main__grid {
     display: grid;
-    gap: var(--space-xl, 3rem);
-    max-width: 75rem;
+    gap: var(--space-2xs, 2rem) var(--space-xs, 3rem);
+    grid-template-columns: 1fr;
   }
-  @media (min-width: 45rem) {
+  @media (min-width: 55rem) {
     .main__grid {
-      grid-template-columns: 3fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+    }
+  }
+  .main__col--span-2 {
+    grid-column: span 1;
+  }
+  @media (min-width: 55rem) {
+    .main__col--span-2 {
+      grid-column: span 2;
     }
   }
   .main__col {
     min-width: 0;
   }
-  .main__title {
-    font-size: var(--step-4, 2.5rem);
-    font-weight: 400;
-    margin: 0;
-    letter-spacing: 0.02em;
+  .main__empty {
+    min-height: 0;
   }
-  .main__subtitle {
-    font-size: var(--step-0, 1rem);
+  .main__block-text {
+    font-size: var(--step--1, 1rem);
+  }
+  .main__block-text--muted {
     color: var(--color-text-muted);
-    margin: var(--space-s, 1rem) 0;
   }
   .main__intro {
-    font-size: var(--step-0, 1rem);
-    line-height: 1.6;
+    font-size: var(--step--1, 1rem);
+
     max-width: 65ch;
   }
   .main__intro :global(p) {
@@ -90,29 +232,64 @@ const {
   .main__email:hover {
     text-decoration: none;
   }
+  .main__copy-btn {
+    background: none;
+    border: none;
+    color: var(--color-text);
+    padding: 0;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+    font: inherit;
+  }
+  .main__copy-btn:hover {
+    color: var(--color-accent);
+  }
+  .main__copy-btn:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
   .main__caption {
     display: block;
-    font-family: var(--font-mono, "Geist Mono", ui-monospace, monospace);
+
     font-size: var(--step--2, 0.75rem);
-    font-weight: 475;
+    font-weight: 300;
     color: var(--color-text-muted);
-    margin: 0 0 var(--space-s, 1rem);
+    margin: 0 0 var(--space-2xs, 1rem);
+    padding-top: var(--space-3xs, 1rem);
     letter-spacing: 0.02em;
-  }
-  .main__col-title {
-    font-size: var(--step--1, 0.875rem);
-    font-weight: 500;
-    color: var(--color-text-muted);
-    margin: 0 0 var(--space-s, 1rem);
-    letter-spacing: 0.02em;
+    border-top: 1px solid var(--color-border);
   }
   .main__list {
     list-style: none;
     margin: 0;
     padding: 0;
-    font-size: var(--step-0, 1rem);
+    font-size: var(--step--1, 1rem);
+    line-height: inherit;
+
+    li {
+      line-height: inherit;
+    }
+  }
+  .main__list + .main__list {
+    margin-top: var(--space-s, 1.5rem);
   }
   .main__list li {
-    margin-bottom: 0.25rem;
+    margin-bottom: 0;
+  }
+  .main__list--small {
+    font-size: var(--step--2, 0.75rem);
+    color: var(--color-text-muted);
+  }
+  .main__list--small a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+  .main__list--small a:hover {
+    color: var(--color-accent);
+  }
+  .main__copy-link {
+    font: inherit;
   }
 </style>

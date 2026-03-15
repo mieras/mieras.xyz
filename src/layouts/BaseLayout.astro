@@ -1,6 +1,4 @@
 ---
-import '@fontsource/geist-sans/400.css';
-import '@fontsource/geist-sans/500.css';
 import '@fontsource/geist-mono/400.css';
 import '../styles/global.scss';
 
@@ -17,6 +15,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://mieras.x
 <html lang="nl">
   <head>
     <meta charset="utf-8" />
+    <link href="https://fonts.cdnfonts.com/css/neue-haas-grotesk-display-pro" rel="stylesheet" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width" />
@@ -49,6 +48,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://mieras.x
       import Lenis from 'lenis';
 
       const lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
+      (window as unknown as { lenis?: Lenis }).lenis = lenis;
 
       function raf(time: number) {
         lenis.raf(time);

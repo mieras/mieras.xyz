@@ -2,11 +2,23 @@
 @use './tokens';
 
 body {
-  font-family: 'Geist', 'Geist Sans', system-ui, sans-serif;
+  font-family: 'Neue Haas Grotesk Display Pro', sans-serif;
+  font-weight: 500;
   font-size: var(--step-0, 1rem);
-  line-height: 1.5;
+  line-height: 100%;
   color: var(--color-text);
   background-color: var(--color-bg);
+}
+
+/* Vertical rhythm: lists gebruiken dezelfde line-height als body */
+ul,
+ol {
+  line-height: 1.5;
+}
+
+ul li,
+ol li {
+  line-height: 1.5;
 }
 
 .page {
@@ -28,6 +40,7 @@ body {
   transform: translateY(-100%);
   transition: transform 0.2s;
 }
+
 .skip-link:focus {
   transform: translateY(0);
   outline: none;

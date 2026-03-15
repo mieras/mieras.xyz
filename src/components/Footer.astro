@@ -35,50 +35,6 @@ const today = new Date().toLocaleDateString("nl-NL", {
             Vandaag: {today}
           </span>
         </div>
-        <div class="footer__col footer__col--right">
-          <span class="footer__caption">© {year} MIERAS</span>
-          <ul class="footer__list">
-            <li>
-              <span>BTW:</span>
-              <button
-                type="button"
-                class="footer__copy-btn"
-                data-copy-value={btw}
-                data-label="BTW"
-                aria-label="Kopieer BTW-nummer"
-              >
-                {btw}
-              </button>
-            </li>
-            <li>
-              <span>KVK:</span>
-              <button
-                type="button"
-                class="footer__copy-btn"
-                data-copy-value={kvk}
-                data-label="KVK"
-                aria-label="Kopieer KVK-nummer"
-              >
-                {kvk}
-              </button>
-            </li>
-            <li>
-              <span>BANK:</span>
-              <button
-                type="button"
-                class="footer__copy-btn"
-                data-copy-value={bank}
-                data-label="BANK"
-                aria-label="Kopieer bankrekeningnummer"
-              >
-                {bank}
-              </button>
-            </li>
-          </ul>
-          <p class="footer__links">
-            <a href="/terms.pdf">T&C</a> (PDF)
-          </p>
-        </div>
       </div>
     ) : (
       <>
@@ -163,13 +119,10 @@ const today = new Date().toLocaleDateString("nl-NL", {
 
 <style scoped>
   .footer {
-    padding: var(--space-l, 2rem);
-    border-top: 1px solid var(--color-border);
-    font-size: var(--step--2, 0.875rem);
-    color: var(--color-text-muted);
-    display: flex;
-    gap: var(--space-s, 1rem);
     justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-s, 1rem);
+    padding: var(--space-2xs) var(--space-xs, 2rem);
   }
   .footer--template .footer__cols {
     display: grid;
@@ -181,9 +134,8 @@ const today = new Date().toLocaleDateString("nl-NL", {
     text-align: right;
   }
   .footer__caption {
-    font-family: var(--font-mono, "Geist Mono", ui-monospace, monospace);
     font-size: var(--step--2, 0.75rem);
-    font-weight: 475;
+
     color: var(--color-text-muted);
   }
   .footer__caption--date {

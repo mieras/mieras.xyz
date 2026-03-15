@@ -4,61 +4,91 @@ interface Props {
   href?: string;
   /** CSS value, e.g. #00c600 or var(--marquee-1) */
   backgroundColor: string;
-  /** Use light (white) text for dark backgrounds */
-  light?: boolean;
-  /** Animation duration in seconds (higher = slower) */
+  /** CSS value for text color, e.g. rgba(255,255,255,0.85) */
+  textColor?: string;
+  /** Animation speed: higher = slower (maps to CSS duration in seconds) */
   speed?: number;
 }
 
-const { text, href, backgroundColor, light = false, speed = 25 } = Astro.props;
+const { text, href, backgroundColor, textColor, speed = 25 } = Astro.props;
+
+// Render 8 copies — horizontalLoop needs enough width to fill the viewport
+const copies = Array(8).fill(null);
 ---
 
 <section
-  class:list={["marquee-section", light && "marquee-section--light"]}
-  style={{ backgroundColor, "--marquee-speed": `${speed}s` }}
+  class="marquee-section"
+  style={{ backgroundColor, "--marquee-text-color": textColor ?? "var(--color-text)" }}
+  data-speed={speed}
   aria-label="Marquee"
 >
   <div class="marquee-section__track">
     <div class="marquee-section__inner">
       {
-        href ? (
-          <a href={href} class="marquee-section__link">
-            {text}
-          </a>
-        ) : (
-          <span class="marquee-section__text">{text}</span>
-        )
-      }
-      {
-        href ? (
-          <a href={href} class="marquee-section__link" aria-hidden="true">
-            {text}
-          </a>
-        ) : (
-          <span class="marquee-section__text" aria-hidden="true">
-            {text}
-          </span>
+        copies.map((_, i) =>
+          href ? (
+            <a
+              href={href}
+              class="marquee-section__item"
+              aria-hidden={i > 0 ? "true" : undefined}
+            >
+              {text}
+            </a>
+          ) : (
+            <span
+              class="marquee-section__item"
+              aria-hidden={i > 0 ? "true" : undefined}
+            >
+              {text}
+            </span>
+          )
         )
       }
     </div>
   </div>
 </section>
 
+<script>
+  import gsap from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  import { horizontalLoop } from "../lib/horizontalLoop";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  document.querySelectorAll<HTMLElement>(".marquee-section").forEach((section) => {
+    const items = section.querySelectorAll<HTMLElement>(".marquee-section__item");
+    const speed = parseFloat(section.dataset.speed ?? "25");
+    // Convert CSS duration (higher = slower) to GSAP speed (higher = faster)
+    const gsapSpeed = (30 / speed) * 2;
+
+    const tl = horizontalLoop(items, { repeat: -1, speed: gsapSpeed });
+
+    let speedTween: gsap.core.Animation | null = null;
+
+    ScrollTrigger.create({
+      trigger: section,
+      start: "top bottom",
+      end: "bottom top",
+      onUpdate: (self) => {
+        speedTween?.kill();
+        speedTween = gsap
+          .timeline()
+          .to(tl, { timeScale: 3 * self.direction, duration: 0.25 })
+          .to(tl, { timeScale: 1 * self.direction, duration: 1.5 }, "+=0.5");
+      },
+    });
+  });
+</script>
+
 <style>
   .marquee-section {
-    --marquee-speed: 25s;
-    padding: var(--space-s) 0;
-    min-height: 20vh;
+    padding: var(--space-2xs) 0;
+    min-height: 10vh;
     display: flex;
     align-items: center;
     overflow: hidden;
-    border-radius: var(--space-xs, 0.5rem);
-    margin: 0 var(--space-s, 1rem) var(--space-s, 1rem);
-  }
-
-  .marquee-section--light .marquee-section__link,
-  .marquee-section--light .marquee-section__text {
-    color: rgba(255, 255, 255, 0.85);
+    border-radius: var(--space-2xs, 0.5rem);
+    margin: 0 var(--space-2xs, 1rem) var(--space-2xs, 1rem);
   }
 
   .marquee-section__track {
@@ -67,43 +97,29 @@ const { text, href, backgroundColor, light = false, speed = 25 } = Astro.props;
   }
 
   .marquee-section__inner {
-    display: inline-flex;
+    display: flex;
     width: max-content;
-    animation: marquee-scroll var(--marquee-speed) linear infinite;
     will-change: transform;
   }
 
-  .marquee-section__link,
-  .marquee-section__text {
+  .marquee-section__item {
     flex-shrink: 0;
-    padding-right: 0.5em;
+    padding-right: 0.5ch;
     font-size: var(--step-5, clamp(3rem, 8vw, 9rem));
     font-weight: 700;
     line-height: 100%;
-    letter-spacing: -0.03em;
-    color: var(--color-text);
+    letter-spacing: -0.01em;
+    color: var(--marquee-text-color);
     white-space: nowrap;
-  }
-
-  .marquee-section__link {
     text-decoration: none;
-    color: inherit;
+    display: block;
   }
 
-  .marquee-section__link:hover {
+  a.marquee-section__item:hover {
     opacity: 0.85;
   }
 
-  .marquee-section__link:active {
+  a.marquee-section__item:active {
     opacity: 0.7;
-  }
-
-  @keyframes marquee-scroll {
-    0% {
-      transform: translateX(0);
-    }
-    100% {
-      transform: translateX(-50%);
-    }
   }
 </style>

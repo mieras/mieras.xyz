@@ -1,0 +1,45 @@
+- order: 1
+  text: "mieras.xyz mieras.xyz mieras.xyz mieras.xyz  mieras.xyz"
+  href: "#information"
+  backgroundColor: "var(--marquee-1)"
+  speed: 28
+
+- order: 2
+  text: "Rotterdam · Product design, design systems, prototyping"
+  href: "#information"
+  backgroundColor: "var(--marquee-2)"
+  textColor: "rgba(255, 255, 255, 0.85)"
+  speed: 24
+
+- order: 3
+  text: "St Joost, ABN AMRO, Secrid, One-fit, Jungle Minds, NOS"
+  href: "#information"
+  backgroundColor: "var(--marquee-3)"
+  speed: 26
+
+- order: 4
+  text: "User research, visual design, agile teams"
+  href: "#information"
+  backgroundColor: "var(--marquee-4)"
+  textColor: "rgba(255, 255, 255, 0.85)"
+  speed: 22
+
+- order: 5
+  text: "Studio@mieras.xyz — Information & Contact"
+  href: "#information"
+  backgroundColor: "var(--marquee-5)"
+  textColor: "rgba(255, 255, 255, 0.85)"
+  speed: 25
+
+- order: 6
+  text: "Clear and intuitive digital products — mieras.xyz"
+  href: "#information"
+  backgroundColor: "var(--marquee-6)"
+  textColor: "rgba(255, 255, 255, 0.85)"
+  speed: 27
+
+- order: 7
+  text: "Maarten Mieras — Digital Designer, Rotterdam"
+  href: "#information"
+  backgroundColor: "var(--marquee-7)"
+  speed: 23
