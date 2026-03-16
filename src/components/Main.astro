@@ -221,8 +221,12 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
   gsap.registerPlugin(ScrollTrigger);
 
   function initListStagger() {
-    const clientItems = document.querySelectorAll(".main__clients .main__list li");
-    const serviceItems = document.querySelectorAll(".main__skills .main__list li");
+    const clientItems = document.querySelectorAll(
+      ".main__clients .main__list li",
+    );
+    const serviceItems = document.querySelectorAll(
+      ".main__skills .main__list li",
+    );
 
     const animateList = (elements: NodeListOf<Element>) => {
       if (!elements.length) return;
@@ -326,7 +330,7 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
     font-size: var(--step--2, 0.75rem);
     font-weight: 300;
     color: var(--color-text-muted);
-    margin: 0 0 var(--space-2xs, 1rem);
+    margin: 0 0 var(--space-xs, 1rem);
     padding-top: var(--space-3xs, 1rem);
     letter-spacing: 0.02em;
     border-top: 1px solid var(--color-border);
@@ -358,6 +362,7 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
     text-underline-offset: 0.15em;
     text-decoration: underline wavy
       rgb(from var(--color-text, #111) r g b / 0.2);
+    text-decoration-thickness: 0.01em;
   }
   .main__list--small a:hover {
     color: var(--color-accent);
@@ -365,7 +370,7 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
   .main__copy-link {
     font-variant-numeric: proportional-nums;
     letter-spacing: 0.1ch;
-    font-weight: 400;
+
     margin-left: 0.25ch;
   }
   .main__cv-link--disabled {
