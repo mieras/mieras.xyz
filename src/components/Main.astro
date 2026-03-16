@@ -145,21 +145,23 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
       <!-- Row 2: col 1/2 = empty, col 3 = clients, col 4 = diensten -->
       <div class="main__col main__col--span-2 main__empty" aria-hidden="true">
       </div>
-      <section
-        class="main__col main__clients"
-        aria-labelledby="clients-heading"
-      >
-        <span class="main__caption" id="clients-heading">{clientsTitle}</span>
-        <ul class="main__list">
-          {clientNames.map((name) => <li>{name}</li>)}
-        </ul>
-      </section>
-      <section class="main__col main__skills" aria-labelledby="skills-heading">
-        <span class="main__caption" id="skills-heading">{skillsTitle}</span>
-        <ul class="main__list">
-          {serviceItems.map((item) => <li>{item}</li>)}
-        </ul>
-      </section>
+      <div class="main__clients-skills-wrap">
+        <section
+          class="main__col main__clients"
+          aria-labelledby="clients-heading"
+        >
+          <span class="main__caption" id="clients-heading">{clientsTitle}</span>
+          <ul class="main__list">
+            {clientNames.map((name) => <li>{name}</li>)}
+          </ul>
+        </section>
+        <section class="main__col main__skills" aria-labelledby="skills-heading">
+          <span class="main__caption" id="skills-heading">{skillsTitle}</span>
+          <ul class="main__list">
+            {serviceItems.map((item) => <li>{item}</li>)}
+          </ul>
+        </section>
+      </div>
     </div>
   </div>
   <div id="copy-feedback" class="main__copy-feedback" hidden aria-live="polite">
@@ -266,6 +268,13 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
     gap: var(--space-2xs, 2rem) var(--space-xs, 3rem);
     grid-template-columns: 1fr;
   }
+  /* Clients + services altijd 2 kolommen (ook op mobiel) */
+  .main__clients-skills-wrap {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2xs, 2rem) var(--space-xs, 3rem);
+  }
   /* Tablet: contact full, studio | about, clients | services */
   @media (min-width: 40rem) {
     .main__grid {
@@ -276,7 +285,7 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
       grid-column: 1 / -1;
     }
   }
-  /* Desktop: 4-col layout */
+  /* Desktop: 4-col layout; clients-skills wrap in cols 3-4 */
   @media (min-width: 55rem) {
     .main__grid {
       grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -285,6 +294,9 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
       grid-column: span 2;
     }
     .main__empty {
+      grid-column: span 2;
+    }
+    .main__clients-skills-wrap {
       grid-column: span 2;
     }
   }
