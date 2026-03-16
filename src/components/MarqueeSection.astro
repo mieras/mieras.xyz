@@ -18,7 +18,10 @@ const copies = Array(8).fill(null);
 
 <section
   class="marquee-section"
-  style={{ backgroundColor, "--marquee-text-color": textColor ?? "var(--color-text)" }}
+  style={{
+    backgroundColor,
+    "--marquee-text-color": textColor ?? "var(--color-text)",
+  }}
   data-speed={speed}
   aria-label="Marquee"
 >
@@ -41,7 +44,7 @@ const copies = Array(8).fill(null);
             >
               {text}
             </span>
-          )
+          ),
         )
       }
     </div>
@@ -55,29 +58,33 @@ const copies = Array(8).fill(null);
 
   gsap.registerPlugin(ScrollTrigger);
 
-  document.querySelectorAll<HTMLElement>(".marquee-section").forEach((section) => {
-    const items = section.querySelectorAll<HTMLElement>(".marquee-section__item");
-    const speed = parseFloat(section.dataset.speed ?? "25");
-    // Convert CSS duration (higher = slower) to GSAP speed (higher = faster)
-    const gsapSpeed = (30 / speed) * 2;
+  document
+    .querySelectorAll<HTMLElement>(".marquee-section")
+    .forEach((section) => {
+      const items = section.querySelectorAll<HTMLElement>(
+        ".marquee-section__item",
+      );
+      const speed = parseFloat(section.dataset.speed ?? "25");
+      // Convert CSS duration (higher = slower) to GSAP speed (higher = faster)
+      const gsapSpeed = (30 / speed) * 2;
 
-    const tl = horizontalLoop(items, { repeat: -1, speed: gsapSpeed });
+      const tl = horizontalLoop(items, { repeat: -1, speed: gsapSpeed });
 
-    let speedTween: gsap.core.Animation | null = null;
+      let speedTween: gsap.core.Animation | null = null;
 
-    ScrollTrigger.create({
-      trigger: section,
-      start: "top bottom",
-      end: "bottom top",
-      onUpdate: (self) => {
-        speedTween?.kill();
-        speedTween = gsap
-          .timeline()
-          .to(tl, { timeScale: 3 * self.direction, duration: 0.25 })
-          .to(tl, { timeScale: 1 * self.direction, duration: 1.5 }, "+=0.5");
-      },
+      ScrollTrigger.create({
+        trigger: section,
+        start: "top bottom",
+        end: "bottom top",
+        onUpdate: (self) => {
+          speedTween?.kill();
+          speedTween = gsap
+            .timeline()
+            .to(tl, { timeScale: 1 * self.direction, duration: 0.25 })
+            .to(tl, { timeScale: 1 * self.direction, duration: 1.5 }, "+=0.5");
+        },
+      });
     });
-  });
 </script>
 
 <style>

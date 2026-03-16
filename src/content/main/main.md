@@ -6,7 +6,7 @@ address: |
   Het Industriegebouw
   Goudsesingel 136 — Unit 5
   3011 KD Rotterdam
-cvLabel: "Curriculum Vitae (inactive download)"
+cvLabel: "Curriculum Vitae"
 # instagram: "@mieras.xyz"
 clientsTitle: Clients
 clientNames:

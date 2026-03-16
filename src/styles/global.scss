@@ -1,6 +1,10 @@
 @use './base';
 @use './tokens';
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: 'Neue Haas Grotesk Display Pro', sans-serif;
   font-weight: 500;
@@ -52,5 +56,5 @@ ol li {
 }
 
 .mono {
-  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
 }

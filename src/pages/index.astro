@@ -6,9 +6,6 @@ import Footer from "../components/Footer.astro";
 import MarqueeSection from "../components/MarqueeSection.astro";
 import { getEntry, getCollection } from "astro:content";
 
-/** Cargo-style template: stacked marquees + information layout. Set to false for original Hero layout. */
-const useTemplate = true;
-
 const mainEntry = await getEntry("main", "main");
 const contact = mainEntry?.data?.contact ?? "studio@mieras.xyz";
 
@@ -22,7 +19,7 @@ const marquees = (marqueeEntries[0]?.data ?? []).sort(
   title="MIERAS.XYZ — Maarten Mieras, Digital Designer"
   description="Maarten Mieras is a Digital Designer with 15+ years of experience, based in Rotterdam. Clear and intuitive digital products, agile methods."
 >
-  <Header templateStyle={useTemplate} contact={contact} />
+  <Header contact={contact} />
   <section class="marquee-wrapper">
     {
       marquees.map((m) => (
@@ -38,7 +35,7 @@ const marquees = (marqueeEntries[0]?.data ?? []).sort(
   </section>
 
   <Main />
-  <Footer templateStyle={useTemplate} />
+  <Footer />
 </BaseLayout>
 
 <style>

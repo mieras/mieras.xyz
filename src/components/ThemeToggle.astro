@@ -5,21 +5,25 @@
 <button
   type="button"
   id="theme-toggle"
-  aria-label="Wissel tussen donker en licht thema"
+  aria-label="Switch between light and dark theme"
   class="theme-toggle mono"
 >
   <span aria-hidden="true">◐</span>
 </button>
 
 <script>
-  const btn = document.getElementById('theme-toggle');
+  const btn = document.getElementById("theme-toggle");
   if (btn) {
-    btn.addEventListener('click', () => {
+    btn.addEventListener("click", () => {
       const root = document.documentElement;
-      const current = root.getAttribute('data-theme') ?? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-      const next = current === 'dark' ? 'light' : 'dark';
-      root.setAttribute('data-theme', next);
-      localStorage.setItem('theme', next);
+      const current =
+        root.getAttribute("data-theme") ??
+        (window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light");
+      const next = current === "dark" ? "light" : "dark";
+      root.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
     });
   }
 </script>
@@ -31,8 +35,12 @@
     color: var(--color-text);
     padding: 0.25rem 0.5rem;
     font-size: var(--step--1, 0.875rem);
+    line-height: 100%;
     cursor: pointer;
-    border-radius: 0;
+    border-radius: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .theme-toggle:hover {
     background: var(--color-text);

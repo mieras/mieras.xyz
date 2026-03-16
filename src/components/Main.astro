@@ -61,7 +61,19 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
           <li>
             <a href={`mailto:${contact}`} class="main__email">{contact}</a>
           </li>
-          {cvLabel ? <li>{cvLabel}</li> : null}
+          {
+            cvLabel ? (
+              <li>
+                <a
+                  class="main__cv-link main__cv-link--disabled"
+                  aria-disabled="true"
+                >
+                  {cvLabel}
+                </a>
+                <span class="main__cv-soon">coming soon</span>
+              </li>
+            ) : null
+          }
         </ul>
         <ul class="main__list main__list--small">
           <li>
@@ -87,7 +99,7 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
             </a>
           </li>
           <li>
-            Bank:
+            IBAN:
             <a
               href="#"
               class="main__copy-link"
@@ -150,9 +162,41 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
       </section>
     </div>
   </div>
+  <div id="copy-feedback" class="main__copy-feedback" hidden aria-live="polite">
+    <span class="main__copy-feedback__pill">Got it!</span>
+  </div>
 </main>
 
 <script>
+  let hideTimer: ReturnType<typeof setTimeout> | null = null;
+  let fallTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function showFeedback(value: string) {
+    const feedback = document.getElementById("copy-feedback");
+    if (!feedback) return;
+    const pill = feedback.querySelector(".main__copy-feedback__pill");
+    if (!pill) return;
+
+    // Reset any running timers and animations
+    if (hideTimer) clearTimeout(hideTimer);
+    if (fallTimer) clearTimeout(fallTimer);
+    pill.classList.remove("is-falling");
+
+    pill.textContent = value;
+    feedback.hidden = false;
+    // Force reflow so re-triggering the animation works
+    void (pill as HTMLElement).offsetHeight;
+    pill.classList.remove("is-falling");
+
+    fallTimer = setTimeout(() => {
+      pill.classList.add("is-falling");
+      hideTimer = setTimeout(() => {
+        feedback.hidden = true;
+        pill.classList.remove("is-falling");
+      }, 600);
+    }, 2400);
+  }
+
   function setupCopy(selector: string) {
     document.querySelectorAll(selector).forEach((el) => {
       el.addEventListener("click", async (e) => {
@@ -161,20 +205,48 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
         if (!value) return;
         try {
           await navigator.clipboard.writeText(value);
-          const feedback = document.getElementById("copy-feedback");
-          if (feedback) {
-            feedback.hidden = false;
-            feedback.textContent = "Gekopieerd!";
-            setTimeout(() => {
-              feedback.hidden = true;
-            }, 2000);
-          }
+          showFeedback("Copied!");
         } catch (_) {}
       });
     });
   }
   setupCopy(".main__copy-btn");
   setupCopy(".main__copy-link");
+</script>
+
+<script>
+  import gsap from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  function initListStagger() {
+    const clientItems = document.querySelectorAll(".main__clients .main__list li");
+    const serviceItems = document.querySelectorAll(".main__skills .main__list li");
+
+    const animateList = (elements: NodeListOf<Element>) => {
+      if (!elements.length) return;
+      const section = elements[0]?.closest("section");
+      if (!section) return;
+      gsap.set(elements, { opacity: 0 });
+      gsap.to(elements, {
+        opacity: 1,
+        duration: 0.5,
+        stagger: 0.08,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: section,
+          start: "top 88%",
+          toggleActions: "play none none none",
+        },
+      });
+    };
+
+    animateList(clientItems);
+    animateList(serviceItems);
+  }
+
+  initListStagger();
 </script>
 
 <style scoped>
@@ -184,7 +256,6 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
     flex: 1;
   }
   .main__wrap {
-    max-width: 90rem;
   }
   .main__grid {
     display: grid;
@@ -279,17 +350,86 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
   }
   .main__list--small {
     font-size: var(--step--2, 0.75rem);
-    color: var(--color-text-muted);
+    color: var(--color-text);
   }
   .main__list--small a {
     color: inherit;
     text-decoration: underline;
     text-underline-offset: 0.15em;
+    text-decoration: underline wavy
+      rgb(from var(--color-text, #111) r g b / 0.2);
   }
   .main__list--small a:hover {
     color: var(--color-accent);
   }
   .main__copy-link {
-    font: inherit;
+    font-variant-numeric: proportional-nums;
+    letter-spacing: 0.1ch;
+    font-weight: 400;
+    margin-left: 0.25ch;
+  }
+  .main__cv-link--disabled {
+    color: var(--color-text-muted);
+    text-decoration: line-through;
+    cursor: not-allowed;
+    /* pointer-events: none; */
+  }
+  .main__cv-soon {
+    margin-left: 0.35em;
+    font-size: 0.5em;
+    font-weight: 400;
+    text-decoration: none !important;
+    opacity: 0.8;
+  }
+
+  @keyframes pill-in {
+    from {
+      opacity: 0;
+      transform: scale(0.35);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes pill-fall {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: scale(2);
+    }
+  }
+
+  .main__copy-feedback {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 9999;
+  }
+  .main__copy-feedback[hidden] {
+    display: none !important;
+  }
+  .main__copy-feedback__pill {
+    display: block;
+    white-space: nowrap;
+    text-align: center;
+    padding: var(--space-s) var(--space-l);
+    font-size: var(--step-5);
+    color: var(--color-text);
+    backdrop-filter: blur(5vw);
+    background: rgb(from var(--color-text, #111) r g b / 0.2);
+    border-radius: 9999px;
+    animation: pill-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    line-height: 100%;
+    box-shadow: var(--space-3xs) var(--space-2xs) var(--space-2xs)
+      rgb(from var(--color-bg, #111) r g b / 0.2);
+  }
+  .main__copy-feedback__pill.is-falling {
+    animation: pill-fall 0.6s ease forwards;
   }
 </style>

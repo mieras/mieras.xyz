@@ -1,192 +1,75 @@
 ---
-import { getEntry } from "astro:content";
+import { getCurrentWeather } from "../lib/weather";
 
-interface Props {
-  /** Cargo-style: two columns with caption typography */
-  templateStyle?: boolean;
+let tempDisplay = "--";
+try {
+  const weather = await getCurrentWeather("Rotterdam");
+  if (weather?.current?.temp_c != null) {
+    tempDisplay = String(Math.round(weather.current.temp_c));
+  }
+} catch {
+  // keep -- on error
 }
-
-const { templateStyle = false } = Astro.props;
-
-const footerEntry = await getEntry("footer", "footer");
 const year = new Date().getFullYear();
-const btw = footerEntry?.data?.btw ?? "NL001619749B74";
-const kvk = footerEntry?.data?.kvk ?? "24486874";
-const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
-const today = new Date().toLocaleDateString("nl-NL", {
+const today = new Date().toLocaleDateString("en-US", {
   weekday: "long",
-  day: "numeric",
   month: "long",
+  day: "numeric",
 });
 ---
 
-<footer
-  class="footer"
-  class:list={[templateStyle && "footer--template"]}
-  role="contentinfo"
->
-  {
-    templateStyle ? (
-      <div class="footer__cols">
-        <div class="footer__col footer__col--left">
-          <span class="footer__caption">mieras.xyz — {year}</span>
-          <br />
-          <span class="footer__caption footer__caption--date">
-            Vandaag: {today}
-          </span>
-        </div>
-      </div>
-    ) : (
-      <>
-        <p class="footer__copy">© {year} MIERAS</p>
-        <ul class="footer__list ">
-          <li>
-            <span>BTW:</span>
-            <button
-              type="button"
-              class="footer__copy-btn"
-              data-copy-value={btw}
-              data-label="BTW"
-              aria-label="Kopieer BTW-nummer"
-            >
-              {btw}
-            </button>
-          </li>
-          <li>
-            <span>KVK:</span>
-            <button
-              type="button"
-              class="footer__copy-btn"
-              data-copy-value={kvk}
-              data-label="KVK"
-              aria-label="Kopieer KVK-nummer"
-            >
-              {kvk}
-            </button>
-          </li>
-          <li>
-            <span>BANK:</span>
-            <button
-              type="button"
-              class="footer__copy-btn"
-              data-copy-value={bank}
-              data-label="BANK"
-              aria-label="Kopieer bankrekeningnummer"
-            >
-              {bank}
-            </button>
-          </li>
-        </ul>
-        <p class="footer__links">
-          <a href="/terms.pdf">T&C</a> (PDF)
-        </p>
-      </>
-    )
-  }
+<footer class="footer" role="contentinfo">
+  <div class="footer__col footer__col--1">
+    <p class="footer__line">
+      © {year} mieras.xyz
+    </p>
+    <p class="footer__line footer__line--date">
+      Today is: {today}
+    </p>
+  </div>
+  <div class="footer__col footer__col--2">
+    <p class="footer__line">
+      Rotterdam, {tempDisplay}°C
+    </p>
+    <p class="footer__line">
+      <time id="live-time" datetime="">00:00:00:000</time>
+    </p>
+  </div>
 </footer>
 
-<div
-  id="copy-feedback"
-  role="status"
-  aria-live="polite"
-  class="footer__feedback"
-  hidden
->
-  Gekopieerd!
-</div>
-
 <script>
-  document.querySelectorAll(".footer__copy-btn").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      const value = btn.getAttribute("data-copy-value");
-      if (!value) return;
-      try {
-        await navigator.clipboard.writeText(value);
-        const feedback = document.getElementById("copy-feedback");
-        if (feedback) {
-          feedback.hidden = false;
-          feedback.textContent = "Gekopieerd!";
-          setTimeout(() => {
-            feedback.hidden = true;
-          }, 2000);
-        }
-      } catch (_) {
-        // ignore
-      }
-    });
-  });
+  function pad(n: number, len = 2) {
+    return String(n).padStart(len, "0");
+  }
+  function updateTime() {
+    const el = document.getElementById("live-time");
+    if (!el) return;
+    const d = new Date();
+    const h = pad(d.getHours());
+    const m = pad(d.getMinutes());
+    const s = pad(d.getSeconds());
+    const ms = pad(d.getMilliseconds(), 3);
+    el.textContent = `${h}:${m}:${s}:${ms}`;
+    el.setAttribute("datetime", d.toISOString());
+  }
+  updateTime();
+  setInterval(updateTime, 50);
 </script>
 
-<style scoped>
+<style>
   .footer {
-    justify-content: space-between;
-    align-items: baseline;
-    gap: var(--space-s, 1rem);
-    padding: var(--space-2xs) var(--space-xs, 2rem);
-  }
-  .footer--template .footer__cols {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--space-xl, 3rem);
-    width: 100%;
+    gap: var(--space-2xs, 2rem) var(--space-xs, 3rem);
+    align-items: start;
+    padding: var(--space-2xs, 3rem) var(--space-xs, 2rem);
+    font-size: var(--step--3, 0.75rem);
+    color: var(--color-color-bg);
+    line-height: inherit;
   }
-  .footer--template .footer__col--right {
-    text-align: right;
+  .footer__col--2 {
   }
-  .footer__caption {
-    font-size: var(--step--2, 0.75rem);
-
-    color: var(--color-text-muted);
-  }
-  .footer__caption--date {
-    display: block;
-    margin-top: 0.25rem;
-  }
-  .footer__copy {
+  .footer__line {
     margin: 0;
-  }
-  .footer__list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-s, 1rem);
-  }
-  .footer__list li {
-    margin-bottom: 0.25rem;
-  }
-  .footer__copy-btn {
-    background: none;
-    border: none;
-    color: var(--color-text);
-    padding: 0;
-    cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 0.15em;
-    font: inherit;
-  }
-  .footer__copy-btn:hover {
-    color: var(--color-accent);
-  }
-  .footer__copy-btn:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
-  }
-  .footer__links {
-    margin: 0;
-  }
-  .footer__links a {
-    color: var(--color-accent);
-    text-decoration: underline;
-  }
-  .footer__feedback {
-    position: absolute;
-    bottom: var(--space-m, 1.5rem);
-    right: var(--space-m, 1.5rem);
-    padding: var(--space-xs, 0.5rem) var(--space-s, 1rem);
-    background: var(--color-accent);
-    color: var(--color-bg);
-    font-size: var(--step--1, 0.875rem);
   }
 </style>

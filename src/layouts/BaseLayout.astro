@@ -42,6 +42,13 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://mieras.x
         } else {
           document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
         }
+
+        // Reageer op OS-thema wijzigingen, maar alleen zonder handmatige voorkeur
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+          if (!localStorage.getItem('theme')) {
+            document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+          }
+        });
       })();
     </script>
     <script>
