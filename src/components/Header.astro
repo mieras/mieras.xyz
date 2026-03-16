@@ -13,20 +13,16 @@ const { contact = "studio@mieras.xyz" } = Astro.props;
     <a href="/" class="header__name" rel="home">mieras.xyz</a>
   </div>
   <nav class="header__nav" aria-label="Hoofdnavigatie">
-    <a href="#information" class="header__link">
-      Information
-    </a>
-    <a href={`mailto:${contact}`} class="header__link">
-      Email
-    </a>
-    <a
+    <a href="#information" class="header__link"> info</a>
+    <a href={`mailto:${contact}`} class="header__link">mail</a>
+    <!-- <a
       href="https://www.instagram.com/mieras.xyz"
       target="_blank"
       rel="noopener noreferrer"
       class="header__link"
     >
       IG
-    </a>
+    </a> -->
     <ThemeToggle />
   </nav>
 </header>

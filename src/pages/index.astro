@@ -40,12 +40,16 @@ const marquees = (marqueeEntries[0]?.data ?? []).sort(
 
 <style>
   .marquee-wrapper {
-    display: flex;
-    flex-direction: column;
-    min-height: 100svh;
     margin-bottom: var(--space-2xl, 1rem);
   }
-  :global(.marquee-wrapper > section) {
-    flex: 1;
+  @media (min-width: 1280px) {
+    .marquee-wrapper {
+      display: flex;
+      flex-direction: column;
+      min-height: 100svh;
+    }
+    :global(.marquee-wrapper > section) {
+      flex: 1;
+    }
   }
 </style>

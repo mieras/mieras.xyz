@@ -266,27 +266,48 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
     gap: var(--space-2xs, 2rem) var(--space-xs, 3rem);
     grid-template-columns: 1fr;
   }
+  /* Tablet: contact full, studio | about, clients | services */
+  @media (min-width: 40rem) {
+    .main__grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .main__col--span-2,
+    .main__empty {
+      grid-column: 1 / -1;
+    }
+  }
+  /* Desktop: 4-col layout */
   @media (min-width: 55rem) {
     .main__grid {
       grid-template-columns: 1fr 1fr 1fr 1fr;
     }
-  }
-  .main__col--span-2 {
-    grid-column: span 1;
-  }
-  @media (min-width: 55rem) {
     .main__col--span-2 {
+      grid-column: span 2;
+    }
+    .main__empty {
       grid-column: span 2;
     }
   }
   .main__col {
     min-width: 0;
+
+    a {
+      color: var(--color-text);
+      text-decoration: underline;
+      text-underline-offset: 0.2em;
+    }
   }
   .main__empty {
     min-height: 0;
   }
   .main__block-text {
     font-size: var(--step--1, 1rem);
+  }
+
+  .main__contact,
+  .main__clients,
+  .main__skills {
+    margin: 0 0 var(--space-m, 1.5rem);
   }
   .main__block-text--muted {
     color: var(--color-text-muted);
@@ -298,6 +319,14 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
   }
   .main__intro :global(p) {
     margin: 0 0 var(--space-m, 1.5rem);
+  }
+  .main__subtitle-a :global(a) {
+    color: var(--color-text);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  .main__subtitle-a :global(a:hover) {
+    text-decoration: none;
   }
   .main__email {
     color: var(--color-accent);
