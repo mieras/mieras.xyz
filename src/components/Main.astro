@@ -170,6 +170,9 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
 </main>
 
 <script>
+  import { WebHaptics } from "web-haptics";
+  const haptics = new WebHaptics();
+
   let hideTimer: ReturnType<typeof setTimeout> | null = null;
   let fallTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -208,6 +211,7 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
         try {
           await navigator.clipboard.writeText(value);
           showFeedback("Copied!");
+          haptics.trigger("success");
         } catch (_) {}
       });
     });
