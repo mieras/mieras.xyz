@@ -4,6 +4,7 @@ import Header from "../components/Header.astro";
 import Main from "../components/Main.astro";
 import Footer from "../components/Footer.astro";
 import MarqueeSection from "../components/MarqueeSection.astro";
+import JsonLd from "../components/JsonLd.astro";
 import { getEntry, getCollection } from "astro:content";
 
 const mainEntry = await getEntry("main", "main");
@@ -13,12 +14,57 @@ const marqueeEntries = await getCollection("marquee");
 const marquees = (marqueeEntries[0]?.data ?? []).sort(
   (a: { order: number }, b: { order: number }) => a.order - b.order
 );
+
+const seoEntry = await getEntry("seo", "seo");
+const { person: p, organization: o } = seoEntry!.data;
+
+const personSchema = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: p.name,
+  jobTitle: p.jobTitle,
+  gender: p.gender,
+  email: p.email,
+  birthDate: p.birthDate,
+  birthPlace: p.birthPlace,
+  url: p.url,
+  address: {
+    "@type": "PostalAddress",
+    ...p.address,
+  },
+};
+
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  name: o.name,
+  url: o.url,
+  sameAs: o.sameAs,
+  logo: o.logo,
+  description: o.description,
+  email: o.email,
+  hasMap: o.hasMap,
+  openingHours: o.openingHours,
+  geo: {
+    "@type": "GeoCoordinates",
+    latitude: o.latitude,
+    longitude: o.longitude,
+  },
+  address: {
+    "@type": "PostalAddress",
+    ...o.address,
+  },
+};
 ---
 
 <BaseLayout
   title="MIERAS.XYZ — Maarten Mieras, Digital Designer"
   description="Maarten Mieras is a Digital Designer with 15+ years of experience, based in Rotterdam. Clear and intuitive digital products, agile methods."
 >
+  <Fragment slot="head">
+    <JsonLd data={personSchema} />
+    <JsonLd data={organizationSchema} />
+  </Fragment>
   <Header contact={contact} />
   <section class="marquee-wrapper">
     {

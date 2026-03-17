@@ -38,7 +38,8 @@ const kvk = footerEntry?.data?.kvk ?? "24486874";
 const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
 ---
 
-<main id="main" class="main" role="main">
+<main id="main" class="main">
+  <h1 class="sr-only">Maarten Mieras — Digital Designer</h1>
   <div id="information" class="main__wrap">
     <div class="main__grid">
       <!-- Row 1: col 1/2 = address + kvk/btw/bank, col 3 = studio, col 4 = music/extra -->
@@ -46,7 +47,7 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
         class="main__col main__col--span-2 main__contact"
         aria-labelledby="contact-heading"
       >
-        <span class="main__caption" id="contact-heading">Contact</span>
+        <h2 class="main__caption" id="contact-heading">Contact</h2>
         <ul class="main__list">
           {
             address
@@ -112,7 +113,7 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
         </ul>
       </section>
       <section class="main__col main__studio" aria-labelledby="studio-heading">
-        <span class="main__caption" id="studio-heading">Studio</span>
+        <h2 class="main__caption" id="studio-heading">Studio</h2>
         <div class="main__intro">
           <Content />
         </div>
@@ -121,8 +122,8 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
         class="main__col main__subtitle-a"
         aria-labelledby="subtitle-a-heading"
       >
-        <span class="main__caption" id="subtitle-a-heading"
-          >{subtitleALabel}</span
+        <h2 class="main__caption" id="subtitle-a-heading"
+          >{subtitleALabel}</h2
         >
         {
           contentAbout ? (
@@ -150,13 +151,13 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
           class="main__col main__clients"
           aria-labelledby="clients-heading"
         >
-          <span class="main__caption" id="clients-heading">{clientsTitle}</span>
+          <h2 class="main__caption" id="clients-heading">{clientsTitle}</h2>
           <ul class="main__list">
             {clientNames.map((name) => <li>{name}</li>)}
           </ul>
         </section>
         <section class="main__col main__skills" aria-labelledby="skills-heading">
-          <span class="main__caption" id="skills-heading">{skillsTitle}</span>
+          <h2 class="main__caption" id="skills-heading">{skillsTitle}</h2>
           <ul class="main__list">
             {serviceItems.map((item) => <li>{item}</li>)}
           </ul>
@@ -260,6 +261,16 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
 </script>
 
 <style scoped>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
   .main {
     min-height: 90svh;
     padding: var(--space-2xs, 3rem) var(--space-xs, 2rem);

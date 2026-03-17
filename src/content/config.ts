@@ -37,8 +37,46 @@ const marquee = defineCollection({
   })),
 });
 
+const addressSchema = z.object({
+  streetAddress: z.string(),
+  addressLocality: z.string(),
+  addressRegion: z.string(),
+  postalCode: z.string(),
+  addressCountry: z.string(),
+});
+
+const seo = defineCollection({
+  type: 'data',
+  schema: z.object({
+    person: z.object({
+      name: z.string(),
+      jobTitle: z.string(),
+      gender: z.string().optional(),
+      email: z.string(),
+      birthDate: z.string().optional(),
+      birthPlace: z.string().optional(),
+      url: z.string(),
+      address: addressSchema,
+    }),
+    organization: z.object({
+      name: z.string(),
+      url: z.string(),
+      sameAs: z.array(z.string()).optional(),
+      logo: z.string().optional(),
+      description: z.string(),
+      email: z.string(),
+      hasMap: z.string().optional(),
+      latitude: z.string().optional(),
+      longitude: z.string().optional(),
+      openingHours: z.array(z.string()).optional(),
+      address: addressSchema,
+    }),
+  }),
+});
+
 export const collections = {
   footer,
   main,
   marquee,
+  seo,
 };
