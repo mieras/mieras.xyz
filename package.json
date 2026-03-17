@@ -6,7 +6,9 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "astro": "^5.17.1",
@@ -16,5 +18,8 @@
     "sass": "^1.97.3",
     "utopia-core-scss": "^1.3.1",
     "web-haptics": "^0.0.6"
+  },
+  "devDependencies": {
+    "prettier": "^3.8.1"
   }
 }

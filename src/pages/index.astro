@@ -12,90 +12,90 @@ const contact = mainEntry?.data?.contact ?? "studio@mieras.xyz";
 
 const marqueeEntries = await getCollection("marquee");
 const marquees = (marqueeEntries[0]?.data ?? []).sort(
-  (a: { order: number }, b: { order: number }) => a.order - b.order
+    (a: { order: number }, b: { order: number }) => a.order - b.order
 );
 
 const seoEntry = await getEntry("seo", "seo");
 const { person: p, organization: o } = seoEntry!.data;
 
 const personSchema = {
-  "@context": "https://schema.org",
-  "@type": "Person",
-  name: p.name,
-  jobTitle: p.jobTitle,
-  gender: p.gender,
-  email: p.email,
-  birthDate: p.birthDate,
-  birthPlace: p.birthPlace,
-  url: p.url,
-  address: {
-    "@type": "PostalAddress",
-    ...p.address,
-  },
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: p.name,
+    jobTitle: p.jobTitle,
+    gender: p.gender,
+    email: p.email,
+    birthDate: p.birthDate,
+    birthPlace: p.birthPlace,
+    url: p.url,
+    address: {
+        "@type": "PostalAddress",
+        ...p.address,
+    },
 };
 
 const organizationSchema = {
-  "@context": "https://schema.org",
-  "@type": "LocalBusiness",
-  name: o.name,
-  url: o.url,
-  sameAs: o.sameAs,
-  logo: o.logo,
-  description: o.description,
-  email: o.email,
-  hasMap: o.hasMap,
-  openingHours: o.openingHours,
-  geo: {
-    "@type": "GeoCoordinates",
-    latitude: o.latitude,
-    longitude: o.longitude,
-  },
-  address: {
-    "@type": "PostalAddress",
-    ...o.address,
-  },
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name: o.name,
+    url: o.url,
+    sameAs: o.sameAs,
+    logo: o.logo,
+    description: o.description,
+    email: o.email,
+    hasMap: o.hasMap,
+    openingHours: o.openingHours,
+    geo: {
+        "@type": "GeoCoordinates",
+        latitude: o.latitude,
+        longitude: o.longitude,
+    },
+    address: {
+        "@type": "PostalAddress",
+        ...o.address,
+    },
 };
 ---
 
 <BaseLayout
-  title="MIERAS.XYZ — Maarten Mieras, Digital Designer"
-  description="Maarten Mieras is a Digital Designer with 15+ years of experience, based in Rotterdam. Clear and intuitive digital products, agile methods."
+    title={o.metaTitle ?? `${o.name} • ${p.name} • ${p.jobTitle}`}
+    description={o.metaDescription ?? o.description}
 >
-  <Fragment slot="head">
-    <JsonLd data={personSchema} />
-    <JsonLd data={organizationSchema} />
-  </Fragment>
-  <Header contact={contact} />
-  <section class="marquee-wrapper">
-    {
-      marquees.map((m) => (
-        <MarqueeSection
-          text={m.text}
-          href={m.href}
-          backgroundColor={m.backgroundColor}
-          textColor={m.textColor}
-          speed={m.speed}
-        />
-      ))
-    }
-  </section>
+    <Fragment slot="head">
+        <JsonLd data={personSchema} />
+        <JsonLd data={organizationSchema} />
+    </Fragment>
+    <Header contact={contact} />
+    <section class="marquee-wrapper">
+        {
+            marquees.map((m) => (
+                <MarqueeSection
+                    text={m.text}
+                    href={m.href}
+                    backgroundColor={m.backgroundColor}
+                    textColor={m.textColor}
+                    speed={m.speed}
+                />
+            ))
+        }
+    </section>
 
-  <Main />
-  <Footer />
+    <Main />
+    <Footer />
 </BaseLayout>
 
 <style>
-  .marquee-wrapper {
-    margin-bottom: var(--space-2xl, 1rem);
-  }
-  @media (min-width: 1280px) {
     .marquee-wrapper {
-      display: flex;
-      flex-direction: column;
-      min-height: 100svh;
+        margin-bottom: var(--space-2xl, 1rem);
     }
-    :global(.marquee-wrapper > section) {
-      flex: 1;
+    @media (min-width: 1280px) {
+        .marquee-wrapper {
+            display: flex;
+            flex-direction: column;
+            min-height: 100svh;
+        }
+        :global(.marquee-wrapper > section) {
+            flex: 1;
+        }
     }
-  }
 </style>

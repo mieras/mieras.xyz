@@ -1,57 +1,76 @@
 ---
-import '../styles/global.scss';
-import SeoMeta from '../components/SeoMeta.astro';
+import "../styles/global.scss";
+import SeoMeta from "../components/SeoMeta.astro";
 
 interface Props {
-  title: string;
-  description?: string;
+    title: string;
+    description?: string;
 }
 
-const { title, description = 'Maarten Mieras — Digital Designer, Rotterdam. Clear and intuitive digital products.' } = Astro.props;
-const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://mieras.xyz');
+const {
+    title,
+    description = "Maarten Mieras • Digital Designer, Rotterdam. Clear and intuitive digital products.",
+} = Astro.props;
+const canonicalURL = new URL(
+    Astro.url.pathname,
+    Astro.site ?? "https://mieras.xyz"
+);
 ---
 
 <!doctype html>
 <html lang="nl">
-  <head>
-    <link href="https://fonts.cdnfonts.com/css/neue-haas-grotesk-display-pro" rel="stylesheet" />
-    <SeoMeta {title} {description} {canonicalURL} />
-    <slot name="head" />
-  </head>
-  <body>
-    <a href="#main" class="skip-link">Naar inhoud</a>
-    <div class="page">
-      <slot />
-    </div>
-    <script is:inline define:vars={{}}>
-      (function() {
-        const stored = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (stored === 'light' || stored === 'dark') {
-          document.documentElement.setAttribute('data-theme', stored);
-        } else {
-          document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
-        }
+    <head>
+        <link
+            href="https://fonts.cdnfonts.com/css/neue-haas-grotesk-display-pro"
+            rel="stylesheet"
+        />
+        <SeoMeta {title} {description} {canonicalURL} />
+        <slot name="head" />
+    </head>
+    <body>
+        <a href="#main" class="skip-link">Naar inhoud</a>
+        <div class="page">
+            <slot />
+        </div>
+        <script is:inline define:vars={{}}>
+            (function () {
+                const stored = localStorage.getItem("theme");
+                const prefersDark = window.matchMedia(
+                    "(prefers-color-scheme: dark)"
+                ).matches;
+                if (stored === "light" || stored === "dark") {
+                    document.documentElement.setAttribute("data-theme", stored);
+                } else {
+                    document.documentElement.setAttribute(
+                        "data-theme",
+                        prefersDark ? "dark" : "light"
+                    );
+                }
 
-        // Reageer op OS-thema wijzigingen, maar alleen zonder handmatige voorkeur
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-          if (!localStorage.getItem('theme')) {
-            document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
-          }
-        });
-      })();
-    </script>
-    <script>
-      import Lenis from 'lenis';
+                // Reageer op OS-thema wijzigingen, maar alleen zonder handmatige voorkeur
+                window
+                    .matchMedia("(prefers-color-scheme: dark)")
+                    .addEventListener("change", (e) => {
+                        if (!localStorage.getItem("theme")) {
+                            document.documentElement.setAttribute(
+                                "data-theme",
+                                e.matches ? "dark" : "light"
+                            );
+                        }
+                    });
+            })();
+        </script>
+        <script>
+            import Lenis from "lenis";
 
-      const lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
-      (window as unknown as { lenis?: Lenis }).lenis = lenis;
+            const lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
+            (window as unknown as { lenis?: Lenis }).lenis = lenis;
 
-      function raf(time: number) {
-        lenis.raf(time);
-        requestAnimationFrame(raf);
-      }
-      requestAnimationFrame(raf);
-    </script>
-  </body>
+            function raf(time: number) {
+                lenis.raf(time);
+                requestAnimationFrame(raf);
+            }
+            requestAnimationFrame(raf);
+        </script>
+    </body>
 </html>

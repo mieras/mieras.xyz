@@ -61,6 +61,8 @@ const seo = defineCollection({
     organization: z.object({
       name: z.string(),
       url: z.string(),
+      metaTitle: z.string().optional(),
+      metaDescription: z.string().optional(),
       sameAs: z.array(z.string()).optional(),
       logo: z.string().optional(),
       description: z.string(),
