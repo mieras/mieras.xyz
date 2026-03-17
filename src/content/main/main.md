@@ -13,16 +13,17 @@ clientsTitle: Clients
 clientNames:
     - Postcode Loterij
     - St Joost
-    - ABN AMRO
     - Studio Dumbar/DEPT®
-    - Narwal Creative
     - WNF
+    - ABN AMRO
+    - NOS
+    # - Nieuwsuur
     - HIZKIA
+    - Paul Kempe
+    - Narwal Creative
     - Jungle Minds
     - Basic-Fit
     - Secrid
-    - NOS
-    - Nieuwsuur
     - Peaks
 skillsTitle: Services
 # Column under Music: list from md. Falls back to skills if services is omitted.
