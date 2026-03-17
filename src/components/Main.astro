@@ -6,32 +6,33 @@ const mainEntry = await getEntry("main", "main");
 const footerEntry = await getEntry("footer", "footer");
 
 if (!mainEntry) {
-  throw new Error("Main content (main/main) not found.");
+    throw new Error("Main content (main/main) not found.");
 }
 const { Content } = await render(mainEntry);
 const {
-  title,
-  subtitle,
-  contact,
-  address,
-  instagram,
-  cvLabel,
-  clientsTitle,
-  clientNames,
-  skillsTitle,
-  skills,
-  subtitleALabel = "Music",
-  subtitleAText,
-  contentAbout,
-  services,
+    title,
+    subtitle,
+    contact,
+    linkedin,
+    address,
+    instagram,
+    cvLabel,
+    clientsTitle,
+    clientNames,
+    skillsTitle,
+    skills,
+    subtitleALabel = "Music",
+    subtitleAText,
+    contentAbout,
+    services,
 } = mainEntry.data;
 
 const serviceItems = services
-  ? services
-      .split(/\n/)
-      .map((line) => line.replace(/^\s*[-*]\s*/, "").trim())
-      .filter(Boolean)
-  : skills;
+    ? services
+          .split(/\n/)
+          .map((line) => line.replace(/^\s*[-*]\s*/, "").trim())
+          .filter(Boolean)
+    : skills;
 
 const btw = footerEntry?.data?.btw ?? "NL001619749B74";
 const kvk = footerEntry?.data?.kvk ?? "24486874";
@@ -39,458 +40,497 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
 ---
 
 <main id="main" class="main">
-  <h1 class="sr-only">Maarten Mieras — Digital Designer</h1>
-  <div id="information" class="main__wrap">
-    <div class="main__grid">
-      <!-- Row 1: col 1/2 = address + kvk/btw/bank, col 3 = studio, col 4 = music/extra -->
-      <section
-        class="main__col main__col--span-2 main__contact"
-        aria-labelledby="contact-heading"
-      >
-        <h2 class="main__caption" id="contact-heading">Contact</h2>
-        <ul class="main__list">
-          {
-            address
-              ? address
-                  .split(/\n/)
-                  .filter(Boolean)
-                  .map((line) => <li>{line}</li>)
-              : null
-          }
-        </ul>
-        <ul class="main__list">
-          <li>
-            <a href={`mailto:${contact}`} class="main__email">{contact}</a>
-          </li>
-          {
-            cvLabel ? (
-              <li>
-                <a
-                  class="main__cv-link main__cv-link--disabled"
-                  aria-disabled="true"
-                >
-                  {cvLabel}
-                </a>
-                <span class="main__cv-soon">coming soon</span>
-              </li>
-            ) : null
-          }
-        </ul>
-        <ul class="main__list main__list--small">
-          <li>
-            KVK:
-            <a
-              href="#"
-              class="main__copy-link"
-              data-copy-value={kvk}
-              aria-label="Kopieer KVK-nummer"
+    <h1 class="sr-only">Maarten Mieras — Digital Designer</h1>
+    <div id="information" class="main__wrap">
+        <div class="main__grid">
+            <!-- Row 1: col 1/2 = address + kvk/btw/bank, col 3 = studio, col 4 = music/extra -->
+            <section
+                class="main__col main__col--span-2 main__contact"
+                aria-labelledby="contact-heading"
             >
-              {kvk}
-            </a>
-          </li>
-          <li>
-            BTW:
-            <a
-              href="#"
-              class="main__copy-link"
-              data-copy-value={btw}
-              aria-label="Kopieer BTW-nummer"
-            >
-              {btw}
-            </a>
-          </li>
-          <li>
-            IBAN:
-            <a
-              href="#"
-              class="main__copy-link"
-              data-copy-value={bank}
-              aria-label="Kopieer bankrekeningnummer"
-            >
-              {bank}
-            </a>
-          </li>
-        </ul>
-      </section>
-      <section class="main__col main__studio" aria-labelledby="studio-heading">
-        <h2 class="main__caption" id="studio-heading">Studio</h2>
-        <div class="main__intro">
-          <Content />
-        </div>
-      </section>
-      <section
-        class="main__col main__subtitle-a"
-        aria-labelledby="subtitle-a-heading"
-      >
-        <h2 class="main__caption" id="subtitle-a-heading"
-          >{subtitleALabel}</h2
-        >
-        {
-          contentAbout ? (
-            <div
-              class="main__intro main__block-text"
-              set:html={marked.parse(contentAbout) as string}
-            />
-          ) : subtitleAText ? (
-            <div class="main__intro main__block-text">
-              {subtitleAText.split(/\n\n+/).map((p) => (
-                <p>{p}</p>
-              ))}
-            </div>
-          ) : (
-            <p class="main__block-text main__block-text--muted">—</p>
-          )
-        }
-      </section>
+                <h2 class="main__caption" id="contact-heading">Contact</h2>
+                <ul class="main__list">
+                    {
+                        address
+                            ? address
+                                  .split(/\n/)
+                                  .filter(Boolean)
+                                  .map((line) => <li>{line}</li>)
+                            : null
+                    }
+                </ul>
+                <ul class="main__list">
+                    <li>
+                        <a href={`mailto:${contact}`} class="main__email"
+                            >{contact}</a
+                        >
+                    </li>
 
-      <!-- Row 2: col 1/2 = empty, col 3 = clients, col 4 = diensten -->
-      <div class="main__col main__col--span-2 main__empty" aria-hidden="true">
-      </div>
-      <div class="main__clients-skills-wrap">
-        <section
-          class="main__col main__clients"
-          aria-labelledby="clients-heading"
-        >
-          <h2 class="main__caption" id="clients-heading">{clientsTitle}</h2>
-          <ul class="main__list">
-            {clientNames.map((name) => <li>{name}</li>)}
-          </ul>
-        </section>
-        <section class="main__col main__skills" aria-labelledby="skills-heading">
-          <h2 class="main__caption" id="skills-heading">{skillsTitle}</h2>
-          <ul class="main__list">
-            {serviceItems.map((item) => <li>{item}</li>)}
-          </ul>
-        </section>
-      </div>
+                    {
+                        cvLabel ? (
+                            <li>
+                                <a
+                                    class="main__cv-link main__cv-link--disabled"
+                                    aria-disabled="true"
+                                >
+                                    {cvLabel}
+                                </a>
+                                <span class="main__cv-soon">coming soon</span>
+                            </li>
+                        ) : null
+                    }
+                    {
+                        linkedin ? (
+                            <li>
+                                <a
+                                    href={linkedin}
+                                    class="main__email"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    linkedin
+                                </a>
+                            </li>
+                        ) : null
+                    }
+                </ul>
+                <ul class="main__list main__list--small">
+                    <li>
+                        KVK:
+                        <a
+                            href="#"
+                            class="main__copy-link"
+                            data-copy-value={kvk}
+                            aria-label="Kopieer KVK-nummer"
+                        >
+                            {kvk}
+                        </a>
+                    </li>
+                    <li>
+                        BTW:
+                        <a
+                            href="#"
+                            class="main__copy-link"
+                            data-copy-value={btw}
+                            aria-label="Kopieer BTW-nummer"
+                        >
+                            {btw}
+                        </a>
+                    </li>
+                    <li>
+                        IBAN:
+                        <a
+                            href="#"
+                            class="main__copy-link"
+                            data-copy-value={bank}
+                            aria-label="Kopieer bankrekeningnummer"
+                        >
+                            {bank}
+                        </a>
+                    </li>
+                </ul>
+            </section>
+            <section
+                class="main__col main__studio"
+                aria-labelledby="studio-heading"
+            >
+                <h2 class="main__caption" id="studio-heading">Studio</h2>
+                <div class="main__intro">
+                    <Content />
+                </div>
+            </section>
+            <section
+                class="main__col main__subtitle-a"
+                aria-labelledby="subtitle-a-heading"
+            >
+                <h2 class="main__caption" id="subtitle-a-heading">
+                    {subtitleALabel}
+                </h2>
+                {
+                    contentAbout ? (
+                        <div
+                            class="main__intro main__block-text"
+                            set:html={marked.parse(contentAbout) as string}
+                        />
+                    ) : subtitleAText ? (
+                        <div class="main__intro main__block-text">
+                            {subtitleAText.split(/\n\n+/).map((p) => (
+                                <p>{p}</p>
+                            ))}
+                        </div>
+                    ) : (
+                        <p class="main__block-text main__block-text--muted">
+                            —
+                        </p>
+                    )
+                }
+            </section>
+
+            <!-- Row 2: col 1/2 = empty, col 3 = clients, col 4 = diensten -->
+            <div
+                class="main__col main__col--span-2 main__empty"
+                aria-hidden="true"
+            >
+            </div>
+            <div class="main__clients-skills-wrap">
+                <section
+                    class="main__col main__clients"
+                    aria-labelledby="clients-heading"
+                >
+                    <h2 class="main__caption" id="clients-heading">
+                        {clientsTitle}
+                    </h2>
+                    <ul class="main__list">
+                        {clientNames.map((name) => <li>{name}</li>)}
+                    </ul>
+                </section>
+                <section
+                    class="main__col main__skills"
+                    aria-labelledby="skills-heading"
+                >
+                    <h2 class="main__caption" id="skills-heading">
+                        {skillsTitle}
+                    </h2>
+                    <ul class="main__list">
+                        {serviceItems.map((item) => <li>{item}</li>)}
+                    </ul>
+                </section>
+            </div>
+        </div>
     </div>
-  </div>
-  <div id="copy-feedback" class="main__copy-feedback" hidden aria-live="polite">
-    <span class="main__copy-feedback__pill">Got it!</span>
-  </div>
+    <div
+        id="copy-feedback"
+        class="main__copy-feedback"
+        hidden
+        aria-live="polite"
+    >
+        <span class="main__copy-feedback__pill">Got it!</span>
+    </div>
 </main>
 
 <script>
-  import { WebHaptics } from "web-haptics";
-  const haptics = new WebHaptics();
+    import { WebHaptics } from "web-haptics";
+    const haptics = new WebHaptics();
 
-  let hideTimer: ReturnType<typeof setTimeout> | null = null;
-  let fallTimer: ReturnType<typeof setTimeout> | null = null;
+    let hideTimer: ReturnType<typeof setTimeout> | null = null;
+    let fallTimer: ReturnType<typeof setTimeout> | null = null;
 
-  function showFeedback(value: string) {
-    const feedback = document.getElementById("copy-feedback");
-    if (!feedback) return;
-    const pill = feedback.querySelector(".main__copy-feedback__pill");
-    if (!pill) return;
+    function showFeedback(value: string) {
+        const feedback = document.getElementById("copy-feedback");
+        if (!feedback) return;
+        const pill = feedback.querySelector(".main__copy-feedback__pill");
+        if (!pill) return;
 
-    // Reset any running timers and animations
-    if (hideTimer) clearTimeout(hideTimer);
-    if (fallTimer) clearTimeout(fallTimer);
-    pill.classList.remove("is-falling");
-
-    pill.textContent = value;
-    feedback.hidden = false;
-    // Force reflow so re-triggering the animation works
-    void (pill as HTMLElement).offsetHeight;
-    pill.classList.remove("is-falling");
-
-    fallTimer = setTimeout(() => {
-      pill.classList.add("is-falling");
-      hideTimer = setTimeout(() => {
-        feedback.hidden = true;
+        // Reset any running timers and animations
+        if (hideTimer) clearTimeout(hideTimer);
+        if (fallTimer) clearTimeout(fallTimer);
         pill.classList.remove("is-falling");
-      }, 600);
-    }, 2400);
-  }
 
-  function setupCopy(selector: string) {
-    document.querySelectorAll(selector).forEach((el) => {
-      el.addEventListener("click", async (e) => {
-        e.preventDefault();
-        const value = (el as HTMLElement).getAttribute("data-copy-value");
-        if (!value) return;
-        try {
-          await navigator.clipboard.writeText(value);
-          showFeedback("Copied!");
-          haptics.trigger("success");
-        } catch (_) {}
-      });
-    });
-  }
-  setupCopy(".main__copy-btn");
-  setupCopy(".main__copy-link");
+        pill.textContent = value;
+        feedback.hidden = false;
+        // Force reflow so re-triggering the animation works
+        void (pill as HTMLElement).offsetHeight;
+        pill.classList.remove("is-falling");
+
+        fallTimer = setTimeout(() => {
+            pill.classList.add("is-falling");
+            hideTimer = setTimeout(() => {
+                feedback.hidden = true;
+                pill.classList.remove("is-falling");
+            }, 600);
+        }, 2400);
+    }
+
+    function setupCopy(selector: string) {
+        document.querySelectorAll(selector).forEach((el) => {
+            el.addEventListener("click", async (e) => {
+                e.preventDefault();
+                const value = (el as HTMLElement).getAttribute(
+                    "data-copy-value"
+                );
+                if (!value) return;
+                try {
+                    await navigator.clipboard.writeText(value);
+                    showFeedback("Copied!");
+                    haptics.trigger("success");
+                } catch (_) {}
+            });
+        });
+    }
+    setupCopy(".main__copy-btn");
+    setupCopy(".main__copy-link");
 </script>
 
 <script>
-  import gsap from "gsap";
-  import { ScrollTrigger } from "gsap/ScrollTrigger";
+    import gsap from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-  gsap.registerPlugin(ScrollTrigger);
+    gsap.registerPlugin(ScrollTrigger);
 
-  function initListStagger() {
-    const clientItems = document.querySelectorAll(
-      ".main__clients .main__list li",
-    );
-    const serviceItems = document.querySelectorAll(
-      ".main__skills .main__list li",
-    );
+    function initListStagger() {
+        const clientItems = document.querySelectorAll(
+            ".main__clients .main__list li"
+        );
+        const serviceItems = document.querySelectorAll(
+            ".main__skills .main__list li"
+        );
 
-    const animateList = (elements: NodeListOf<Element>) => {
-      if (!elements.length) return;
-      const section = elements[0]?.closest("section");
-      if (!section) return;
-      gsap.set(elements, { opacity: 0 });
-      gsap.to(elements, {
-        opacity: 1,
-        duration: 0.5,
-        stagger: 0.08,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: section,
-          start: "top 88%",
-          toggleActions: "play none none none",
-        },
-      });
-    };
+        const animateList = (elements: NodeListOf<Element>) => {
+            if (!elements.length) return;
+            const section = elements[0]?.closest("section");
+            if (!section) return;
+            gsap.set(elements, { opacity: 0 });
+            gsap.to(elements, {
+                opacity: 1,
+                duration: 0.5,
+                stagger: 0.08,
+                ease: "power2.out",
+                scrollTrigger: {
+                    trigger: section,
+                    start: "top 88%",
+                    toggleActions: "play none none none",
+                },
+            });
+        };
 
-    animateList(clientItems);
-    animateList(serviceItems);
-  }
+        animateList(clientItems);
+        animateList(serviceItems);
+    }
 
-  initListStagger();
+    initListStagger();
 </script>
 
 <style scoped>
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
-  .main {
-    min-height: 90svh;
-    padding: var(--space-2xs, 3rem) var(--space-xs, 2rem);
-    flex: 1;
-  }
-  .main__wrap {
-  }
-  .main__grid {
-    display: grid;
-    gap: var(--space-2xs, 2rem) var(--space-xs, 3rem);
-    grid-template-columns: 1fr;
-  }
-  /* Clients + services altijd 2 kolommen (ook op mobiel) */
-  .main__clients-skills-wrap {
-    grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-2xs, 2rem) var(--space-xs, 3rem);
-  }
-  /* Tablet: contact full, studio | about, clients | services */
-  @media (min-width: 40rem) {
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+    .main {
+        min-height: 90svh;
+        padding: var(--space-2xs, 3rem) var(--space-xs, 2rem);
+        flex: 1;
+    }
+    .main__wrap {
+    }
     .main__grid {
-      grid-template-columns: 1fr 1fr;
+        display: grid;
+        gap: var(--space-2xs, 2rem) var(--space-xs, 3rem);
+        grid-template-columns: 1fr;
     }
-    .main__col--span-2,
-    .main__empty {
-      grid-column: 1 / -1;
-    }
-  }
-  /* Desktop: 4-col layout; clients-skills wrap in cols 3-4 */
-  @media (min-width: 55rem) {
-    .main__grid {
-      grid-template-columns: 1fr 1fr 1fr 1fr;
-    }
-    .main__col--span-2 {
-      grid-column: span 2;
-    }
-    .main__empty {
-      grid-column: span 2;
-    }
+    /* Clients + services altijd 2 kolommen (ook op mobiel) */
     .main__clients-skills-wrap {
-      grid-column: span 2;
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-2xs, 2rem) var(--space-xs, 3rem);
     }
-  }
-  .main__col {
-    min-width: 0;
-
-    a {
-      color: var(--color-text);
-      text-decoration: underline;
-      text-underline-offset: 0.2em;
+    /* Tablet: contact full, studio | about, clients | services */
+    @media (min-width: 40rem) {
+        .main__grid {
+            grid-template-columns: 1fr 1fr;
+        }
+        .main__col--span-2,
+        .main__empty {
+            grid-column: 1 / -1;
+        }
     }
-  }
-  .main__empty {
-    min-height: 0;
-  }
-  .main__block-text {
-    font-size: var(--step--1, 1rem);
-  }
-
-  .main__contact,
-  .main__clients,
-  .main__skills {
-    margin: 0 0 var(--space-m, 1.5rem);
-  }
-  .main__block-text--muted {
-    color: var(--color-text-muted);
-  }
-  .main__intro {
-    font-size: var(--step--1, 1rem);
-
-    max-width: 65ch;
-  }
-  .main__intro :global(p) {
-    margin: 0 0 var(--space-m, 1.5rem);
-  }
-  .main__subtitle-a :global(a) {
-    color: var(--color-text);
-    text-decoration: underline;
-    text-underline-offset: 0.2em;
-  }
-  .main__subtitle-a :global(a:hover) {
-    text-decoration: none;
-  }
-  .main__email {
-    color: var(--color-accent);
-    text-decoration: underline;
-    text-underline-offset: 0.2em;
-  }
-  .main__email:hover {
-    text-decoration: none;
-  }
-  .main__copy-btn {
-    background: none;
-    border: none;
-    color: var(--color-text);
-    padding: 0;
-    cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 0.15em;
-    font: inherit;
-  }
-  .main__copy-btn:hover {
-    color: var(--color-accent);
-  }
-  .main__copy-btn:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
-  }
-  .main__caption {
-    display: block;
-
-    font-size: var(--step--2, 0.75rem);
-    font-weight: 300;
-    color: var(--color-text-muted);
-    margin: 0 0 var(--space-xs, 1rem);
-    padding-top: var(--space-3xs, 1rem);
-    letter-spacing: 0.02em;
-    border-top: 1px solid var(--color-border);
-  }
-  .main__list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    font-size: var(--step--1, 1rem);
-    line-height: inherit;
-
-    li {
-      line-height: inherit;
+    /* Desktop: 4-col layout; clients-skills wrap in cols 3-4 */
+    @media (min-width: 55rem) {
+        .main__grid {
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+        }
+        .main__col--span-2 {
+            grid-column: span 2;
+        }
+        .main__empty {
+            grid-column: span 2;
+        }
+        .main__clients-skills-wrap {
+            grid-column: span 2;
+        }
     }
-  }
-  .main__list + .main__list {
-    margin-top: var(--space-s, 1.5rem);
-  }
-  .main__list li {
-    margin-bottom: 0;
-  }
-  .main__list--small {
-    font-size: var(--step--2, 0.75rem);
-    color: var(--color-text);
-  }
-  .main__list--small a {
-    color: inherit;
-    text-decoration: underline;
-    text-underline-offset: 0.15em;
-    text-decoration: underline wavy
-      rgb(from var(--color-text, #111) r g b / 0.2);
-    text-decoration-thickness: 0.01em;
-  }
-  .main__list--small a:hover {
-    color: var(--color-accent);
-  }
-  .main__copy-link {
-    font-variant-numeric: proportional-nums;
-    letter-spacing: 0.1ch;
+    .main__col {
+        min-width: 0;
 
-    margin-left: 0.25ch;
-  }
-  .main__cv-link--disabled {
-    color: var(--color-text-muted);
-    text-decoration: line-through;
-    cursor: not-allowed;
-    /* pointer-events: none; */
-  }
-  .main__cv-soon {
-    margin-left: 0.35em;
-    font-size: 0.5em;
-    font-weight: 400;
-    text-decoration: none !important;
-    opacity: 0.8;
-  }
+        a {
+            color: var(--color-text);
+            text-decoration: underline;
+            text-underline-offset: 0.2em;
+        }
+    }
+    .main__empty {
+        min-height: 0;
+    }
+    .main__block-text {
+        font-size: var(--step--1, 1rem);
+    }
 
-  @keyframes pill-in {
-    from {
-      opacity: 0;
-      transform: scale(0.35);
+    .main__contact,
+    .main__clients,
+    .main__skills {
+        margin: 0 0 var(--space-m, 1.5rem);
     }
-    to {
-      opacity: 1;
-      transform: scale(1);
+    .main__block-text--muted {
+        color: var(--color-text-muted);
     }
-  }
-  @keyframes pill-fall {
-    from {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    to {
-      opacity: 0;
-      transform: scale(2);
-    }
-  }
+    .main__intro {
+        font-size: var(--step--1, 1rem);
 
-  .main__copy-feedback {
-    position: fixed;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    z-index: 9999;
-  }
-  .main__copy-feedback[hidden] {
-    display: none !important;
-  }
-  .main__copy-feedback__pill {
-    display: block;
-    white-space: nowrap;
-    text-align: center;
-    padding: var(--space-s) var(--space-l);
-    font-size: var(--step-5);
-    color: var(--color-text);
-    backdrop-filter: blur(5vw);
-    background: rgb(from var(--color-text, #111) r g b / 0.2);
-    border-radius: 9999px;
-    animation: pill-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    line-height: 100%;
-    box-shadow: var(--space-3xs) var(--space-2xs) var(--space-2xs)
-      rgb(from var(--color-bg, #111) r g b / 0.2);
-  }
-  .main__copy-feedback__pill.is-falling {
-    animation: pill-fall 0.6s ease forwards;
-  }
+        max-width: 65ch;
+    }
+    .main__intro :global(p) {
+        margin: 0 0 var(--space-m, 1.5rem);
+    }
+    .main__subtitle-a :global(a) {
+        color: var(--color-text);
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+    }
+    .main__subtitle-a :global(a:hover) {
+        text-decoration: none;
+    }
+    .main__email {
+        color: var(--color-accent);
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+    }
+    .main__email:hover {
+        text-decoration: none;
+    }
+    .main__copy-btn {
+        background: none;
+        border: none;
+        color: var(--color-text);
+        padding: 0;
+        cursor: pointer;
+        text-decoration: underline;
+        text-underline-offset: 0.15em;
+        font: inherit;
+    }
+    .main__copy-btn:hover {
+        color: var(--color-accent);
+    }
+    .main__copy-btn:focus-visible {
+        outline: 2px solid var(--color-accent);
+        outline-offset: 2px;
+    }
+    .main__caption {
+        display: block;
+
+        font-size: var(--step--2, 0.75rem);
+        font-weight: 300;
+        color: var(--color-text-muted);
+        margin: 0 0 var(--space-xs, 1rem);
+        padding-top: var(--space-3xs, 1rem);
+        letter-spacing: 0.02em;
+        border-top: 1px solid var(--color-border);
+    }
+    .main__list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        font-size: var(--step--1, 1rem);
+        line-height: inherit;
+
+        li {
+            line-height: inherit;
+        }
+    }
+    .main__list + .main__list {
+        margin-top: var(--space-s, 1.5rem);
+    }
+    .main__list li {
+        margin-bottom: 0;
+    }
+    .main__list--small {
+        font-size: var(--step--2, 0.75rem);
+        color: var(--color-text);
+    }
+    .main__list--small a {
+        color: inherit;
+        text-decoration: underline;
+        text-underline-offset: 0.15em;
+        text-decoration: underline wavy
+            rgb(from var(--color-text, #111) r g b / 0.2);
+        text-decoration-thickness: 0.01em;
+    }
+    .main__list--small a:hover {
+        color: var(--color-accent);
+    }
+    .main__copy-link {
+        font-variant-numeric: proportional-nums;
+        letter-spacing: 0.1ch;
+
+        margin-left: 0.25ch;
+    }
+    .main__cv-link--disabled {
+        color: var(--color-text-muted);
+        text-decoration: line-through;
+        cursor: not-allowed;
+        /* pointer-events: none; */
+    }
+    .main__cv-soon {
+        margin-left: 0.35em;
+        font-size: 0.5em;
+        font-weight: 400;
+        text-decoration: none !important;
+        opacity: 0.8;
+    }
+
+    @keyframes pill-in {
+        from {
+            opacity: 0;
+            transform: scale(0.35);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    @keyframes pill-fall {
+        from {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        to {
+            opacity: 0;
+            transform: scale(2);
+        }
+    }
+
+    .main__copy-feedback {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        z-index: 9999;
+    }
+    .main__copy-feedback[hidden] {
+        display: none !important;
+    }
+    .main__copy-feedback__pill {
+        display: block;
+        white-space: nowrap;
+        text-align: center;
+        padding: var(--space-s) var(--space-l);
+        font-size: var(--step-5);
+        color: var(--color-text);
+        backdrop-filter: blur(5vw);
+        background: rgb(from var(--color-text, #111) r g b / 0.2);
+        border-radius: 9999px;
+        animation: pill-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        line-height: 100%;
+        box-shadow: var(--space-3xs) var(--space-2xs) var(--space-2xs)
+            rgb(from var(--color-bg, #111) r g b / 0.2);
+    }
+    .main__copy-feedback__pill.is-falling {
+        animation: pill-fall 0.6s ease forwards;
+    }
 </style>

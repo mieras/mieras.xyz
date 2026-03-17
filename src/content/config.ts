@@ -11,6 +11,7 @@ const main = defineCollection({
     title: z.string(),
     subtitle: z.string(),
     contact: z.string(),
+    linkedin: z.string().optional(),
     address: z.string().optional(),
     instagram: z.string().optional(),
     cvLabel: z.string().optional(),
