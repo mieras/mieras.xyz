@@ -1,5 +1,6 @@
 ---
 import ThemeToggle from "./ThemeToggle.astro";
+import MarqueeRefreshToggle from "./MarqueeRefreshToggle.astro";
 
 interface Props {
   contact?: string;
@@ -23,6 +24,7 @@ const { contact = "studio@mieras.xyz" } = Astro.props;
     >
       IG
     </a> -->
+    <MarqueeRefreshToggle />
     <ThemeToggle />
   </nav>
 </header>
@@ -33,6 +35,8 @@ const { contact = "studio@mieras.xyz" } = Astro.props;
     flex-wrap: wrap;
     justify-content: space-between;
     align-items: baseline;
+    position: relative;
+    z-index: 1000;
     gap: var(--space-s, 1rem);
     padding: var(--space-2xs) var(--space-xs, 2rem);
   }
