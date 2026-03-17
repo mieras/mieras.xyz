@@ -128,7 +128,9 @@ const organizationSchema = {
         }
 
         function applyChaos() {
-            sections.forEach((section) => setSectionTransform(section, chaosRange));
+            sections.forEach((section) =>
+                setSectionTransform(section, chaosRange)
+            );
         }
 
         function setChaosState(enabled: boolean, reshuffle = false) {
@@ -169,7 +171,7 @@ const organizationSchema = {
         margin-bottom: var(--space-2xl, 1rem);
         overflow-x: hidden;
         overflow-x: clip;
-        padding-inline: var(--space-2xs, 0.5rem);
+        /* padding-inline: var(--space-2xs, 0.5rem); */
     }
     :global(.marquee-wrapper > .marquee-section) {
         position: relative;
@@ -178,9 +180,7 @@ const organizationSchema = {
     :global(.marquee-wrapper[data-marquee-chaos="on"] > .marquee-section) {
         margin-bottom: calc(var(--space-2xs, 0.5rem) * -0.45);
     }
-    :global(
-        .marquee-wrapper[data-marquee-chaos="off"] > .marquee-section
-    ) {
+    :global(.marquee-wrapper[data-marquee-chaos="off"] > .marquee-section) {
         margin-bottom: var(--space-2xs, 0.5rem);
     }
     @media (min-width: 1280px) {
@@ -188,7 +188,7 @@ const organizationSchema = {
             display: flex;
             flex-direction: column;
             min-height: 100svh;
-            padding-block: var(--space-2xs, 0.5rem);
+            /* padding-block: var(--space-2xs, 0.5rem); */
         }
         :global(.marquee-wrapper > section) {
             flex: 1;

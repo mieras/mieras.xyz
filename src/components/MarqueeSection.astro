@@ -1,13 +1,13 @@
 ---
 interface Props {
-  text: string;
-  href?: string;
-  /** CSS value, e.g. #00c600 or var(--marquee-1) */
-  backgroundColor: string;
-  /** CSS value for text color, e.g. rgba(255,255,255,0.85) */
-  textColor?: string;
-  /** Animation speed: higher = slower (maps to CSS duration in seconds) */
-  speed?: number;
+    text: string;
+    href?: string;
+    /** CSS value, e.g. #00c600 or var(--marquee-1) */
+    backgroundColor: string;
+    /** CSS value for text color, e.g. rgba(255,255,255,0.85) */
+    textColor?: string;
+    /** Animation speed: higher = slower (maps to CSS duration in seconds) */
+    speed?: number;
 }
 
 const { text, href, backgroundColor, textColor, speed = 25 } = Astro.props;
@@ -17,127 +17,134 @@ const copies = Array(8).fill(null);
 ---
 
 <section
-  class="marquee-section"
-  style={{
-    backgroundColor,
-    "--marquee-text-color": textColor ?? "var(--color-text)",
-  }}
-  data-speed={speed}
-  aria-label="Marquee"
+    class="marquee-section"
+    style={{
+        backgroundColor,
+        "--marquee-text-color": textColor ?? "var(--color-text)",
+    }}
+    data-speed={speed}
+    aria-label="Marquee"
 >
-  <div class="marquee-section__track">
-    <div class="marquee-section__inner">
-      {
-        copies.map((_, i) =>
-          href ? (
-            <a
-              href={href}
-              class="marquee-section__item"
-              aria-hidden={i > 0 ? "true" : undefined}
-            >
-              {text}
-            </a>
-          ) : (
-            <span
-              class="marquee-section__item"
-              aria-hidden={i > 0 ? "true" : undefined}
-            >
-              {text}
-            </span>
-          ),
-        )
-      }
+    <div class="marquee-section__track">
+        <div class="marquee-section__inner">
+            {
+                copies.map((_, i) =>
+                    href ? (
+                        <a
+                            href={href}
+                            class="marquee-section__item"
+                            aria-hidden={i > 0 ? "true" : undefined}
+                        >
+                            {text}
+                        </a>
+                    ) : (
+                        <span
+                            class="marquee-section__item"
+                            aria-hidden={i > 0 ? "true" : undefined}
+                        >
+                            {text}
+                        </span>
+                    )
+                )
+            }
+        </div>
     </div>
-  </div>
 </section>
 
 <script>
-  import gsap from "gsap";
-  import { ScrollTrigger } from "gsap/ScrollTrigger";
-  import { horizontalLoop } from "../lib/horizontalLoop";
+    import gsap from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+    import { horizontalLoop } from "../lib/horizontalLoop";
 
-  gsap.registerPlugin(ScrollTrigger);
+    gsap.registerPlugin(ScrollTrigger);
 
-  document
-    .querySelectorAll<HTMLElement>(".marquee-section")
-    .forEach((section) => {
-      const items = section.querySelectorAll<HTMLElement>(
-        ".marquee-section__item",
-      );
-      const speed = parseFloat(section.dataset.speed ?? "25");
-      // Convert CSS duration (higher = slower) to GSAP speed (higher = faster)
-      const gsapSpeed = (30 / speed) * 2;
+    document
+        .querySelectorAll<HTMLElement>(".marquee-section")
+        .forEach((section) => {
+            const items = section.querySelectorAll<HTMLElement>(
+                ".marquee-section__item"
+            );
+            const speed = parseFloat(section.dataset.speed ?? "25");
+            // Convert CSS duration (higher = slower) to GSAP speed (higher = faster)
+            const gsapSpeed = (30 / speed) * 2;
 
-      const tl = horizontalLoop(items, { repeat: -1, speed: gsapSpeed });
+            const tl = horizontalLoop(items, { repeat: -1, speed: gsapSpeed });
 
-      let speedTween: gsap.core.Animation | null = null;
+            let speedTween: gsap.core.Animation | null = null;
 
-      ScrollTrigger.create({
-        trigger: section,
-        start: "top bottom",
-        end: "bottom top",
-        onUpdate: (self) => {
-          speedTween?.kill();
-          speedTween = gsap
-            .timeline()
-            .to(tl, { timeScale: 1 * self.direction, duration: 0.25 })
-            .to(tl, { timeScale: 1 * self.direction, duration: 1.5 }, "+=0.5");
-        },
-      });
-    });
+            ScrollTrigger.create({
+                trigger: section,
+                start: "top bottom",
+                end: "bottom top",
+                onUpdate: (self) => {
+                    speedTween?.kill();
+                    speedTween = gsap
+                        .timeline()
+                        .to(tl, {
+                            timeScale: 1 * self.direction,
+                            duration: 0.25,
+                        })
+                        .to(
+                            tl,
+                            { timeScale: 1 * self.direction, duration: 1.5 },
+                            "+=0.5"
+                        );
+                },
+            });
+        });
 </script>
 
 <style>
-  .marquee-section {
-    --marquee-rotate: 0deg;
-    --marquee-x: 0px;
-    --marquee-y: 0px;
-    padding: var(--space-2xs) 0;
-    display: flex;
-    align-items: center;
-    overflow: hidden;
-    border-radius: var(--space-2xs, 0.5rem);
-    margin: 0 var(--space-2xs, 1rem) var(--space-2xs, 1rem);
-    transform: translate3d(var(--marquee-x), var(--marquee-y), 0)
-      rotate(var(--marquee-rotate));
-    transform-origin: center;
-    transition: transform 320ms ease;
-  }
-  @media (min-width: 1280px) {
     .marquee-section {
-      min-height: 10vh;
+        --marquee-rotate: 0deg;
+        --marquee-x: 0px;
+        --marquee-y: 0px;
+        padding: var(--space-2xs) 0;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        border-radius: var(--space-2xs, 0.5rem);
+        margin: 0 var(--space-2xs, 1rem) var(--space-2xs, 1rem);
+        transform: translate3d(var(--marquee-x), var(--marquee-y), 0)
+            rotate(var(--marquee-rotate));
+        transform-origin: center;
+        transition: transform 320ms ease;
     }
-  }
+    @media (min-width: 1280px) {
+        .marquee-section {
+            min-height: 10vh;
+        }
+    }
 
-  .marquee-section__track {
-    width: 100%;
-    overflow: hidden;
-  }
+    .marquee-section__track {
+        width: 100%;
+        overflow: hidden;
+    }
 
-  .marquee-section__inner {
-    display: flex;
-    width: max-content;
-    will-change: transform;
-  }
+    .marquee-section__inner {
+        display: flex;
+        width: max-content;
+        will-change: transform;
+    }
 
-  .marquee-section__item {
-    flex-shrink: 0;
-    padding-right: 0.5ch;
-    font-size: var(--step-5, clamp(3rem, 8vw, 9rem));
-    font-weight: 700;
-    line-height: 100%;
-    letter-spacing: -0.01em;
-    color: var(--marquee-text-color);
-    white-space: nowrap;
-    text-decoration: none;
-    display: block;
-  }
+    .marquee-section__item {
+        flex-shrink: 0;
+        padding-right: 0.5ch;
+        font-size: var(--step-5, clamp(3rem, 8vw, 9rem));
+        font-weight: 700;
+        line-height: 100%;
+        letter-spacing: -0.01em;
+        color: var(--marquee-text-color);
+        white-space: nowrap;
+        text-decoration: none;
+        display: block;
+    }
 
-  a.marquee-section__item:hover {
-    opacity: 0.85;
-  }
+    a.marquee-section__item:hover {
+        opacity: 0.85;
+    }
 
-  a.marquee-section__item:active {
-    opacity: 0.7;
-  }
+    a.marquee-section__item:active {
+        opacity: 0.7;
+    }
 </style>
