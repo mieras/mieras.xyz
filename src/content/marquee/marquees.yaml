@@ -1,27 +1,27 @@
 - order: 1
   text: "Maarten Mieras — Digital Designer, Rotterdam,"
-  href: "#information"
+
   backgroundColor: "#3260AD"
   textColor: "#FF85A2"
   speed: 38
 
 - order: 2
   text: "product design, ux design, visual design, design systems, prototyping, user research,"
-  href: "#information"
+  
   backgroundColor: "#C4C4C4"
   textColor: "#201C3D"
   speed: 34
 
 - order: 3
   text: "Postcode Loterij, St Joost, ABN AMRO, Secrid, WNF, Jungle Minds, NOS, Studio Dumbar/DEPT®, Basic-Fit, NOS, Nieuwsuur, Peaks,"
-  href: "#information"
+  
   backgroundColor: "#F25734"
   textColor: "#FC6F44"
   speed: 36
 
 - order: 4
   text: "work in progress, more soon, maybe, probably, who knows, who cares,"
-  href: "#information"
+  
   backgroundColor: "#9392CC"
   textColor: "#EF5132"
   speed: 32
@@ -42,7 +42,7 @@
 
 - order: 7
   text: "not available for hire, not looking for a job, not looking for a client, not looking for a project, not looking for a partnership, not looking for a collaboration, not looking for a job, not looking for a client, not looking for a project, not looking for a partnership, not looking for a collaboration,"
-  href: "#information"
+  
   backgroundColor: "#454CA7"
   textColor: "#EB5F52"
   speed: 33
