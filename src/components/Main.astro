@@ -101,7 +101,7 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
                             href="#"
                             class="main__copy-link"
                             data-copy-value={kvk}
-                            aria-label="Kopieer KVK-nummer"
+                            aria-label="Copy Chamber of Commerce number"
                         >
                             {kvk}
                         </a>
@@ -112,7 +112,7 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
                             href="#"
                             class="main__copy-link"
                             data-copy-value={btw}
-                            aria-label="Kopieer BTW-nummer"
+                            aria-label="Copy VAT number"
                         >
                             {btw}
                         </a>
@@ -123,7 +123,7 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
                             href="#"
                             class="main__copy-link"
                             data-copy-value={bank}
-                            aria-label="Kopieer bankrekeningnummer"
+                            aria-label="Copy bank account number"
                         >
                             {bank}
                         </a>
@@ -166,7 +166,7 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
                 }
             </section>
 
-            <!-- Row 2: col 1/2 = empty, col 3 = clients, col 4 = diensten -->
+            <!-- Row 2: col 1/2 = empty, col 3 = clients, col 4 = services -->
             <div
                 class="main__col main__col--span-2 main__empty"
                 aria-hidden="true"
@@ -323,7 +323,7 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
         gap: var(--space-2xs, 2rem) var(--space-xs, 3rem);
         grid-template-columns: 1fr;
     }
-    /* Clients + services altijd 2 kolommen (ook op mobiel) */
+    /* Clients + services always 2 columns (also on mobile) */
     .main__clients-skills-wrap {
         grid-column: 1 / -1;
         display: grid;

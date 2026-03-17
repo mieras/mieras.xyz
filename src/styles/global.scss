@@ -14,7 +14,7 @@ body {
   background-color: var(--color-bg);
 }
 
-/* Vertical rhythm: lists gebruiken dezelfde line-height als body */
+/* Vertical rhythm: lists use the same line-height as body */
 ul,
 ol {
   line-height: 1.5;
@@ -34,21 +34,35 @@ ol li {
 
 
 .skip-link {
-  position: absolute;
-  top: 0;
-  left: 0;
-  padding: var(--space-2xs, 0.5rem) var(--space-s, 1rem);
-  background: var(--color-accent);
-  color: var(--color-bg);
-  font-weight: 500;
+  position: fixed;
+  left: 50%;
+  bottom: var(--space-m, 1.5rem);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  padding: var(--space-s, 0.5rem) var(--space-l, 1rem);
+  border-radius: 9999px;
+  color: var(--color-text);
+  backdrop-filter: blur(2vw);
+  background: rgb(from var(--color-text, #111) r g b / 0.1);
+  // box-shadow: var(--space-3xs, 0.25rem) var(--space-2xs, 0.5rem) var(--space-2xs, 0.5rem) rgb(from var(--color-bg, #111) r g b / 0.2);
+  font-size: var(--step-4, 0.75rem);
+  font-weight: 400;
+  line-height: 1;
   text-decoration: none;
-  z-index: 100;
-  transform: translateY(-100%);
-  transition: transform 0.2s;
+  z-index: 9999;
+  transform: translate(-50%, calc(100% + var(--space-m, 1.5rem)));
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
-.skip-link:focus {
-  transform: translateY(0);
+.skip-link:focus,
+.skip-link:focus-visible {
+  transform: translate(-50%, 0);
+  opacity: 1;
+  pointer-events: auto;
   outline: none;
 }
 

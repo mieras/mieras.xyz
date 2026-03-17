@@ -14,13 +14,13 @@ clientNames:
     - Postcode Loterij
     - St Joost
     - ABN AMRO
-    - Secrid
-    - One-fit
+    - Studio Dumbar/DEPT®
+    - Narwal Creative
     - WNF
     - HIZKIA
     - Jungle Minds
-    - Studio Dumbar/DEPT®
     - Basic-Fit
+    - Secrid
     - NOS
     - Nieuwsuur
     - Peaks
