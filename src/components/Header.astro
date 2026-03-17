@@ -1,71 +1,76 @@
 ---
 import ThemeToggle from "./ThemeToggle.astro";
+import MarqueeRefreshToggle from "./MarqueeRefreshToggle.astro";
 
 interface Props {
-  contact?: string;
+    contact?: string;
 }
 
 const { contact = "studio@mieras.xyz" } = Astro.props;
 ---
 
 <header class="header" role="banner">
-  <div class="header__identity">
-    <a href="/" class="header__name" rel="home">mieras.xyz</a>
-  </div>
-  <nav class="header__nav" aria-label="Hoofdnavigatie">
-    <a href="#information" class="header__link"> info</a>
-    <a href={`mailto:${contact}`} class="header__link">mail</a>
-    <!-- <a
-      href="https://www.instagram.com/mieras.xyz"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="header__link"
-    >
-      IG
-    </a> -->
-    <ThemeToggle />
-  </nav>
+    <div class="header__identity">
+        <a href="/" class="header__name" rel="home">mieras.xyz</a>
+    </div>
+    <nav class="header__nav" aria-label="Navigation">
+        <a href="#information" class="header__link"> info</a>
+        <a href={`mailto:${contact}`} class="header__link">mail</a>
+
+        <div class="header__controls">
+            <MarqueeRefreshToggle />
+            <ThemeToggle />
+        </div>
+    </nav>
 </header>
 
 <style scoped>
-  .header {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: var(--space-s, 1rem);
-    padding: var(--space-2xs) var(--space-xs, 2rem);
-  }
-  .header__name {
-    font-size: var(--step--2, 1.25rem);
-    font-weight: 500;
-    margin: 0;
-    color: inherit;
-    text-decoration: none;
-  }
-  .header__name:hover {
-    text-decoration: underline;
-  }
-  .header__nav {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-m, 1.5rem);
-    font-size: var(--step--2, 0.875rem);
-    color: var(--color-text-muted);
-  }
-  .header__link {
-    color: inherit;
-    text-decoration: none;
-  }
-  .header__link:hover {
-    color: var(--color-text);
-    text-decoration: underline;
-  }
-  .header__title {
-    font-size: var(--step--2, 0.875rem);
-    margin: 0.25rem 0 0;
-    letter-spacing: 0.05em;
-    color: var(--color-text-muted);
-  }
+    .header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: baseline;
+        position: relative;
+        z-index: 1000;
+        gap: var(--space-s, 1rem);
+        padding: var(--space-2xs) var(--space-xs, 2rem);
+    }
+    .header__name {
+        font-size: var(--step--2, 1.25rem);
+        font-weight: 500;
+        margin: 0;
+        color: inherit;
+        text-decoration: none;
+    }
+    .header__name:hover {
+        text-decoration: underline;
+    }
+    .header__nav {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space-m, 1.5rem);
+        font-size: var(--step--2, 0.875rem);
+        color: var(--color-text-muted);
+    }
+    .header__controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space-2xs, 1.5rem);
+    }
+    .header__link {
+        color: inherit;
+        text-decoration: none;
+    }
+    .header__link:hover {
+        color: var(--color-text);
+        text-decoration: underline;
+    }
+    .header__title {
+        font-size: var(--step--2, 0.875rem);
+        margin: 0.25rem 0 0;
+        letter-spacing: 0.05em;
+        color: var(--color-text-muted);
+    }
 </style>

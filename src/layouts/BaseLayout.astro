@@ -18,7 +18,7 @@ const canonicalURL = new URL(
 ---
 
 <!doctype html>
-<html lang="nl">
+<html lang="en">
     <head>
         <link
             href="https://fonts.cdnfonts.com/css/neue-haas-grotesk-display-pro"
@@ -28,7 +28,7 @@ const canonicalURL = new URL(
         <slot name="head" />
     </head>
     <body>
-        <a href="#main" class="skip-link">Naar inhoud</a>
+        <a href="#main" class="skip-link">Skip to content</a>
         <div class="page">
             <slot />
         </div>
@@ -47,7 +47,7 @@ const canonicalURL = new URL(
                     );
                 }
 
-                // Reageer op OS-thema wijzigingen, maar alleen zonder handmatige voorkeur
+                // React to OS theme changes only when no manual preference is set
                 window
                     .matchMedia("(prefers-color-scheme: dark)")
                     .addEventListener("change", (e) => {
