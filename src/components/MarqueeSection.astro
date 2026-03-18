@@ -73,18 +73,22 @@ const copies = Array(8).fill(null);
             const tl = horizontalLoop(items, { repeat: -1, speed: gsapSpeed });
 
             let speedTween: gsap.core.Animation | null = null;
+            let lastDirection = 0;
 
             ScrollTrigger.create({
                 trigger: section,
                 start: "top bottom",
                 end: "bottom top",
                 onUpdate: (self) => {
-                    speedTween?.kill();
-                    speedTween = gsap.to(tl, {
-                        timeScale: self.direction,
-                        duration: 0.4,
-                        ease: "power2.out",
-                    });
+                    if (self.direction !== lastDirection) {
+                        lastDirection = self.direction;
+                        speedTween?.kill();
+                        speedTween = gsap.to(tl, {
+                            timeScale: self.direction,
+                            duration: 0.4,
+                            ease: "power2.out",
+                        });
+                    }
                 },
             });
         });

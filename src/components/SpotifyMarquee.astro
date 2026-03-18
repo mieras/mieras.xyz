@@ -10,13 +10,13 @@ interface Props {
 
 const {
     tracks,
-    backgroundColor = "var(--color-text)",
+    backgroundColor = "#1DB954",
     textColor = "var(--color-bg)",
     speed = 35,
 } = Astro.props;
 
 // 3 groups is enough — at step-5 font size, 10 tracks span many viewport widths
-const groupCount = 3;
+const groupCount = 2;
 ---
 
 {
@@ -101,6 +101,7 @@ const groupCount = 3;
         const tl = horizontalLoop(items, { repeat: -1, speed: gsapSpeed });
 
         let scrollDirection = 1;
+        let lastDirection = 0;
         let speedTween: gsap.core.Animation | null = null;
         let isHovered = false;
 
@@ -110,7 +111,9 @@ const groupCount = 3;
             end: "bottom top",
             onUpdate: (self) => {
                 scrollDirection = self.direction;
-                if (!isHovered) {
+                // Only create a new tween when direction actually flips (1 ↔ -1)
+                if (!isHovered && self.direction !== lastDirection) {
+                    lastDirection = self.direction;
                     speedTween?.kill();
                     speedTween = gsap.to(tl, {
                         timeScale: self.direction,
@@ -125,13 +128,14 @@ const groupCount = 3;
         section.addEventListener("mouseenter", () => {
             isHovered = true;
             speedTween?.kill();
-            gsap.to(tl, { timeScale: 0, duration: 0.4 });
+            speedTween = gsap.to(tl, { timeScale: 0, duration: 0.4 });
         });
 
         section.addEventListener("mouseleave", () => {
             isHovered = false;
+            lastDirection = 0; // force tween recreation on next scroll
             speedTween?.kill();
-            gsap.to(tl, { timeScale: scrollDirection, duration: 0.4 });
+            speedTween = gsap.to(tl, { timeScale: scrollDirection, duration: 0.4 });
         });
     }
 </script>

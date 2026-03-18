@@ -197,7 +197,7 @@ const organizationSchema = {
 
     if (wrapper) {
         const sections = Array.from(
-            wrapper.querySelectorAll<HTMLElement>(".marquee-section")
+            wrapper.querySelectorAll<HTMLElement>(".marquee-section, .spotify-marquee")
         );
 
         const chaosRangeDesktop = { rotate: 8, x: 18, y: 28 };
@@ -259,8 +259,7 @@ const organizationSchema = {
             setChaosState(!isOn, true);
         });
 
-        wrapper.addEventListener("click", (e) => {
-            if ((e.target as HTMLElement).closest(".spotify-marquee")) return;
+        wrapper.addEventListener("click", () => {
             const isOn = wrapper.dataset.marqueeChaos === "on";
             setChaosState(!isOn, true);
         });
@@ -305,9 +304,13 @@ const organizationSchema = {
         opacity: 1;
     }
 
-    /* Default: show shuffle icon with spin, hide play icon */
+    /* Both icons stacked; opacity swap avoids layout reflow */
+    .cursor-icon {
+        transition: opacity 0.15s ease;
+    }
     .cursor-icon--play {
-        display: none;
+        position: absolute;
+        opacity: 0;
     }
 
     .shuffle-cursor.is-visible .cursor-icon--shuffle {
@@ -315,12 +318,13 @@ const organizationSchema = {
         animation: cursor-spin 2s linear infinite;
     }
 
-    /* Play mode: show play icon (no spin), hide shuffle icon */
+    /* Play mode: fade between icons without layout change */
     .shuffle-cursor.is-play-mode .cursor-icon--shuffle {
-        display: none;
+        opacity: 0;
+        animation: none;
     }
     .shuffle-cursor.is-play-mode .cursor-icon--play {
-        display: block;
+        opacity: 1;
     }
 
     @keyframes cursor-spin {
