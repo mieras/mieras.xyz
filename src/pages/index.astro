@@ -82,7 +82,79 @@ const organizationSchema = {
 
     <Main />
     <Footer />
+
+    <div id="shuffle-cursor" class="shuffle-cursor" aria-hidden="true">
+        <svg
+            width="40"
+            height="40"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M23 14V15H22V17H21V19H20V20H19V21H17V22H15V23H9V22H7V21H5V20H3V21H2V22H1V15H8V16H7V17H6V19H7V20H9V21H15V20H17V19H19V17H20V14H23ZM23 2V9H16V8H17V7H18V5H17V4H15V3H9V4H7V5H5V7H4V10H1V9H2V7H3V5H4V4H5V3H7V2H9V1H15V2H17V3H19V4H21V3H22V2H23Z"
+                fill="currentColor"></path>
+        </svg>
+    </div>
 </BaseLayout>
+
+<script>
+    import gsap from "gsap";
+
+    const cursor = document.getElementById("shuffle-cursor");
+    const heroWrapper = document.querySelector<HTMLElement>(".marquee-wrapper");
+    const isTouch = window.matchMedia("(pointer: coarse)").matches;
+
+    if (cursor && heroWrapper) {
+        if (!isTouch) {
+            // Desktop: follow mouse with GSAP delay
+            const xTo = gsap.quickTo(cursor, "x", {
+                duration: 0.5,
+                ease: "power3.out",
+            });
+            const yTo = gsap.quickTo(cursor, "y", {
+                duration: 0.5,
+                ease: "power3.out",
+            });
+
+            window.addEventListener("mousemove", (e) => {
+                xTo(e.clientX);
+                yTo(e.clientY);
+            });
+
+            heroWrapper.addEventListener("mouseenter", () => {
+                cursor.classList.add("is-visible");
+                heroWrapper.classList.add("cursor-active");
+            });
+
+            heroWrapper.addEventListener("mouseleave", () => {
+                cursor.classList.remove("is-visible");
+                heroWrapper.classList.remove("cursor-active");
+            });
+
+            heroWrapper.querySelectorAll<HTMLElement>("a").forEach((link) => {
+                link.addEventListener("mouseenter", () => cursor.classList.remove("is-visible"));
+                link.addEventListener("mouseleave", () => cursor.classList.add("is-visible"));
+            });
+        } else {
+            // Mobile: fixed center, hide when bottom of marquee-wrapper scrolls past viewport center
+            function checkMobileCursor() {
+                const rect = heroWrapper!.getBoundingClientRect();
+                const centerY = window.innerHeight / 2;
+                if (rect.top < centerY && rect.bottom > centerY) {
+                    cursor!.classList.add("is-visible");
+                } else {
+                    cursor!.classList.remove("is-visible");
+                }
+            }
+
+            checkMobileCursor();
+            window.addEventListener("scroll", checkMobileCursor, {
+                passive: true,
+            });
+        }
+    }
+</script>
 
 <script>
     const desktopMedia = window.matchMedia("(min-width: 1280px)");
@@ -155,6 +227,11 @@ const organizationSchema = {
             setChaosState(!isOn, true);
         });
 
+        wrapper.addEventListener("click", () => {
+            const isOn = wrapper.dataset.marqueeChaos === "on";
+            setChaosState(!isOn, true);
+        });
+
         desktopMedia.addEventListener("change", () => {
             if (wrapper.dataset.marqueeChaos === "on") {
                 applyChaos();
@@ -162,6 +239,63 @@ const organizationSchema = {
         });
     }
 </script>
+
+<style>
+    :root {
+        --cursor-blur: var(--space-s, 1rem);
+    }
+
+    .shuffle-cursor {
+        position: fixed;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+        z-index: 9998;
+        opacity: 0;
+        translate: -50% -50%;
+        transition: opacity 0.2s ease;
+        will-change: transform;
+
+        /* circle */
+        border-radius: 100vw;
+        background: rgb(from var(--color-text, #111) r g b / 0.2);
+        backdrop-filter: blur(var(--cursor-blur));
+        -webkit-backdrop-filter: blur(var(--cursor-blur));
+        color: var(--color-bg);
+        padding: var(--space-m);
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .shuffle-cursor.is-visible {
+        opacity: 1;
+    }
+
+    .shuffle-cursor.is-visible svg {
+        transform-origin: center center;
+        animation: cursor-spin 2s linear infinite;
+    }
+
+    @keyframes cursor-spin {
+        to {
+            rotate: 360deg;
+        }
+    }
+    .marquee-wrapper.cursor-active,
+    .marquee-wrapper.cursor-active * {
+        cursor: none;
+    }
+
+    /* mobile: centered, no mouse tracking */
+    @media (pointer: coarse) {
+        .shuffle-cursor {
+            top: 50%;
+            left: 50%;
+            translate: -50% -50%;
+        }
+    }
+</style>
 
 <style>
     .marquee-wrapper {
