@@ -65,8 +65,10 @@ const copies = Array(8).fill(null);
                 ".marquee-section__item"
             );
             const speed = parseFloat(section.dataset.speed ?? "25");
+            const isDesktop = window.matchMedia("(min-width: 1280px)").matches;
             // Convert CSS duration (higher = slower) to GSAP speed (higher = faster)
-            const gsapSpeed = (30 / speed) * 2;
+            const baseSpeed = (30 / speed) * 2;
+            const gsapSpeed = isDesktop ? baseSpeed : baseSpeed * 0.5;
 
             const tl = horizontalLoop(items, { repeat: -1, speed: gsapSpeed });
 
