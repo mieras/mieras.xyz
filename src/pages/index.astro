@@ -97,7 +97,7 @@ const organizationSchema = {
         );
 
         const chaosRangeDesktop = { rotate: 8, x: 18, y: 28 };
-        const chaosRangeMobile = { rotate: 4, x: 10, y: 12 };
+        const chaosRangeMobile = { rotate: 4, x: 10, y: 24 };
 
         const randomBetween = (maxAbs: number) =>
             (Math.random() * 2 - 1) * maxAbs;
@@ -169,7 +169,7 @@ const organizationSchema = {
         overflow-x: hidden;
         overflow-x: clip;
         /* padding-inline: var(--space-2xs, 0.5rem); */
-        height: 70vh;
+        height: 50vh;
         @media (min-width: 1280px) {
             min-height: auto;
         }
@@ -179,7 +179,7 @@ const organizationSchema = {
         z-index: 1;
     }
     :global(.marquee-wrapper[data-marquee-chaos="on"] > .marquee-section) {
-        margin-bottom: calc(var(--space-2xs, 0.5rem) * -0.45);
+        margin-bottom: calc(var(--space-2xs, 0.5rem) * 1);
     }
     :global(.marquee-wrapper[data-marquee-chaos="off"] > .marquee-section) {
         margin-bottom: var(--space-2xs, 0.5rem);
