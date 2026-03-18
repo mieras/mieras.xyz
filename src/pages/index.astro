@@ -4,8 +4,10 @@ import Header from "../components/Header.astro";
 import Main from "../components/Main.astro";
 import Footer from "../components/Footer.astro";
 import MarqueeSection from "../components/MarqueeSection.astro";
+import SpotifyMarquee from "../components/SpotifyMarquee.astro";
 import JsonLd from "../components/JsonLd.astro";
 import { getEntry, getCollection } from "astro:content";
+import { getRecentlyPlayed } from "../lib/spotify";
 
 const mainEntry = await getEntry("main", "main");
 const contact = mainEntry?.data?.contact ?? "studio@mieras.xyz";
@@ -14,6 +16,8 @@ const marqueeEntries = await getCollection("marquee");
 const marquees = (marqueeEntries[0]?.data ?? []).sort(
     (a: { order: number }, b: { order: number }) => a.order - b.order
 );
+
+const spotifyTracks = await getRecentlyPlayed(10);
 
 const seoEntry = await getEntry("seo", "seo");
 const { person: p, organization: o } = seoEntry!.data;
@@ -78,6 +82,7 @@ const organizationSchema = {
                 />
             ))
         }
+        <SpotifyMarquee tracks={spotifyTracks} />
     </section>
 
     <Main />
@@ -85,6 +90,7 @@ const organizationSchema = {
 
     <div id="shuffle-cursor" class="shuffle-cursor" aria-hidden="true">
         <svg
+            class="cursor-icon cursor-icon--shuffle"
             width="40"
             height="40"
             viewBox="0 0 24 24"
@@ -94,6 +100,16 @@ const organizationSchema = {
             <path
                 d="M23 14V15H22V17H21V19H20V20H19V21H17V22H15V23H9V22H7V21H5V20H3V21H2V22H1V15H8V16H7V17H6V19H7V20H9V21H15V20H17V19H19V17H20V14H23ZM23 2V9H16V8H17V7H18V5H17V4H15V3H9V4H7V5H5V7H4V10H1V9H2V7H3V5H4V4H5V3H7V2H9V1H15V2H17V3H19V4H21V3H22V2H23Z"
                 fill="currentColor"></path>
+        </svg>
+        <svg
+            class="cursor-icon cursor-icon--play"
+            width="40"
+            height="40"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path d="M8 5.14v14l11-7-11-7z"></path>
         </svg>
     </div>
 </BaseLayout>
@@ -132,7 +148,8 @@ const organizationSchema = {
                 heroWrapper.classList.remove("cursor-active");
             });
 
-            heroWrapper.querySelectorAll<HTMLElement>("a").forEach((link) => {
+            // Hide cursor on regular marquee links; keep visible on Spotify links
+            heroWrapper.querySelectorAll<HTMLElement>("a:not(.spotify-marquee__item)").forEach((link) => {
                 link.addEventListener("mouseenter", () =>
                     cursor.classList.remove("is-visible")
                 );
@@ -140,6 +157,17 @@ const organizationSchema = {
                     cursor.classList.add("is-visible")
                 );
             });
+
+            // Switch to play icon when hovering Spotify marquee
+            const spotifySection = heroWrapper.querySelector<HTMLElement>(".spotify-marquee");
+            if (spotifySection) {
+                spotifySection.addEventListener("mouseenter", () => {
+                    cursor.classList.add("is-play-mode");
+                });
+                spotifySection.addEventListener("mouseleave", () => {
+                    cursor.classList.remove("is-play-mode");
+                });
+            }
         } else {
             // Mobile: fixed center, hide when bottom of marquee-wrapper scrolls past viewport center
             function checkMobileCursor() {
@@ -231,7 +259,8 @@ const organizationSchema = {
             setChaosState(!isOn, true);
         });
 
-        wrapper.addEventListener("click", () => {
+        wrapper.addEventListener("click", (e) => {
+            if ((e.target as HTMLElement).closest(".spotify-marquee")) return;
             const isOn = wrapper.dataset.marqueeChaos === "on";
             setChaosState(!isOn, true);
         });
@@ -276,9 +305,22 @@ const organizationSchema = {
         opacity: 1;
     }
 
-    .shuffle-cursor.is-visible svg {
+    /* Default: show shuffle icon with spin, hide play icon */
+    .cursor-icon--play {
+        display: none;
+    }
+
+    .shuffle-cursor.is-visible .cursor-icon--shuffle {
         transform-origin: center center;
         animation: cursor-spin 2s linear infinite;
+    }
+
+    /* Play mode: show play icon (no spin), hide shuffle icon */
+    .shuffle-cursor.is-play-mode .cursor-icon--shuffle {
+        display: none;
+    }
+    .shuffle-cursor.is-play-mode .cursor-icon--play {
+        display: block;
     }
 
     @keyframes cursor-spin {

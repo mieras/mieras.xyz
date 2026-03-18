@@ -1,0 +1,222 @@
+---
+import type { SpotifyTrack } from "../lib/spotify";
+
+interface Props {
+    tracks: SpotifyTrack[];
+    backgroundColor?: string;
+    textColor?: string;
+    speed?: number;
+}
+
+const {
+    tracks,
+    backgroundColor = "var(--color-text)",
+    textColor = "var(--color-bg)",
+    speed = 35,
+} = Astro.props;
+
+// 3 groups is enough — at step-5 font size, 10 tracks span many viewport widths
+const groupCount = 3;
+---
+
+{
+    tracks.length > 0 && (
+        <section
+            class="spotify-marquee"
+            style={{
+                backgroundColor,
+                "--spotify-text-color": textColor,
+            }}
+            data-speed={speed}
+            aria-label="Recently played on Spotify"
+        >
+            <div class="spotify-marquee__track">
+                <div class="spotify-marquee__inner">
+                    {Array.from({ length: groupCount }, (_, groupIndex) => (
+                        <div
+                            class="spotify-marquee__group"
+                            aria-hidden={groupIndex > 0 ? "true" : undefined}
+                        >
+                            {tracks.map((track) => (
+                                <a
+                                    class="spotify-marquee__item"
+                                    href={track.trackUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label={
+                                        groupIndex === 0
+                                            ? `${track.artist} — ${track.title}`
+                                            : undefined
+                                    }
+                                    tabindex={groupIndex > 0 ? -1 : undefined}
+                                >
+                                    {track.albumArt && (
+                                        <img
+                                            class="spotify-marquee__thumb"
+                                            src={track.albumArt}
+                                            alt=""
+                                            aria-hidden="true"
+                                            width="48"
+                                            height="48"
+                                            loading="lazy"
+                                        />
+                                    )}
+                                    <span class="spotify-marquee__text">
+                                        {track.artist} • {track.title}
+                                    </span>
+                                    <span
+                                        class="spotify-marquee__sep"
+                                        aria-hidden="true"
+                                    >
+                                        {""}
+                                    </span>
+                                </a>
+                            ))}
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    )
+}
+
+<script>
+    import gsap from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+    import { horizontalLoop } from "../lib/horizontalLoop";
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    const section = document.querySelector<HTMLElement>(".spotify-marquee");
+    if (section) {
+        const items = section.querySelectorAll<HTMLElement>(
+            ".spotify-marquee__group"
+        );
+        const speed = parseFloat(section.dataset.speed ?? "35");
+        const isDesktop = window.matchMedia("(min-width: 1280px)").matches;
+
+        const baseSpeed = (30 / speed) * 2;
+        const gsapSpeed = isDesktop ? baseSpeed : baseSpeed * 0.5;
+
+        const tl = horizontalLoop(items, { repeat: -1, speed: gsapSpeed });
+
+        let scrollDirection = 1;
+        let speedTween: gsap.core.Animation | null = null;
+        let isHovered = false;
+
+        ScrollTrigger.create({
+            trigger: section,
+            start: "top bottom",
+            end: "bottom top",
+            onUpdate: (self) => {
+                scrollDirection = self.direction;
+                if (!isHovered) {
+                    speedTween?.kill();
+                    speedTween = gsap
+                        .timeline()
+                        .to(tl, { timeScale: scrollDirection, duration: 0.25 })
+                        .to(
+                            tl,
+                            { timeScale: scrollDirection, duration: 1.5 },
+                            "+=0.5"
+                        );
+                }
+            },
+        });
+
+        // Pause on hover so links are easy to click
+        section.addEventListener("mouseenter", () => {
+            isHovered = true;
+            speedTween?.kill();
+            gsap.to(tl, { timeScale: 0, duration: 0.4 });
+        });
+
+        section.addEventListener("mouseleave", () => {
+            isHovered = false;
+            speedTween?.kill();
+            gsap.to(tl, { timeScale: scrollDirection, duration: 0.4 });
+        });
+    }
+</script>
+
+<style>
+    .spotify-marquee {
+        --marquee-rotate: 0deg;
+        --marquee-x: 0px;
+        --marquee-y: 0px;
+        padding: var(--space-2xs) 0;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        border-radius: var(--space-2xs, 0.5rem);
+        margin: 0 var(--space-2xs, 1rem) var(--space-2xs, 1rem);
+        transform: translate3d(var(--marquee-x), var(--marquee-y), 0)
+            rotate(var(--marquee-rotate));
+        transform-origin: center;
+        transition: transform 320ms ease;
+    }
+
+    @media (min-width: 1280px) {
+        .spotify-marquee {
+            min-height: 10vh;
+        }
+    }
+
+    .spotify-marquee__track {
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .spotify-marquee__inner {
+        display: flex;
+        width: max-content;
+        will-change: transform;
+        align-items: center;
+    }
+
+    .spotify-marquee__group {
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+    }
+
+    .spotify-marquee__item {
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-xs, 0.75rem);
+        padding-right: var(--space-xs, 0.75rem);
+        color: var(--spotify-text-color);
+        text-decoration: none;
+    }
+
+    .spotify-marquee__item:hover {
+        opacity: 0.85;
+    }
+
+    .spotify-marquee__item:active {
+        opacity: 0.7;
+    }
+
+    .spotify-marquee__thumb {
+        display: block;
+        flex-shrink: 0;
+        width: 3em;
+        height: 3em;
+        border-radius: var(--space-3xs, 0.25rem);
+        object-fit: cover;
+    }
+
+    .spotify-marquee__text {
+        font-size: var(--step-5, clamp(3rem, 8vw, 9rem));
+        font-weight: 700;
+        line-height: 100%;
+        letter-spacing: -0.01em;
+        white-space: nowrap;
+    }
+
+    .spotify-marquee__sep {
+        font-size: var(--step-5);
+        opacity: 0.4;
+    }
+</style>
