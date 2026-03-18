@@ -74,12 +74,18 @@ const canonicalURL = new URL(
         </script>
         <script>
             import Lenis from "lenis";
+            import gsap from "gsap";
+            import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+            gsap.registerPlugin(ScrollTrigger);
 
             const lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
             (window as unknown as { lenis?: Lenis }).lenis = lenis;
 
             function raf(time: number) {
                 lenis.raf(time);
+                // Keep ScrollTrigger in sync with Lenis's interpolated scroll position
+                ScrollTrigger.update();
                 requestAnimationFrame(raf);
             }
             requestAnimationFrame(raf);

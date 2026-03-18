@@ -112,14 +112,11 @@ const groupCount = 3;
                 scrollDirection = self.direction;
                 if (!isHovered) {
                     speedTween?.kill();
-                    speedTween = gsap
-                        .timeline()
-                        .to(tl, { timeScale: scrollDirection, duration: 0.25 })
-                        .to(
-                            tl,
-                            { timeScale: scrollDirection, duration: 1.5 },
-                            "+=0.5"
-                        );
+                    speedTween = gsap.to(tl, {
+                        timeScale: self.direction,
+                        duration: 0.4,
+                        ease: "power2.out",
+                    });
                 }
             },
         });
