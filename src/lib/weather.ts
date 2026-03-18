@@ -2,7 +2,7 @@ const WEATHER_API_BASE = 'https://api.weatherapi.com/v1';
 
 export interface CurrentWeather {
   temp_c: number;
-  condition: { text: string; icon: string };
+  condition: { text: string; icon: string; code: number };
 }
 
 export interface WeatherResponse {

@@ -1,15 +1,44 @@
 ---
 import { getCurrentWeather } from "../lib/weather";
+import 'weather-icons/css/weather-icons.css';
+
+function getWeatherIconClass(code: number): string {
+  const map: Record<number, string> = {
+    1000: 'wi-day-sunny',
+    1003: 'wi-day-cloudy',
+    1006: 'wi-cloudy', 1009: 'wi-cloudy',
+    1030: 'wi-fog', 1135: 'wi-fog', 1147: 'wi-fog',
+    1063: 'wi-day-showers', 1180: 'wi-day-rain', 1186: 'wi-day-rain', 1192: 'wi-day-rain',
+    1087: 'wi-day-thunderstorm', 1273: 'wi-day-thunderstorm',
+    1150: 'wi-day-sprinkle', 1153: 'wi-day-sprinkle',
+    1168: 'wi-sleet', 1171: 'wi-sleet', 1198: 'wi-day-sleet', 1201: 'wi-sleet',
+    1183: 'wi-rain', 1189: 'wi-rain', 1195: 'wi-rain',
+    1204: 'wi-day-sleet', 1207: 'wi-sleet', 1249: 'wi-day-sleet', 1252: 'wi-sleet',
+    1240: 'wi-day-showers', 1243: 'wi-showers', 1246: 'wi-showers',
+    1066: 'wi-day-snow', 1210: 'wi-day-snow', 1216: 'wi-day-snow', 1222: 'wi-day-snow', 1255: 'wi-day-snow',
+    1069: 'wi-day-sleet', 1072: 'wi-day-sleet',
+    1114: 'wi-snow-wind', 1117: 'wi-snow-wind',
+    1213: 'wi-snow', 1219: 'wi-snow', 1225: 'wi-snow', 1258: 'wi-snow',
+    1237: 'wi-hail', 1261: 'wi-hail', 1264: 'wi-hail',
+    1276: 'wi-thunderstorm',
+    1279: 'wi-day-snow-thunderstorm', 1282: 'wi-snow-thunderstorm',
+  };
+  return map[code] ?? 'wi-cloudy';
+}
 
 let tempDisplay = "--";
+let conditionCode = 0;
 try {
   const weather = await getCurrentWeather("Rotterdam");
   if (weather?.current?.temp_c != null) {
     tempDisplay = String(Math.round(weather.current.temp_c));
+    conditionCode = weather.current.condition.code;
   }
 } catch {
-  // keep -- on error
+  // keep -- and 0 on error
 }
+
+const iconClass = getWeatherIconClass(conditionCode);
 const year = new Date().getFullYear();
 const today = new Date().toLocaleDateString("en-US", {
   weekday: "long",
@@ -29,7 +58,7 @@ const today = new Date().toLocaleDateString("en-US", {
   </div>
   <div class="footer__col footer__col--2">
     <p class="footer__line">
-      Rotterdam, {tempDisplay}°C
+      Rotterdam, <i class={`wi ${iconClass} footer__weather-icon`} aria-hidden="true"></i>{tempDisplay}°C
     </p>
     <p class="footer__line">
       <time id="live-time" datetime="">00:00:00:000</time>
@@ -71,5 +100,12 @@ const today = new Date().toLocaleDateString("en-US", {
   }
   .footer__line {
     margin: 0;
+  }
+  .footer__weather-icon {
+    font-style: normal;
+    font-size: 1.2em;
+    vertical-align: middle;
+    margin-right: 0.2em;
+    line-height: 1;
   }
 </style>
