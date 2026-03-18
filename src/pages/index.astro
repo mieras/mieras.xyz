@@ -96,14 +96,18 @@ const organizationSchema = {
             wrapper.querySelectorAll<HTMLElement>(".marquee-section")
         );
 
-        const chaosRange = { rotate: 8, x: 18, y: 28 };
+        const chaosRangeDesktop = { rotate: 8, x: 18, y: 28 };
+        const chaosRangeMobile = { rotate: 4, x: 10, y: 12 };
 
         const randomBetween = (maxAbs: number) =>
             (Math.random() * 2 - 1) * maxAbs;
 
+        const getChaosRange = () =>
+            desktopMedia.matches ? chaosRangeDesktop : chaosRangeMobile;
+
         function setSectionTransform(
             section: HTMLElement,
-            range: typeof subtleRange
+            range: typeof chaosRangeDesktop
         ) {
             section.style.setProperty(
                 "--marquee-rotate",
@@ -128,19 +132,11 @@ const organizationSchema = {
         }
 
         function applyChaos() {
-            sections.forEach((section) =>
-                setSectionTransform(section, chaosRange)
-            );
+            const range = getChaosRange();
+            sections.forEach((section) => setSectionTransform(section, range));
         }
 
         function setChaosState(enabled: boolean, reshuffle = false) {
-            if (!desktopMedia.matches) {
-                wrapper.dataset.marqueeChaos = "off";
-                toggle?.setAttribute("aria-pressed", "false");
-                resetTransforms();
-                return;
-            }
-
             if (enabled) {
                 wrapper.dataset.marqueeChaos = "on";
                 toggle?.setAttribute("aria-pressed", "true");
@@ -155,13 +151,14 @@ const organizationSchema = {
         setChaosState(false);
 
         toggle?.addEventListener("click", () => {
-            if (!desktopMedia.matches) return;
             const isOn = wrapper.dataset.marqueeChaos === "on";
             setChaosState(!isOn, true);
         });
 
         desktopMedia.addEventListener("change", () => {
-            setChaosState(false);
+            if (wrapper.dataset.marqueeChaos === "on") {
+                applyChaos();
+            }
         });
     }
 </script>
@@ -172,6 +169,10 @@ const organizationSchema = {
         overflow-x: hidden;
         overflow-x: clip;
         /* padding-inline: var(--space-2xs, 0.5rem); */
+        height: 70vh;
+        @media (min-width: 1280px) {
+            min-height: auto;
+        }
     }
     :global(.marquee-wrapper > .marquee-section) {
         position: relative;
