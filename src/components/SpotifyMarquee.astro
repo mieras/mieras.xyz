@@ -85,8 +85,6 @@ const groupCount = 2;
     import { ScrollTrigger } from "gsap/ScrollTrigger";
     import { horizontalLoop } from "../lib/horizontalLoop";
 
-    gsap.registerPlugin(ScrollTrigger);
-
     const section = document.querySelector<HTMLElement>(".spotify-marquee");
     if (section) {
         const items = section.querySelectorAll<HTMLElement>(
@@ -171,7 +169,6 @@ const groupCount = 2;
     .spotify-marquee__inner {
         display: flex;
         width: max-content;
-        will-change: transform;
         align-items: center;
     }
 

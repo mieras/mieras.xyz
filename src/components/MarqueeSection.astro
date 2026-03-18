@@ -56,8 +56,6 @@ const copies = Array(8).fill(null);
     import { ScrollTrigger } from "gsap/ScrollTrigger";
     import { horizontalLoop } from "../lib/horizontalLoop";
 
-    gsap.registerPlugin(ScrollTrigger);
-
     document
         .querySelectorAll<HTMLElement>(".marquee-section")
         .forEach((section) => {
@@ -124,7 +122,6 @@ const copies = Array(8).fill(null);
     .marquee-section__inner {
         display: flex;
         width: max-content;
-        will-change: transform;
     }
 
     .marquee-section__item {
