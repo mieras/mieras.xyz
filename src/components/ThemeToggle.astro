@@ -6,9 +6,17 @@
   type="button"
   id="theme-toggle"
   aria-label="Switch between light and dark theme"
-  class="theme-toggle mono"
+  class="theme-toggle"
 >
-  <span aria-hidden="true">◐</span>
+  <!-- Moon: shown in light mode (click to go dark) -->
+  <svg class="theme-toggle__moon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M21 17V18H19V19H15V18H13V17H11V16H10V14H9V12H8V8H9V6H10V4H11V3H13V2H15V1H10V2H8V3H6V4H5V5H4V7H3V9H2V15H3V17H4V19H5V20H6V21H8V22H10V23H16V22H18V21H20V20H21V19H22V17H21ZM8 20V19H6V17H5V15H4V9H5V7H6V5H8V6H7V8H6V12H7V14H8V16H9V17H10V18H11V19H13V20H15V21H10V20H8Z" fill="currentColor"/>
+  </svg>
+  <!-- Sun: shown in dark mode (click to go light) -->
+  <svg class="theme-toggle__sun" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M21 11V10H22V9H23V7H20V6H18V4H17V1H15V2H14V3H13V4H11V3H10V2H9V1H7V4H6V6H4V7H1V9H2V10H3V11H4V13H3V14H2V15H1V17H4V18H6V20H7V23H9V22H10V21H11V20H13V21H14V22H15V23H17V20H18V18H20V17H23V15H22V14H21V13H20V11H21ZM19 13V14H20V15H21V16H18V17H17V18H16V21H15V20H14V19H13V18H11V19H10V20H9V21H8V18H7V17H6V16H3V15H4V14H5V13H6V11H5V10H4V9H3V8H6V7H7V6H8V3H9V4H10V5H11V6H13V5H14V4H15V3H16V5H17V7H18V8H21V9H20V10H19V11H18V13H19Z" fill="currentColor"/>
+    <path d="M16 10V9H15V8H14V7H10V8H9V9H8V10H7V14H8V15H9V16H10V17H14V16H15V15H16V14H17V10H16ZM15 14H14V15H10V14H9V10H10V9H14V10H15V14Z" fill="currentColor"/>
+  </svg>
 </button>
 
 <script>
@@ -30,24 +38,44 @@
 
 <style scoped>
   .theme-toggle {
-    background: none;
-    border: 1px solid var(--color-border);
-    color: var(--color-text);
-    padding: 0.25rem 0.5rem;
-    font-size: var(--step--1, 0.875rem);
-    line-height: 100%;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    border: none;
     cursor: pointer;
-    border-radius: 100vw;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: transform 0.2s ease;
+
+    background: rgb(from var(--color-bg) r g b / 0.8);
+    color: var(--color-text);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
+
   .theme-toggle:hover {
-    background: var(--color-text);
-    color: var(--color-bg);
+    transform: scale(1.08);
   }
+
   .theme-toggle:focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
+  }
+
+  /* light mode: show moon, hide sun */
+  .theme-toggle__sun {
+    display: none;
+  }
+  .theme-toggle__moon {
+    display: block;
+  }
+
+  /* dark mode: show sun, hide moon */
+  :global([data-theme="dark"]) .theme-toggle__sun {
+    display: block;
+  }
+  :global([data-theme="dark"]) .theme-toggle__moon {
+    display: none;
   }
 </style>
