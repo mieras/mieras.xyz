@@ -11,7 +11,7 @@ export interface WeatherResponse {
 }
 
 export async function getCurrentWeather(q: string = 'Rotterdam'): Promise<WeatherResponse | null> {
-  const key = import.meta.env.PUBLIC_WEATHER_API_KEY ?? import.meta.env.WEATHER_API_KEY;
+  const key = process.env.PUBLIC_WEATHER_API_KEY ?? process.env.WEATHER_API_KEY;
   if (!key) return null;
   try {
     const res = await fetch(

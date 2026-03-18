@@ -28,9 +28,9 @@ async function getAccessToken(clientId: string, clientSecret: string, refreshTok
 }
 
 export async function getRecentlyPlayed(limit = 10): Promise<SpotifyTrack[]> {
-  const clientId = import.meta.env.SPOTIFY_CLIENT_ID;
-  const clientSecret = import.meta.env.SPOTIFY_CLIENT_SECRET;
-  const refreshToken = import.meta.env.SPOTIFY_REFRESH_TOKEN;
+  const clientId = process.env.SPOTIFY_CLIENT_ID;
+  const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+  const refreshToken = process.env.SPOTIFY_REFRESH_TOKEN;
 
   if (!clientId || !clientSecret || !refreshToken) {
     console.warn("[spotify] Missing env vars — skipping Spotify marquee.");
