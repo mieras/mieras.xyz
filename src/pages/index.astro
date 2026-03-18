@@ -133,8 +133,12 @@ const organizationSchema = {
             });
 
             heroWrapper.querySelectorAll<HTMLElement>("a").forEach((link) => {
-                link.addEventListener("mouseenter", () => cursor.classList.remove("is-visible"));
-                link.addEventListener("mouseleave", () => cursor.classList.add("is-visible"));
+                link.addEventListener("mouseenter", () =>
+                    cursor.classList.remove("is-visible")
+                );
+                link.addEventListener("mouseleave", () =>
+                    cursor.classList.add("is-visible")
+                );
             });
         } else {
             // Mobile: fixed center, hide when bottom of marquee-wrapper scrolls past viewport center
@@ -290,7 +294,7 @@ const organizationSchema = {
     /* mobile: centered, no mouse tracking */
     @media (pointer: coarse) {
         .shuffle-cursor {
-            top: 50%;
+            bottom: 30%;
             left: 50%;
             translate: -50% -50%;
         }
