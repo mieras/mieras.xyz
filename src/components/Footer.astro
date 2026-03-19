@@ -1,112 +1,155 @@
 ---
 import { getCurrentWeather } from "../lib/weather";
-import 'weather-icons/css/weather-icons.css';
+import "weather-icons/css/weather-icons.css";
 
 function getWeatherIconClass(code: number): string {
-  const map: Record<number, string> = {
-    1000: 'wi-day-sunny',
-    1003: 'wi-day-cloudy',
-    1006: 'wi-cloudy', 1009: 'wi-cloudy',
-    1030: 'wi-fog', 1135: 'wi-fog', 1147: 'wi-fog',
-    1063: 'wi-day-showers', 1180: 'wi-day-rain', 1186: 'wi-day-rain', 1192: 'wi-day-rain',
-    1087: 'wi-day-thunderstorm', 1273: 'wi-day-thunderstorm',
-    1150: 'wi-day-sprinkle', 1153: 'wi-day-sprinkle',
-    1168: 'wi-sleet', 1171: 'wi-sleet', 1198: 'wi-day-sleet', 1201: 'wi-sleet',
-    1183: 'wi-rain', 1189: 'wi-rain', 1195: 'wi-rain',
-    1204: 'wi-day-sleet', 1207: 'wi-sleet', 1249: 'wi-day-sleet', 1252: 'wi-sleet',
-    1240: 'wi-day-showers', 1243: 'wi-showers', 1246: 'wi-showers',
-    1066: 'wi-day-snow', 1210: 'wi-day-snow', 1216: 'wi-day-snow', 1222: 'wi-day-snow', 1255: 'wi-day-snow',
-    1069: 'wi-day-sleet', 1072: 'wi-day-sleet',
-    1114: 'wi-snow-wind', 1117: 'wi-snow-wind',
-    1213: 'wi-snow', 1219: 'wi-snow', 1225: 'wi-snow', 1258: 'wi-snow',
-    1237: 'wi-hail', 1261: 'wi-hail', 1264: 'wi-hail',
-    1276: 'wi-thunderstorm',
-    1279: 'wi-day-snow-thunderstorm', 1282: 'wi-snow-thunderstorm',
-  };
-  return map[code] ?? 'wi-cloudy';
+    const map: Record<number, string> = {
+        1000: "wi-day-sunny",
+        1003: "wi-day-cloudy",
+        1006: "wi-cloudy",
+        1009: "wi-cloudy",
+        1030: "wi-fog",
+        1135: "wi-fog",
+        1147: "wi-fog",
+        1063: "wi-day-showers",
+        1180: "wi-day-rain",
+        1186: "wi-day-rain",
+        1192: "wi-day-rain",
+        1087: "wi-day-thunderstorm",
+        1273: "wi-day-thunderstorm",
+        1150: "wi-day-sprinkle",
+        1153: "wi-day-sprinkle",
+        1168: "wi-sleet",
+        1171: "wi-sleet",
+        1198: "wi-day-sleet",
+        1201: "wi-sleet",
+        1183: "wi-rain",
+        1189: "wi-rain",
+        1195: "wi-rain",
+        1204: "wi-day-sleet",
+        1207: "wi-sleet",
+        1249: "wi-day-sleet",
+        1252: "wi-sleet",
+        1240: "wi-day-showers",
+        1243: "wi-showers",
+        1246: "wi-showers",
+        1066: "wi-day-snow",
+        1210: "wi-day-snow",
+        1216: "wi-day-snow",
+        1222: "wi-day-snow",
+        1255: "wi-day-snow",
+        1069: "wi-day-sleet",
+        1072: "wi-day-sleet",
+        1114: "wi-snow-wind",
+        1117: "wi-snow-wind",
+        1213: "wi-snow",
+        1219: "wi-snow",
+        1225: "wi-snow",
+        1258: "wi-snow",
+        1237: "wi-hail",
+        1261: "wi-hail",
+        1264: "wi-hail",
+        1276: "wi-thunderstorm",
+        1279: "wi-day-snow-thunderstorm",
+        1282: "wi-snow-thunderstorm",
+    };
+    return map[code] ?? "wi-cloudy";
 }
 
 let tempDisplay = "--";
 let conditionCode = 0;
 try {
-  const weather = await getCurrentWeather("Rotterdam");
-  if (weather?.current?.temp_c != null) {
-    tempDisplay = String(Math.round(weather.current.temp_c));
-    conditionCode = weather.current.condition.code;
-  }
+    const weather = await getCurrentWeather("Rotterdam");
+    if (weather?.current?.temp_c != null) {
+        tempDisplay = String(Math.round(weather.current.temp_c));
+        conditionCode = weather.current.condition.code;
+    }
 } catch {
-  // keep -- and 0 on error
+    // keep -- and 0 on error
 }
 
 const iconClass = getWeatherIconClass(conditionCode);
 ---
 
 <footer class="footer" role="contentinfo">
-  <div class="footer__col footer__col--1">
-    <p class="footer__line">
-      © <span id="live-year"></span> mieras.xyz
-    </p>
-    <p class="footer__line footer__line--date">
-      Today is: <span id="live-date"></span>
-    </p>
-  </div>
-  <div class="footer__col footer__col--2">
-    <p class="footer__line">
-      Rotterdam, <i class={`wi ${iconClass} footer__weather-icon`} aria-hidden="true"></i>{tempDisplay}°C
-    </p>
-    <p class="footer__line">
-      <time id="live-time" datetime="">00:00:00:000</time>
-    </p>
-  </div>
+    <div class="footer__col footer__col--1">
+        <p class="footer__line">
+            © <span id="live-year"></span> mieras.xyz
+        </p>
+        <p class="footer__line footer__line--date">
+            Today is: <span id="live-date"></span>
+        </p>
+    </div>
+    <div class="footer__col footer__col--2">
+        <p class="footer__line">
+            Rotterdam, <i
+                class={`wi ${iconClass} footer__weather-icon`}
+                aria-hidden="true"></i>{tempDisplay}°C
+        </p>
+        <p class="footer__line">
+            <time id="live-time" datetime="">00:00:00:000</time>
+        </p>
+    </div>
 </footer>
 
 <script>
-  function pad(n: number, len = 2) {
-    return String(n).padStart(len, "0");
-  }
-  function updateTime() {
-    const el = document.getElementById("live-time");
-    if (!el) return;
-    const d = new Date();
-    const h = pad(d.getHours());
-    const m = pad(d.getMinutes());
-    const s = pad(d.getSeconds());
-    const ms = pad(d.getMilliseconds(), 3);
-    el.textContent = `${h}:${m}:${s}:${ms}`;
-    el.setAttribute("datetime", d.toISOString());
-  }
+    function pad(n: number, len = 2) {
+        return String(n).padStart(len, "0");
+    }
+    function updateTime() {
+        const el = document.getElementById("live-time");
+        if (!el) return;
+        const d = new Date();
+        const h = pad(d.getHours());
+        const m = pad(d.getMinutes());
+        const s = pad(d.getSeconds());
+        const ms = pad(d.getMilliseconds(), 3);
+        el.textContent = `${h}:${m}:${s}:${ms}`;
+        el.setAttribute("datetime", d.toISOString());
+    }
 
-  const now = new Date();
-  const yearEl = document.getElementById("live-year");
-  if (yearEl) yearEl.textContent = String(now.getFullYear());
-  const dateEl = document.getElementById("live-date");
-  if (dateEl) dateEl.textContent = now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+    const now = new Date();
+    const yearEl = document.getElementById("live-year");
+    if (yearEl) yearEl.textContent = String(now.getFullYear());
+    const dateEl = document.getElementById("live-date");
+    if (dateEl)
+        dateEl.textContent = now.toLocaleDateString("en-US", {
+            weekday: "long",
+            month: "long",
+            day: "numeric",
+        });
 
-  updateTime();
-  setInterval(updateTime, 50);
+    updateTime();
+    setInterval(updateTime, 50);
 </script>
 
 <style>
-  .footer {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-2xs, 2rem) var(--space-xs, 3rem);
-    align-items: start;
-    padding: var(--space-2xs, 3rem) var(--space-xs, 2rem);
-    font-size: calc(0.8 * var(--step--3, 0.75rem));
-    color: var(--color-color-bg);
-    line-height: 133%;
-  }
-  .footer__col--2 {
-  }
-  .footer__line {
-    margin: 0;
-  }
-  .footer__weather-icon {
-    font-style: normal;
-    font-size: 1.2em;
-    vertical-align: middle;
-    margin-right: 0.2em;
-    line-height: 1;
-  }
+    .footer {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-2xs, 2rem) var(--space-xs, 3rem);
+        align-items: start;
+        padding: var(--space-2xs, 3rem) var(--space-xs, 2rem);
+        font-size: calc(0.8 * var(--step--3, 0.75rem));
+        color: var(--color-color-bg);
+        line-height: 133%;
+    }
+    .footer__col--2 {
+    }
+    .footer__line {
+        margin: 0;
+    }
+    .footer__weather-icon {
+        font-style: normal;
+        font-size: 1.2em;
+        vertical-align: middle;
+        margin-right: 0.2em;
+        line-height: 1;
+    }
+
+    @media (max-width: 768px) {
+        .footer {
+            margin-top: var(--space-2xl);
+        }
+    }
 </style>
