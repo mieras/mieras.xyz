@@ -6,6 +6,16 @@ All notable changes to this project are documented here.
 
 ---
 
+## 2026-03-19 (2)
+
+### Added
+- "Now playing" label in Spotify marquee (pill, left-aligned, frosted glass)
+
+### Fixed
+- Load `.env` vars into `process.env` in dev via `loadEnv` in `astro.config.mjs`
+
+---
+
 ## 2026-03-19
 
 ### Fixed

@@ -30,6 +30,9 @@ const groupCount = 2;
             data-speed={speed}
             aria-label="Recently played on Spotify"
         >
+            <div class="spotify-marquee__label" aria-hidden="true">
+                now playing
+            </div>
             <div class="spotify-marquee__track">
                 <div class="spotify-marquee__inner">
                     {Array.from({ length: groupCount }, (_, groupIndex) => (
@@ -135,7 +138,10 @@ const groupCount = 2;
             isHovered = false;
             lastDirection = 0; // force tween recreation on next scroll
             speedTween?.kill();
-            speedTween = gsap.to(tl, { timeScale: scrollDirection, duration: 0.4 });
+            speedTween = gsap.to(tl, {
+                timeScale: scrollDirection,
+                duration: 0.4,
+            });
         });
     }
 </script>
@@ -161,6 +167,26 @@ const groupCount = 2;
         .spotify-marquee {
             min-height: 10vh;
         }
+    }
+
+    .spotify-marquee__label {
+        position: absolute;
+        left: var(--space-s);
+        top: 50%;
+        transform: translateY(-50%);
+        flex-shrink: 0;
+        align-self: stretch;
+        display: flex;
+        align-items: center;
+        padding: var(--space-xs) var(--space-s);
+        background-color: rgb(from var(--color-bg) r g b / 0.4);
+        backdrop-filter: blur(var(--cursor-blur));
+        color: var(--color-text);
+        font-size: var(--step--1);
+        font-weight: 500;
+        white-space: nowrap;
+        border-radius: 9999px;
+        z-index: 1;
     }
 
     .spotify-marquee__track {
