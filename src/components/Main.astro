@@ -455,6 +455,10 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
 
         gap: var(--space-2xs);
         font-size: var(--step--3, 0.75rem);
+
+        @media {min-width: 768px} {
+            flex-direction: column;
+        }
     }
     .main__list--small a {
         color: inherit;
