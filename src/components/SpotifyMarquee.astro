@@ -115,9 +115,11 @@ const groupCount = 2;
                     dir += (dirTarget - dir) * 0.08;
                     hoverMult += (hoverTarget - hoverMult) * 0.08;
 
-                    pos -= pps * (deltaTime / 1000) * dir * hoverMult;
-                    if (pos < -singleWidth) pos += singleWidth;
-                    if (pos > 0) pos -= singleWidth;
+                    // Cap deltaTime to prevent large jumps after tab backgrounding / JS throttling
+                    const dt = Math.min(deltaTime, 50);
+                    pos -= pps * (dt / 1000) * dir * hoverMult;
+                    // Modulo wrap — handles any size of jump correctly
+                    pos = ((pos % singleWidth) + singleWidth) % singleWidth - singleWidth;
 
                     inner.style.transform = `translateX(${pos}px)`;
                 });
