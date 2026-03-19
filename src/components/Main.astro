@@ -325,6 +325,12 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
         grid-template-columns: 1fr 1fr;
         gap: var(--space-2xs, 2rem) var(--space-xs, 3rem);
     }
+    /* Mobile: contact last */
+    @media (max-width: 39.99rem) {
+        .main__contact {
+            order: 10;
+        }
+    }
     /* Tablet: contact full, studio | about, clients | services */
     @media (min-width: 40rem) {
         .main__grid {
@@ -367,6 +373,9 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
         line-height: var(--leading-body);
         text-wrap: pretty;
         padding-right: 1ch;
+        @media (max-width: 39.99rem) {
+            padding-right: 0;
+        }
     }
 
     .main__contact,
@@ -380,7 +389,7 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
     .main__intro {
         font-size: var(--step-0);
         line-height: var(--leading-body);
-
+        text-wrap: pretty;
         max-width: 60ch;
     }
     .main__intro :global(p) {
