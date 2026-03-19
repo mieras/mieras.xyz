@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+### Fixed
+- Mobile layout not filling viewport: added `initial-scale=1` to viewport meta and `overflow-x: clip` to `html` to prevent marquee overflow from triggering zoom-out on iOS Safari
+
+---
+
 ## 2026-03-19 (3)
 
 ### Added
