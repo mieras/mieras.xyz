@@ -9,6 +9,7 @@ All notable changes to this project are documented here.
 - Contact section moved to bottom on mobile via CSS `order`
 - Added `text-wrap: pretty` to body text and intro paragraphs; removed `padding-right` on mobile
 - Footer clock no longer shows milliseconds (updates every second instead of 20×/s)
+- Footer copyright reordered to `2026 © mieras.xyz`
 
 ### Fixed
 - Mobile layout not filling viewport: added `initial-scale=1` to viewport meta and `overflow-x: clip` to `html` to prevent marquee overflow from triggering zoom-out on iOS Safari
