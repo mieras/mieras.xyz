@@ -98,12 +98,13 @@ const groupCount = 2;
             section.style.setProperty("--marquee-translate", `-${singleWidth}px`);
             inner.style.animationPlayState = "running";
 
-            // Pause on hover so links are easy to click
+            // Pause on hover so links are easy to click.
+            // Use inline style to override the inline animationPlayState set above.
             section.addEventListener("mouseenter", () => {
-                inner.classList.add("is-paused");
+                inner.style.animationPlayState = "paused";
             });
             section.addEventListener("mouseleave", () => {
-                inner.classList.remove("is-paused");
+                inner.style.animationPlayState = "running";
             });
         }
     }
@@ -165,10 +166,6 @@ const groupCount = 2;
         will-change: transform;
         animation: spotify-scroll var(--marquee-duration) linear infinite;
         animation-play-state: paused; /* JS sets to running once duration is ready */
-    }
-
-    .spotify-marquee__inner.is-paused {
-        animation-play-state: paused;
     }
 
     @keyframes spotify-scroll {
