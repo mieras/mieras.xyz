@@ -12,8 +12,8 @@ interface Props {
 
 const { text, href, backgroundColor, textColor, speed = 25 } = Astro.props;
 
-// Render 8 copies — horizontalLoop needs enough width to fill the viewport
-const copies = Array(8).fill(null);
+// 4 copies — ensures content always fills the viewport even for short texts
+const copies = Array(4).fill(null);
 ---
 
 <section
@@ -52,45 +52,21 @@ const copies = Array(8).fill(null);
 </section>
 
 <script>
-    import gsap from "gsap";
-    import { ScrollTrigger } from "gsap/ScrollTrigger";
-    import { horizontalLoop } from "../lib/horizontalLoop";
-
-    gsap.registerPlugin(ScrollTrigger);
-
+    // Measure each marquee's width once at startup, then CSS handles the loop.
     document
         .querySelectorAll<HTMLElement>(".marquee-section")
         .forEach((section) => {
-            const items = section.querySelectorAll<HTMLElement>(
-                ".marquee-section__item"
+            const inner = section.querySelector<HTMLElement>(
+                ".marquee-section__inner"
             );
+            if (!inner) return;
+
             const speed = parseFloat(section.dataset.speed ?? "25");
-            const isDesktop = window.matchMedia("(min-width: 1280px)").matches;
-            // Convert CSS duration (higher = slower) to GSAP speed (higher = faster)
-            const baseSpeed = (30 / speed) * 2;
-            const gsapSpeed = isDesktop ? baseSpeed : baseSpeed * 0.5;
-
-            const tl = horizontalLoop(items, { repeat: -1, speed: gsapSpeed });
-
-            let speedTween: gsap.core.Animation | null = null;
-            let lastDirection = 0;
-
-            ScrollTrigger.create({
-                trigger: section,
-                start: "top bottom",
-                end: "bottom top",
-                onUpdate: (self) => {
-                    if (self.direction !== lastDirection) {
-                        lastDirection = self.direction;
-                        speedTween?.kill();
-                        speedTween = gsap.to(tl, {
-                            timeScale: self.direction,
-                            duration: 0.4,
-                            ease: "power2.out",
-                        });
-                    }
-                },
-            });
+            const singleWidth = inner.scrollWidth / 4;
+            const pps = (30 / speed) * 200;
+            section.style.setProperty("--marquee-duration", `${singleWidth / pps}s`);
+            section.style.setProperty("--marquee-translate", `-${singleWidth}px`);
+            inner.style.animationPlayState = "running";
         });
 </script>
 
@@ -99,6 +75,7 @@ const copies = Array(8).fill(null);
         --marquee-rotate: 0deg;
         --marquee-x: 0px;
         --marquee-y: 0px;
+        --marquee-duration: 20s;
         padding: var(--space-2xs) 0;
         display: flex;
         align-items: center;
@@ -124,6 +101,15 @@ const copies = Array(8).fill(null);
     .marquee-section__inner {
         display: flex;
         width: max-content;
+        will-change: transform;
+        animation: marquee-scroll var(--marquee-duration) linear infinite;
+        animation-play-state: paused; /* JS sets to running once duration is ready */
+    }
+
+    @keyframes marquee-scroll {
+        to {
+            transform: translateX(var(--marquee-translate, -25%));
+        }
     }
 
     .marquee-section__item {

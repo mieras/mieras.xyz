@@ -4,6 +4,12 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Fixed
+- Remove `backdrop-filter` from animated cursor and Spotify "now playing" label to reduce style recalcs
+- Replace GSAP per-item marquee animation (56 elements/frame) with CSS `@keyframes` on the container — zero per-frame JS for all marquees
+- Reduce marquee DOM copies from 8 to 2 per strip; hover pause via `animation-play-state`, direction via `animation-direction`
+- Add `will-change: transform` to marquee inner containers
+
 ---
 
 ## 2026-03-19 (2)

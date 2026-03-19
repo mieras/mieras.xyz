@@ -15,7 +15,7 @@ const {
     speed = 35,
 } = Astro.props;
 
-// 3 groups is enough — at step-5 font size, 10 tracks span many viewport widths
+// 2 groups — CSS translateX(-50%) loop needs exactly two identical copies
 const groupCount = 2;
 ---
 
@@ -84,65 +84,28 @@ const groupCount = 2;
 }
 
 <script>
-    import gsap from "gsap";
-    import { ScrollTrigger } from "gsap/ScrollTrigger";
-    import { horizontalLoop } from "../lib/horizontalLoop";
-
-    gsap.registerPlugin(ScrollTrigger);
-
     const section = document.querySelector<HTMLElement>(".spotify-marquee");
     if (section) {
-        const items = section.querySelectorAll<HTMLElement>(
-            ".spotify-marquee__group"
+        const inner = section.querySelector<HTMLElement>(
+            ".spotify-marquee__inner"
         );
-        const speed = parseFloat(section.dataset.speed ?? "35");
-        const isDesktop = window.matchMedia("(min-width: 1280px)").matches;
+        if (inner) {
+            // Measure one group's width once, then CSS handles the loop.
+            const speed = parseFloat(section.dataset.speed ?? "35");
+            const singleWidth = inner.scrollWidth / 2;
+            const pps = (30 / speed) * 200;
+            section.style.setProperty("--marquee-duration", `${singleWidth / pps}s`);
+            section.style.setProperty("--marquee-translate", `-${singleWidth}px`);
+            inner.style.animationPlayState = "running";
 
-        const baseSpeed = (30 / speed) * 2;
-        const gsapSpeed = isDesktop ? baseSpeed : baseSpeed * 0.5;
-
-        const tl = horizontalLoop(items, { repeat: -1, speed: gsapSpeed });
-
-        let scrollDirection = 1;
-        let lastDirection = 0;
-        let speedTween: gsap.core.Animation | null = null;
-        let isHovered = false;
-
-        ScrollTrigger.create({
-            trigger: section,
-            start: "top bottom",
-            end: "bottom top",
-            onUpdate: (self) => {
-                scrollDirection = self.direction;
-                // Only create a new tween when direction actually flips (1 ↔ -1)
-                if (!isHovered && self.direction !== lastDirection) {
-                    lastDirection = self.direction;
-                    speedTween?.kill();
-                    speedTween = gsap.to(tl, {
-                        timeScale: self.direction,
-                        duration: 0.4,
-                        ease: "power2.out",
-                    });
-                }
-            },
-        });
-
-        // Pause on hover so links are easy to click
-        section.addEventListener("mouseenter", () => {
-            isHovered = true;
-            speedTween?.kill();
-            speedTween = gsap.to(tl, { timeScale: 0, duration: 0.4 });
-        });
-
-        section.addEventListener("mouseleave", () => {
-            isHovered = false;
-            lastDirection = 0; // force tween recreation on next scroll
-            speedTween?.kill();
-            speedTween = gsap.to(tl, {
-                timeScale: scrollDirection,
-                duration: 0.4,
+            // Pause on hover so links are easy to click
+            section.addEventListener("mouseenter", () => {
+                inner.classList.add("is-paused");
             });
-        });
+            section.addEventListener("mouseleave", () => {
+                inner.classList.remove("is-paused");
+            });
+        }
     }
 </script>
 
@@ -151,6 +114,7 @@ const groupCount = 2;
         --marquee-rotate: 0deg;
         --marquee-x: 0px;
         --marquee-y: 0px;
+        --marquee-duration: 20s;
         padding: var(--space-2xs) 0;
         display: flex;
         align-items: center;
@@ -198,6 +162,19 @@ const groupCount = 2;
         display: flex;
         width: max-content;
         align-items: center;
+        will-change: transform;
+        animation: spotify-scroll var(--marquee-duration) linear infinite;
+        animation-play-state: paused; /* JS sets to running once duration is ready */
+    }
+
+    .spotify-marquee__inner.is-paused {
+        animation-play-state: paused;
+    }
+
+    @keyframes spotify-scroll {
+        to {
+            transform: translateX(var(--marquee-translate, -50%));
+        }
     }
 
     .spotify-marquee__group {
