@@ -39,21 +39,15 @@ try {
 }
 
 const iconClass = getWeatherIconClass(conditionCode);
-const year = new Date().getFullYear();
-const today = new Date().toLocaleDateString("en-US", {
-  weekday: "long",
-  month: "long",
-  day: "numeric",
-});
 ---
 
 <footer class="footer" role="contentinfo">
   <div class="footer__col footer__col--1">
     <p class="footer__line">
-      © {year} mieras.xyz
+      © <span id="live-year"></span> mieras.xyz
     </p>
     <p class="footer__line footer__line--date">
-      Today is: {today}
+      Today is: <span id="live-date"></span>
     </p>
   </div>
   <div class="footer__col footer__col--2">
@@ -81,6 +75,13 @@ const today = new Date().toLocaleDateString("en-US", {
     el.textContent = `${h}:${m}:${s}:${ms}`;
     el.setAttribute("datetime", d.toISOString());
   }
+
+  const now = new Date();
+  const yearEl = document.getElementById("live-year");
+  if (yearEl) yearEl.textContent = String(now.getFullYear());
+  const dateEl = document.getElementById("live-date");
+  if (dateEl) dateEl.textContent = now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+
   updateTime();
   setInterval(updateTime, 50);
 </script>
