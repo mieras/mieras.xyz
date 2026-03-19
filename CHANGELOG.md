@@ -2,13 +2,18 @@
 
 All notable changes to this project are documented here.
 
-## [Unreleased]
+## 2026-03-19 (3)
 
-### Fixed
-- Remove `backdrop-filter` from animated cursor and Spotify "now playing" label to reduce style recalcs
-- Replace GSAP per-item marquee animation (56 elements/frame) with CSS `@keyframes` on the container — zero per-frame JS for all marquees
-- Reduce marquee DOM copies from 8 to 2 per strip; hover pause via `animation-play-state`, direction via `animation-direction`
-- Add `will-change: transform` to marquee inner containers
+### Added
+- Scroll-direction control for all marquees: direction locks to last scroll direction and reverses when scrolling the other way
+- Spotify marquee smoothly decelerates to a stop on hover instead of cutting instantly
+- `--leading-body` design token for body text line-height
+- `--font-sans` and `--font-mono` tokens in `_tokens.scss`
+- KVK/BTW/IBAN labels hidden by default, revealed on hover with elastic spring animation
+
+### Changed
+- Marquee animation engine replaced: CSS `@keyframes` → `gsap.ticker` updating `style.transform` directly on one element per marquee
+- Body text in main upgraded from `--step--1` to `--step-0`
 
 ---
 

@@ -52,7 +52,8 @@ const copies = Array(4).fill(null);
 </section>
 
 <script>
-    // Measure each marquee's width once at startup, then CSS handles the loop.
+    import gsap from "gsap";
+
     document
         .querySelectorAll<HTMLElement>(".marquee-section")
         .forEach((section) => {
@@ -63,10 +64,31 @@ const copies = Array(4).fill(null);
 
             const speed = parseFloat(section.dataset.speed ?? "25");
             const singleWidth = inner.scrollWidth / 4;
-            const pps = (30 / speed) * 200;
-            section.style.setProperty("--marquee-duration", `${singleWidth / pps}s`);
-            section.style.setProperty("--marquee-translate", `-${singleWidth}px`);
-            inner.style.animationPlayState = "running";
+            if (singleWidth <= 0) return;
+
+            const pps = (30 / speed) * 200; // pixels per second
+            let pos = 0;
+            let dirTarget = 1; // +1 = default (left), -1 = reversed
+            let dir = 1;       // lerps towards dirTarget
+
+            gsap.ticker.add((_time, deltaTime) => {
+                const lenis = (
+                    window as unknown as { lenis?: { velocity: number } }
+                ).lenis;
+                const vel = lenis?.velocity ?? 0;
+
+                // Only update direction when actually scrolling; hold last dir when idle
+                if (vel > 0.5) dirTarget = 1;
+                else if (vel < -0.5) dirTarget = -1;
+
+                dir += (dirTarget - dir) * 0.08;
+
+                pos -= pps * (deltaTime / 1000) * dir;
+                if (pos < -singleWidth) pos += singleWidth;
+                if (pos > 0) pos -= singleWidth;
+
+                inner.style.transform = `translateX(${pos}px)`;
+            });
         });
 </script>
 
@@ -75,7 +97,6 @@ const copies = Array(4).fill(null);
         --marquee-rotate: 0deg;
         --marquee-x: 0px;
         --marquee-y: 0px;
-        --marquee-duration: 20s;
         padding: var(--space-2xs) 0;
         display: flex;
         align-items: center;
@@ -102,14 +123,6 @@ const copies = Array(4).fill(null);
         display: flex;
         width: max-content;
         will-change: transform;
-        animation: marquee-scroll var(--marquee-duration) linear infinite;
-        animation-play-state: paused; /* JS sets to running once duration is ready */
-    }
-
-    @keyframes marquee-scroll {
-        to {
-            transform: translateX(var(--marquee-translate, -25%));
-        }
     }
 
     .marquee-section__item {

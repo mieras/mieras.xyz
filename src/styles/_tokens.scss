@@ -1,3 +1,13 @@
+// Typography
+:root {
+  --font-sans: 'Neue Haas Grotesk Display Pro', sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+
+  --leading-body: 1.2;
+
+
+}
+
 // Light theme (default)
 :root,
 [data-theme="light"] {
