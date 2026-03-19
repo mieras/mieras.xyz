@@ -1,13 +1,13 @@
 # MIERAS.XYZ
 
-Landing page voor Maarten Mieras — Digital Designer (Astro 5, brutalist design, dark mode, WeatherAPI).
+Personal landing page for Maarten Mieras — Digital Designer. Built with Astro 6, SSR via Netlify adapter, brutalist design, dark mode, WeatherAPI, and Spotify integration.
 
-## Ontwikkelen
+## Develop
 
 ```bash
 npm install
 cp .env.example .env
-# Vul PUBLIC_WEATHER_API_KEY in .env in (optioneel; zonder key toont de header "--°C")
+# Fill in WEATHER_API_KEY and SPOTIFY_* in .env (optional; see Environment section)
 npm run dev
 ```
 
@@ -17,21 +17,24 @@ npm run dev
 npm run build
 ```
 
-De output staat in `dist/`. Deploy naar **Cloudflare Pages**: koppel de repo of upload `dist/`, build command `npm run build`, output directory `dist`.
+Output goes to `dist/`. Deployed to **Netlify**: connect the repo, build command `npm run build`, publish directory `dist`.
 
 ## Environment
 
-- **PUBLIC_WEATHER_API_KEY** — API key van [WeatherAPI.com](https://www.weatherapi.com/) voor temperatuur in de header (Rotterdam). Zie `.env.example`.
+| Variable | Required | Description |
+|---|---|---|
+| `WEATHER_API_KEY` | No | [WeatherAPI.com](https://www.weatherapi.com/) key for temperature in the footer (Rotterdam). Without it, footer shows `--°C`. |
+| `SPOTIFY_CLIENT_ID` | No | Spotify app client ID for recently played marquee. |
+| `SPOTIFY_CLIENT_SECRET` | No | Spotify app client secret. |
+| `SPOTIFY_REFRESH_TOKEN` | No | Spotify OAuth refresh token. |
+
+See `.env.example` for all variables.
 
 ## T&C
 
-Plaats je Algemene Voorwaarden-PDF in `public/terms.pdf` zodat de footer-link werkt.
+Place your terms & conditions PDF at `public/terms.pdf` for the footer link to work.
 
-## Domeinen
-
-Zie [docs/DOMAIN-MIGRATION.md](docs/DOMAIN-MIGRATION.md) voor het migratieplan van domeinen naar Cloudflare.
-
-## Structuur
+## Structure
 
 ```text
 src/
@@ -40,6 +43,7 @@ src/
     ThemeToggle.astro
     MarqueeRefreshToggle.astro
     MarqueeSection.astro
+    SpotifyMarquee.astro
     Main.astro
     Footer.astro
     SeoMeta.astro
@@ -48,12 +52,13 @@ src/
     BaseLayout.astro
   pages/
     index.astro
+    api/
+      spotify.ts
   styles/
     _base.scss
     _tokens.scss
     global.scss
   content/
-    config.ts
     main/main.md
     footer/footer.md
     marquee/marquees.yaml
@@ -63,47 +68,48 @@ src/
     weather.ts
 ```
 
-## Componenten
+## Components
 
-- `src/pages/index.astro`: stelt de pagina samen met `Header`, meerdere `MarqueeSection`s, `Main` en `Footer`; laadt content uit Astro collections en injecteert JSON-LD.
-- `src/layouts/BaseLayout.astro`: globale shell (`<head>`, SEO, fonts, skip-link, global styles), initialiseert thema en smooth scroll (Lenis).
-- `src/components/Header.astro`: merknaam, anchors/mail en controls (`MarqueeRefreshToggle` + `ThemeToggle`).
-- `src/components/MarqueeSection.astro`: oneindige horizontale marquee met GSAP + ScrollTrigger + `horizontalLoop`.
-- `src/components/Main.astro`: hoofdcontent (contact, studio, music/about, clients, services), copy-to-clipboard feedback en scroll animatie.
-- `src/components/Footer.astro`: datum/tijd en temperatuur (WeatherAPI via `src/lib/weather.ts`).
-- `src/components/SeoMeta.astro` en `src/components/JsonLd.astro`: metadata en structured data.
+- `src/pages/index.astro` — assembles the page with `Header`, multiple `MarqueeSection`s, `SpotifyMarquee`, `Main`, and `Footer`; loads content from Astro collections and injects JSON-LD.
+- `src/layouts/BaseLayout.astro` — global shell (`<head>`, SEO, fonts, skip-link, global styles), initialises theme and smooth scroll (Lenis).
+- `src/components/Header.astro` — brand name, anchors/mail, and controls (`MarqueeRefreshToggle` + `ThemeToggle`).
+- `src/components/MarqueeSection.astro` — infinite horizontal marquee with GSAP + ScrollTrigger + `horizontalLoop`.
+- `src/components/SpotifyMarquee.astro` — marquee showing recently played Spotify tracks, fetched via the `/api/spotify` endpoint.
+- `src/components/Main.astro` — main content (contact, studio, music/about, clients, services), copy-to-clipboard feedback, and scroll animation.
+- `src/components/Footer.astro` — live date/time and temperature (WeatherAPI via `src/lib/weather.ts`), rendered client-side.
+- `src/components/SeoMeta.astro` and `src/components/JsonLd.astro` — metadata and structured data.
 
-## SCSS-opbouw
+## SCSS
 
-- `src/styles/global.scss` is het entrypoint en `@use`t:
+- `src/styles/global.scss` is the entrypoint and `@use`s:
   - `src/styles/_base.scss` (reset + Utopia scales)
-  - `src/styles/_tokens.scss` (kleur tokens per thema)
-- Globale regels staan in `global.scss` (body, focus styles, skip-link, utility `.mono`).
-- Component-specifieke styling staat lokaal in `<style>`/`<style scoped>` in de `.astro` componenten.
+  - `src/styles/_tokens.scss` (colour tokens per theme)
+- Global rules live in `global.scss` (body, focus styles, skip-link, utility `.mono`).
+- Component-specific styling lives locally in `<style>` / `<style scoped>` in `.astro` components.
 
-## Typografie
+## Typography
 
-- Basisschrift: `'Neue Haas Grotesk Display Pro', sans-serif` (geladen in `BaseLayout.astro`).
+- Base font: `'Neue Haas Grotesk Display Pro', sans-serif` (loaded in `BaseLayout.astro`).
 - Monospace utility: `.mono` in `global.scss`.
-- Fontgrootten komen uit Utopia custom properties (`--step-*`), bijvoorbeeld:
+- Font sizes come from Utopia custom properties (`--step-*`), e.g.:
   - body: `var(--step-0)`
   - captions/meta: `var(--step--2)`
   - marquee: `var(--step-5)`
 
 ## Utopia (fluid type & spacing)
 
-In `src/styles/_base.scss` worden met `utopia-core-scss` twee schalen gegenereerd:
+In `src/styles/_base.scss`, `utopia-core-scss` generates two scales:
 
 - Type scale via `generateTypeScale(...)`
   - viewport: `360px` → `1920px`
   - base font: `18` → `20`
   - ratio: `1.2` → `1.333`
-  - stappen: `--step--2` t/m `--step-5`
+  - steps: `--step--2` through `--step-5`
 - Space scale via `generateSpaceScale(...)`
-  - tokens zoals `--space-3xs`, `--space-2xs`, `--space-s`, `--space-l`, `--space-2xl`, etc.
+  - tokens like `--space-3xs`, `--space-2xs`, `--space-s`, `--space-l`, `--space-2xl`, etc.
   - custom token: `--space-s-l`
 
-## Kleur & dark mode
+## Colour & dark mode
 
 ### Tokens
 
@@ -122,19 +128,17 @@ In `src/styles/_tokens.scss`:
   - `--color-accent: #f0f0eb`
   - `--color-border: #333`
 
-### Gedrag
+### Behaviour
 
-- `ThemeToggle.astro` wisselt `data-theme` op `<html>` en slaat de keuze op in `localStorage` (`theme` key).
-- `BaseLayout.astro` initialiseert bij load:
-  1. opgeslagen keuze (`light`/`dark`) heeft voorrang
-  2. anders: `prefers-color-scheme`
-- Als er geen handmatige keuze in `localStorage` staat, volgt de site runtime wijzigingen van OS theme.
+- `ThemeToggle.astro` toggles `data-theme` on `<html>` and persists the choice in `localStorage` (`theme` key).
+- `BaseLayout.astro` initialises on load:
+  1. stored choice (`light`/`dark`) takes priority
+  2. fallback: `prefers-color-scheme`
+- If no manual choice is stored, the site follows OS theme changes at runtime.
 
 ## Content model (Astro collections)
 
-`src/content/config.ts` definieert:
-
-- `main` (content): tekstblokken + contact/clients/services
-- `footer` (content): o.a. btw/kvk/bank gegevens
-- `marquee` (data): lijst met marquee items (`order`, `text`, `backgroundColor`, `textColor`, `speed`)
-- `seo` (data): person + organization schema data
+- `main` (content): text blocks + contact/clients/services
+- `footer` (content): VAT/KVK/bank details etc.
+- `marquee` (data): list of marquee items (`order`, `text`, `backgroundColor`, `textColor`, `speed`)
+- `seo` (data): person + organisation schema data

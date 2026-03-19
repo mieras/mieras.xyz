@@ -1,0 +1,73 @@
+# CLAUDE.md
+
+Project instructions for Claude Code when working on mieras.xyz.
+
+## Stack
+
+- Astro 6, SSR via Netlify adapter
+- SCSS (utopia-core-scss, no CSS-in-JS)
+- GSAP + ScrollTrigger + Lenis for animation/scroll
+- Spotify API (recently played) + WeatherAPI (Rotterdam temperature)
+- Deployed to Netlify
+
+## Changelog
+
+**Always update `CHANGELOG.md` when merging a feature or fixing a bug.**
+
+- Add entries under `[Unreleased]` during development
+- At merge/release: move `[Unreleased]` items to a dated section (`## YYYY-MM-DD`)
+- Use categories: `Added`, `Changed`, `Fixed`, `Removed`
+- Keep entries concise — one line per change
+
+## Workflow
+
+- Branch naming: `feat/`, `fix/`, `chore/` prefixes (e.g. `feat/spotify-marquee`)
+- Before merging to `main`: test the build locally (`npm run build`), update `CHANGELOG.md`
+- No console.logs left in merged code
+
+## Code conventions
+
+- Prefer editing existing files over creating new ones
+- Component-specific styles go in `<style>` blocks inside `.astro` files
+- Global/shared styles go in `src/styles/`
+- Never use hardcoded hex colours — always use `--color-*` tokens from `src/styles/_tokens.scss`
+- Never use hardcoded px values for font sizes — always use `--step-*` variables from Utopia
+- Never use hardcoded px values for spacing — always use `--space-*` variables from Utopia
+- Environment variables that are server-side secrets use `process.env`, not `import.meta.env`
+- Client-exposed variables must be prefixed `PUBLIC_`
+
+## Design tokens reference
+
+Colours (defined in `src/styles/_tokens.scss`):
+- `--color-bg`, `--color-text`, `--color-text-muted`, `--color-accent`, `--color-border`
+
+Type scale (Utopia, `--step--2` through `--step-5`):
+- body: `--step-0`, captions/meta: `--step--2`, marquee: `--step-5`
+
+Space scale: `--space-3xs`, `--space-2xs`, `--space-xs`, `--space-s`, `--space-m`, `--space-l`, `--space-xl`, `--space-2xl`, custom: `--space-s-l`
+
+## Performance
+
+- `will-change` on GSAP-animated elements only during animation, not permanently
+- Images always via Astro `<Image>` component (never raw `<img>` tags for local assets)
+- Do not register `gsap.registerPlugin()` more than once per component scope
+
+## Astro conventions
+
+- Server-side components: no `client:*` directive (default in Astro SSR)
+- Interactive components that need the DOM: use `client:load`
+- Prefer `client:idle` or `client:visible` over `client:load` for non-critical JS
+- Content collections live in `src/content/` — see `README.md` for schema overview
+
+## Accessibility
+
+- Keep the skip-link in `BaseLayout.astro` — do not remove it
+- All interactive elements must be keyboard-reachable (focusable, visible focus style)
+- Decorative elements get `aria-hidden="true"`
+
+## Do not
+
+- Commit `.env` or any file containing secrets
+- Push directly to `main` without testing the build
+- Add dependencies without a clear reason
+- Use hardcoded colours, font sizes, or spacing values
