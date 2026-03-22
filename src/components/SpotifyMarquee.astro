@@ -226,13 +226,18 @@ const groupCount = 2;
             rotate(var(--marquee-rotate));
         transform-origin: center;
         transition: transform 320ms ease;
-        cursor: grab;
         touch-action: pan-y; /* browser handles vertical scroll; we handle horizontal drag */
         user-select: none;
     }
 
-    .spotify-marquee:active {
-        cursor: grabbing;
+    @media (hover: hover) and (pointer: fine) {
+        .spotify-marquee {
+            cursor: grab;
+        }
+
+        .spotify-marquee:active {
+            cursor: grabbing;
+        }
     }
 
     @media (min-width: 1280px) {

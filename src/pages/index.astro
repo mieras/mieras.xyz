@@ -74,7 +74,7 @@ const organizationSchema = {
     <Header contact={contact} />
     <section class="marquee-wrapper">
         {
-            marquees.map((m) => (
+            marquees.filter((m) => !m.href?.startsWith("mailto")).map((m) => (
                 <MarqueeSection
                     text={m.text}
                     href={m.href}
@@ -85,6 +85,17 @@ const organizationSchema = {
             ))
         }
         <SpotifyMarquee tracks={spotifyTracks} />
+        {
+            marquees.filter((m) => m.href?.startsWith("mailto")).map((m) => (
+                <MarqueeSection
+                    text={m.text}
+                    href={m.href}
+                    backgroundColor={m.backgroundColor}
+                    textColor={m.textColor}
+                    speed={m.speed}
+                />
+            ))
+        }
     </section>
 
     <Main />
