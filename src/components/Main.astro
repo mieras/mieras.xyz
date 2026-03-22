@@ -262,6 +262,8 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
     import gsap from "gsap";
     import { ScrollTrigger } from "gsap/ScrollTrigger";
 
+    gsap.registerPlugin(ScrollTrigger);
+
     function initListStagger() {
         const clientItems = document.querySelectorAll(
             ".main__clients .main__list li"
