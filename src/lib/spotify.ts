@@ -6,6 +6,9 @@ export interface SpotifyTrack {
   trackUrl: string;
 }
 
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+let cache: { tracks: SpotifyTrack[]; ts: number } | null = null;
+
 async function getAccessToken(clientId: string, clientSecret: string, refreshToken: string): Promise<string> {
   const res = await fetch("https://accounts.spotify.com/api/token", {
     method: "POST",
@@ -35,6 +38,10 @@ export async function getRecentlyPlayed(limit = 10): Promise<SpotifyTrack[]> {
   if (!clientId || !clientSecret || !refreshToken) {
     console.warn("[spotify] Missing env vars — skipping Spotify marquee.");
     return [];
+  }
+
+  if (cache && Date.now() - cache.ts < CACHE_TTL_MS) {
+    return cache.tracks;
   }
 
   try {
@@ -72,6 +79,7 @@ export async function getRecentlyPlayed(limit = 10): Promise<SpotifyTrack[]> {
       });
     }
 
+    cache = { tracks, ts: Date.now() };
     return tracks;
   } catch (err) {
     console.warn("[spotify] Failed to fetch recently played:", err);
