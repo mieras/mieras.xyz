@@ -6,6 +6,7 @@ All notable changes to this project are documented here.
 
 ### Fixed
 - Clients and services lists now animate in with GSAP stagger when scrolling into viewport (was missing `gsap.registerPlugin(ScrollTrigger)` call)
+- Contact block moved to bottom on mobile via CSS `order: 10`
 
 ---
 
