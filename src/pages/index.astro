@@ -339,13 +339,10 @@ const organizationSchema = {
         cursor: none;
     }
 
-    /* mobile: centered, no mouse tracking */
+    /* mobile/touch: hide cursor entirely */
     @media (pointer: coarse) {
         .shuffle-cursor {
-            top: 50%;
-            left: 50%;
-            translate: -50% -20%;
-            transform: scale(0.75);
+            display: none;
         }
     }
 </style>

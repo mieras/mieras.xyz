@@ -327,6 +327,11 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
         grid-template-columns: 1fr 1fr;
         gap: var(--space-2xs, 2rem) var(--space-xs, 3rem);
     }
+    /* Mobile: push contact to bottom */
+    @media (max-width: 39.9375rem) {
+        .main__contact { order: 10; }
+        .main__empty { display: none; }
+    }
     /* Tablet: contact full, studio | about, clients | services */
     @media (min-width: 40rem) {
         .main__grid {
