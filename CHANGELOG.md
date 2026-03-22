@@ -8,6 +8,7 @@ All notable changes to this project are documented here.
 - Clients and services lists now animate in with GSAP stagger when scrolling into viewport (was missing `gsap.registerPlugin(ScrollTrigger)` call)
 - Contact block moved to bottom on mobile via CSS `order: 10`
 - Spotify API 429 rate limit errors: added 5-minute in-memory cache to `getRecentlyPlayed`
+- Marquee refresh toggle hidden on touch devices via `@media (hover: none)`
 
 ---
 
