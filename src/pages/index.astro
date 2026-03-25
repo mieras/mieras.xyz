@@ -170,22 +170,6 @@ const organizationSchema = {
                     cursor.classList.remove("is-play-mode");
                 });
             }
-        } else {
-            // Mobile: fixed center, hide when bottom of marquee-wrapper scrolls past viewport center
-            function checkMobileCursor() {
-                const rect = heroWrapper!.getBoundingClientRect();
-                const centerY = window.innerHeight / 2;
-                if (rect.top < centerY && rect.bottom > centerY) {
-                    cursor!.classList.add("is-visible");
-                } else {
-                    cursor!.classList.remove("is-visible");
-                }
-            }
-
-            checkMobileCursor();
-            window.addEventListener("scroll", checkMobileCursor, {
-                passive: true,
-            });
         }
     }
 </script>
@@ -344,13 +328,10 @@ const organizationSchema = {
         cursor: none;
     }
 
-    /* mobile: centered, no mouse tracking */
-    @media (pointer: coarse) {
+    /* Disable custom cursor on touch devices */
+    @media (pointer: coarse), (hover: none) {
         .shuffle-cursor {
-            top: 50%;
-            left: 50%;
-            translate: -50% -20%;
-            transform: scale(0.75);
+            display: none !important;
         }
     }
 </style>
