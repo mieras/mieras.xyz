@@ -103,8 +103,8 @@ const iconClass = getWeatherIconClass(conditionCode);
         const h = pad(d.getHours());
         const m = pad(d.getMinutes());
         const s = pad(d.getSeconds());
-        const ms = pad(d.getMilliseconds(), 3);
-        el.textContent = `${h}:${m}:${s}:${ms}`;
+        // const ms = pad(d.getMilliseconds(), 3);
+        el.textContent = `${h}:${m}:${s}`;
         el.setAttribute("datetime", d.toISOString());
     }
 
