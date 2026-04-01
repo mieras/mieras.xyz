@@ -1,6 +1,6 @@
 ---
 title: Maarten Mieras
-subtitle: Digital Designer — Rotterdam
+subtitle: Digital Product Designer — Rotterdam
 contact: studio@mieras.xyz
 address: |
     Het Industriegebouw
