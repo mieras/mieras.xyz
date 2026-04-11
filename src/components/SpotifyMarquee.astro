@@ -14,9 +14,6 @@ const {
     textColor = "var(--color-bg)",
     speed = 35,
 } = Astro.props;
-
-// 2 groups — CSS translateX(-50%) loop needs exactly two identical copies
-const groupCount = 2;
 ---
 
 {
@@ -35,47 +32,35 @@ const groupCount = 2;
             </div>
             <div class="spotify-marquee__track">
                 <div class="spotify-marquee__inner">
-                    {Array.from({ length: groupCount }, (_, groupIndex) => (
-                        <div
-                            class="spotify-marquee__group"
-                            aria-hidden={groupIndex > 0 ? "true" : undefined}
+                    {tracks.map((track) => (
+                        <a
+                            class="spotify-marquee__item"
+                            href={track.trackUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label={`${track.artist} — ${track.title}`}
                         >
-                            {tracks.map((track) => (
-                                <a
-                                    class="spotify-marquee__item"
-                                    href={track.trackUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    aria-label={
-                                        groupIndex === 0
-                                            ? `${track.artist} — ${track.title}`
-                                            : undefined
-                                    }
-                                    tabindex={groupIndex > 0 ? -1 : undefined}
-                                >
-                                    {track.albumArt && (
-                                        <img
-                                            class="spotify-marquee__thumb"
-                                            src={track.albumArt}
-                                            alt=""
-                                            aria-hidden="true"
-                                            width="48"
-                                            height="48"
-                                            loading="lazy"
-                                        />
-                                    )}
-                                    <span class="spotify-marquee__text">
-                                        {track.artist} • {track.title}
-                                    </span>
-                                    <span
-                                        class="spotify-marquee__sep"
-                                        aria-hidden="true"
-                                    >
-                                        {""}
-                                    </span>
-                                </a>
-                            ))}
-                        </div>
+                            {track.albumArt && (
+                                <img
+                                    class="spotify-marquee__thumb"
+                                    src={track.albumArt}
+                                    alt=""
+                                    aria-hidden="true"
+                                    width="48"
+                                    height="48"
+                                    loading="lazy"
+                                />
+                            )}
+                            <span class="spotify-marquee__text">
+                                {track.artist} • {track.title}
+                            </span>
+                            <span
+                                class="spotify-marquee__sep"
+                                aria-hidden="true"
+                            >
+                                {""}
+                            </span>
+                        </a>
                     ))}
                 </div>
             </div>
@@ -85,51 +70,85 @@ const groupCount = 2;
 
 <script>
     import gsap from "gsap";
+    import { Draggable } from "gsap/Draggable";
+    import { InertiaPlugin } from "gsap/InertiaPlugin";
+    import { horizontalLoop } from "../lib/horizontalLoop";
+
+    gsap.registerPlugin(Draggable, InertiaPlugin);
 
     const section = document.querySelector<HTMLElement>(".spotify-marquee");
     if (section) {
-        const inner = section.querySelector<HTMLElement>(
-            ".spotify-marquee__inner"
+        const items = Array.from(
+            section.querySelectorAll<HTMLElement>(".spotify-marquee__item")
         );
-        if (inner) {
+        if (items.length > 0) {
             const speed = parseFloat(section.dataset.speed ?? "35");
-            const singleWidth = inner.scrollWidth / 2;
-            if (singleWidth > 0) {
-                const pps = (30 / speed) * 200; // pixels per second
-                let pos = 0;
-                let dirTarget = 1; // +1 = default (left), -1 = reversed
-                let dir = 1; // lerps towards dirTarget
-                let hoverTarget = 1; // 1 = full speed, 0 = stopped
-                let hoverMult = 1;
+            // Map to horizontalLoop speed unit: pixelsPerSecond / 100
+            const hlSpeed = (30 / speed) * 2;
 
-                gsap.ticker.add((_time, deltaTime) => {
-                    const lenis = (
-                        window as unknown as { lenis?: { velocity: number } }
-                    ).lenis;
-                    const vel = lenis?.velocity ?? 0;
+            const tl = horizontalLoop(items, {
+                repeat: -1,
+                speed: hlSpeed,
+                paused: false,
+            });
 
-                    // Only update direction when actually scrolling; hold last dir when idle
-                    if (vel > 0.5) dirTarget = 1;
-                    else if (vel < -0.5) dirTarget = -1;
+            // Draggable proxy: maps horizontal drag to timeline progress
+            const proxy = document.createElement("div");
+            const wrapProgress = gsap.utils.wrap(0, 1);
+            const ratio = 1 / tl.totalWidth;
+            let startProgress = 0;
+            let wasPlaying = false;
+            let d: Draggable | null = null;
 
-                    dir += (dirTarget - dir) * 0.08;
-                    hoverMult += (hoverTarget - hoverMult) * 0.08;
+            const align = () => {
+                if (!d) return;
+                tl.progress(
+                    wrapProgress(startProgress + (d.startX - d.x) * ratio)
+                );
+            };
 
-                    pos -= pps * (deltaTime / 1000) * dir * hoverMult;
-                    if (pos < -singleWidth) pos += singleWidth;
-                    if (pos > 0) pos -= singleWidth;
+            d = Draggable.create(proxy, {
+                trigger: section.querySelector(".spotify-marquee__inner"),
+                type: "x",
+                onPressInit() {
+                    wasPlaying = !tl.paused();
+                    gsap.killTweensOf(tl);
+                    tl.pause();
+                    startProgress = tl.progress();
+                    gsap.set(proxy, { x: startProgress / -ratio });
+                },
+                onDrag: align,
+                onThrowUpdate: align,
+                inertia: true,
+                overshootTolerance: 0,
+                onThrowComplete() {
+                    if (wasPlaying) tl.play();
+                },
+            })[0];
 
-                    inner.style.transform = `translateX(${pos}px)`;
-                });
+            // Mirror the original ticker logic: lerp direction + hover multiplier,
+            // applied as timeScale so Draggable can take over progress when needed.
+            let dirTarget = 1;
+            let dir = 1;
+            let isHovering = false;
 
-                // Smooth decelerate to stop on hover so links are easy to click.
-                section.addEventListener("mouseenter", () => {
-                    hoverTarget = 0;
-                });
-                section.addEventListener("mouseleave", () => {
-                    hoverTarget = 1;
-                });
-            }
+            gsap.ticker.add(() => {
+                if (d?.isDragging || d?.isThrowing) return;
+
+                const vel = (
+                    window as unknown as { lenis?: { velocity: number } }
+                ).lenis?.velocity ?? 0;
+
+                // Only update direction when actively scrolling; hold last when idle
+                if (vel > 0.5) dirTarget = 1;
+                else if (vel < -0.5) dirTarget = -1;
+
+                dir += ((isHovering ? 0 : dirTarget) - dir) * 0.08;
+                tl.timeScale(dir);
+            });
+
+            section.addEventListener("mouseenter", () => { isHovering = true; });
+            section.addEventListener("mouseleave", () => { isHovering = false; });
         }
     }
 </script>
@@ -175,23 +194,23 @@ const groupCount = 2;
         white-space: nowrap;
         border-radius: 9999px;
         z-index: 1;
+        pointer-events: none;
     }
 
     .spotify-marquee__track {
         width: 100%;
         overflow: hidden;
+        cursor: grab;
+        user-select: none;
+    }
+
+    .spotify-marquee__track:active {
+        cursor: grabbing;
     }
 
     .spotify-marquee__inner {
         display: flex;
         width: max-content;
-        align-items: center;
-        will-change: transform;
-    }
-
-    .spotify-marquee__group {
-        display: flex;
-        flex-shrink: 0;
         align-items: center;
     }
 
@@ -203,6 +222,7 @@ const groupCount = 2;
         padding-right: var(--space-xs, 0.75rem);
         color: var(--spotify-text-color);
         text-decoration: none;
+        will-change: transform;
     }
 
     .spotify-marquee__item:hover {
