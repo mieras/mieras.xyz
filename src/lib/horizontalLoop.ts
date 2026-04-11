@@ -7,7 +7,6 @@ export interface HorizontalLoopConfig {
   snap?: number | false | ((v: number) => number);
   paddingRight?: number;
   reversed?: boolean;
-  xPercent?: number;
 }
 
 function getNum(el: Element, prop: string): number {
@@ -18,7 +17,8 @@ function getNum(el: Element, prop: string): number {
 
 /**
  * GSAP horizontalLoop – seamless infinite horizontal scroll.
- * Matches GreenSock's horizontalLoop helper; use timeScale for scroll-direction.
+ * Use timeScale to control direction (+1 forward, -1 reverse, 0 paused).
+ * totalWidth is exposed so callers can set up external Draggable integration.
  */
 export function horizontalLoop(
   items: gsap.TweenTarget,
@@ -29,9 +29,9 @@ export function horizontalLoop(
   current: () => number;
   toIndex: (index: number, vars?: gsap.TweenVars) => gsap.core.Tween;
   times: number[];
+  totalWidth: number;
 } {
   const list = gsap.utils.toArray(items) as Element[];
-  config = config || {};
   const tl = gsap.timeline({
     repeat: config.repeat,
     paused: config.paused,
@@ -48,9 +48,11 @@ export function horizontalLoop(
   const xPercents: number[] = [];
   let curIndex = 0;
   const pixelsPerSecond = (config.speed ?? 1) * 100;
-  const snap =
+  const snap: (v: number) => number =
     config.snap === false
       ? (v: number) => v
+      : typeof config.snap === "function"
+      ? config.snap
       : gsap.utils.snap(config.snap ?? 1);
 
   gsap.set(list, {
@@ -107,7 +109,7 @@ export function horizontalLoop(
     times[i] = distanceToStart / pixelsPerSecond;
   }
 
-  function toIndex(index: number, vars?: gsap.TweenVars): gsap.core.Tween {
+  const toIndex = (index: number, vars?: gsap.TweenVars): gsap.core.Tween => {
     vars = vars || {};
     if (Math.abs(index - curIndex) > length / 2) {
       index += index > curIndex ? -length : length;
@@ -123,16 +125,25 @@ export function horizontalLoop(
     curIndex = newIndex;
     (vars as gsap.TweenVars & { overwrite?: boolean }).overwrite = true;
     return tl.tweenTo(time, vars);
-  }
+  };
 
-  (tl as gsap.core.Timeline & { next: (v?: gsap.TweenVars) => gsap.core.Tween }).next = (vars?: gsap.TweenVars) =>
-    toIndex(curIndex + 1, vars);
-  (tl as gsap.core.Timeline & { previous: (v?: gsap.TweenVars) => gsap.core.Tween }).previous = (vars?: gsap.TweenVars) =>
-    toIndex(curIndex - 1, vars);
-  (tl as gsap.core.Timeline & { current: () => number }).current = () => curIndex;
-  (tl as gsap.core.Timeline & { toIndex: (i: number, v?: gsap.TweenVars) => gsap.core.Tween }).toIndex = (index: number, vars?: gsap.TweenVars) =>
-    toIndex(index, vars);
-  (tl as gsap.core.Timeline & { times: number[] }).times = times;
+  type ExtTl = gsap.core.Timeline & {
+    next: (vars?: gsap.TweenVars) => gsap.core.Tween;
+    previous: (vars?: gsap.TweenVars) => gsap.core.Tween;
+    current: () => number;
+    toIndex: (index: number, vars?: gsap.TweenVars) => gsap.core.Tween;
+    times: number[];
+    totalWidth: number;
+  };
+
+  const extTl = tl as ExtTl;
+
+  extTl.next = (vars?: gsap.TweenVars) => toIndex(curIndex + 1, vars);
+  extTl.previous = (vars?: gsap.TweenVars) => toIndex(curIndex - 1, vars);
+  extTl.current = () => curIndex;
+  extTl.toIndex = (index: number, vars?: gsap.TweenVars) => toIndex(index, vars);
+  extTl.times = times;
+  extTl.totalWidth = totalWidth;
 
   tl.progress(1, true).progress(0, true);
 
@@ -141,11 +152,5 @@ export function horizontalLoop(
     tl.reverse();
   }
 
-  return tl as gsap.core.Timeline & {
-    next: (vars?: gsap.TweenVars) => gsap.core.Tween;
-    previous: (vars?: gsap.TweenVars) => gsap.core.Tween;
-    current: () => number;
-    toIndex: (index: number, vars?: gsap.TweenVars) => gsap.core.Tween;
-    times: number[];
-  };
+  return extTl;
 }
