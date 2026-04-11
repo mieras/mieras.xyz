@@ -126,40 +126,29 @@ const {
                 },
             })[0];
 
+            // Mirror the original ticker logic: lerp direction + hover multiplier,
+            // applied as timeScale so Draggable can take over progress when needed.
             let dirTarget = 1;
+            let dir = 1;
             let isHovering = false;
 
-            const updateTimeScale = () => {
-                if (isHovering || d?.isDragging || d?.isThrowing) return;
-                gsap.to(tl, {
-                    timeScale: dirTarget,
-                    duration: 0.4,
-                    overwrite: "auto",
-                });
-            };
-
-            // Follow Lenis scroll direction, only when not dragging/throwing
             gsap.ticker.add(() => {
                 if (d?.isDragging || d?.isThrowing) return;
+
                 const vel = (
                     window as unknown as { lenis?: { velocity: number } }
                 ).lenis?.velocity ?? 0;
-                const newDir: number = vel < -0.5 ? -1 : 1;
-                if (newDir !== dirTarget) {
-                    dirTarget = newDir;
-                    updateTimeScale();
-                }
+
+                // Only update direction when actively scrolling; hold last when idle
+                if (vel > 0.5) dirTarget = 1;
+                else if (vel < -0.5) dirTarget = -1;
+
+                dir += ((isHovering ? 0 : dirTarget) - dir) * 0.08;
+                tl.timeScale(dir);
             });
 
-            section.addEventListener("mouseenter", () => {
-                isHovering = true;
-                gsap.to(tl, { timeScale: 0, duration: 0.5, overwrite: "auto" });
-            });
-
-            section.addEventListener("mouseleave", () => {
-                isHovering = false;
-                updateTimeScale();
-            });
+            section.addEventListener("mouseenter", () => { isHovering = true; });
+            section.addEventListener("mouseleave", () => { isHovering = false; });
         }
     }
 </script>
