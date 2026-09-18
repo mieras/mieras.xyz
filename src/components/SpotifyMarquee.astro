@@ -110,6 +110,8 @@ const {
             d = Draggable.create(proxy, {
                 trigger: section.querySelector(".spotify-marquee__inner"),
                 type: "x",
+                cursor: "none",
+                activeCursor: "none",
                 onPressInit() {
                     wasPlaying = !tl.paused();
                     gsap.killTweensOf(tl);
@@ -121,6 +123,13 @@ const {
                 onThrowUpdate: align,
                 inertia: true,
                 overshootTolerance: 0,
+                onRelease() {
+                    // No throw (e.g. simple click): resume after one tick
+                    // so isThrowing has time to be set if a throw did start
+                    requestAnimationFrame(() => {
+                        if (!d?.isThrowing && wasPlaying) tl.play();
+                    });
+                },
                 onThrowComplete() {
                     if (wasPlaying) tl.play();
                 },

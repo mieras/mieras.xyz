@@ -4,6 +4,14 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Added
+- Spotify marquee is now draggable/swipeable: click-drag or touch-swipe to scrub the marquee, InertiaPlugin throw on release, auto-scroll resumes afterwards
+
+### Changed
+- Spotify marquee animation engine switched from custom GSAP ticker to `horizontalLoop` + `Draggable` + `InertiaPlugin`
+- `horizontalLoop.ts` extended with `totalWidth` on the return type; Draggable integration moved to the component
+- `tsconfig.json`: `forceConsistentCasingInFileNames` disabled to resolve GSAP internal type casing conflict
+
 ### Fixed
 - Clients and services lists now animate in with GSAP stagger when scrolling into viewport (was missing `gsap.registerPlugin(ScrollTrigger)` call)
 - Contact block moved to bottom on mobile via CSS `order: 10`
