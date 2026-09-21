@@ -17,6 +17,8 @@ All notable changes to this project are documented here.
 - Contact block moved to bottom on mobile via CSS `order: 10`
 - Spotify API 429 rate limit errors: added 5-minute in-memory cache to `getRecentlyPlayed`
 - Marquee refresh toggle hidden on touch devices via `@media (hover: none)`
+- Spotify marquee track spacing (was nearly colliding) and vertical overlap between marquee rows in chaos mode
+- Spotify marquee items overlapping at different speeds: switched to single-strip translateX loop (same engine as other marquees) with HMR cleanup
 
 ---
 
