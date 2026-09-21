@@ -14,6 +14,9 @@ const {
     textColor = "var(--color-bg)",
     speed = 35,
 } = Astro.props;
+
+// Duplicate so the strip always fills the viewport for seamless wrap
+const copies = Array(3).fill(null);
 ---
 
 {
@@ -32,36 +35,35 @@ const {
             </div>
             <div class="spotify-marquee__track">
                 <div class="spotify-marquee__inner">
-                    {tracks.map((track) => (
-                        <a
-                            class="spotify-marquee__item"
-                            href={track.trackUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label={`${track.artist} — ${track.title}`}
-                        >
-                            {track.albumArt && (
-                                <img
-                                    class="spotify-marquee__thumb"
-                                    src={track.albumArt}
-                                    alt=""
-                                    aria-hidden="true"
-                                    width="48"
-                                    height="48"
-                                    loading="lazy"
-                                />
-                            )}
-                            <span class="spotify-marquee__text">
-                                {track.artist} • {track.title}
-                            </span>
-                            <span
-                                class="spotify-marquee__sep"
-                                aria-hidden="true"
+                    {copies.map((_, copyIndex) =>
+                        tracks.map((track) => (
+                            <a
+                                class="spotify-marquee__item"
+                                href={track.trackUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label={`${track.artist} — ${track.title}`}
+                                aria-hidden={copyIndex > 0 ? "true" : undefined}
+                                tabindex={copyIndex > 0 ? -1 : undefined}
                             >
-                                {""}
-                            </span>
-                        </a>
-                    ))}
+                                {track.albumArt && (
+                                    <img
+                                        class="spotify-marquee__thumb"
+                                        src={track.albumArt}
+                                        alt=""
+                                        aria-hidden="true"
+                                        width="48"
+                                        height="48"
+                                        loading="eager"
+                                        decoding="async"
+                                    />
+                                )}
+                                <span class="spotify-marquee__text">
+                                    {track.artist} • {track.title}
+                                </span>
+                            </a>
+                        ))
+                    )}
                 </div>
             </div>
         </section>
@@ -72,93 +74,165 @@ const {
     import gsap from "gsap";
     import { Draggable } from "gsap/Draggable";
     import { InertiaPlugin } from "gsap/InertiaPlugin";
-    import { horizontalLoop } from "../lib/horizontalLoop";
 
     gsap.registerPlugin(Draggable, InertiaPlugin);
 
-    const section = document.querySelector<HTMLElement>(".spotify-marquee");
-    if (section) {
-        const items = Array.from(
-            section.querySelectorAll<HTMLElement>(".spotify-marquee__item")
+    type Cleanup = () => void;
+    const cleanups: Cleanup[] = [];
+
+    // Tear down previous inits (HMR / re-runs) so timelines don't stack
+    const prev = (window as unknown as { __spotifyMarqueeCleanup?: Cleanup })
+        .__spotifyMarqueeCleanup;
+    prev?.();
+
+    function init(): Cleanup | null {
+        const section = document.querySelector<HTMLElement>(".spotify-marquee");
+        if (!section) return null;
+
+        const inner = section.querySelector<HTMLElement>(
+            ".spotify-marquee__inner"
         );
-        if (items.length > 0) {
-            const speed = parseFloat(section.dataset.speed ?? "35");
-            // Map to horizontalLoop speed unit: pixelsPerSecond / 100
-            const hlSpeed = (30 / speed) * 2;
+        if (!inner) return null;
 
-            const tl = horizontalLoop(items, {
-                repeat: -1,
-                speed: hlSpeed,
-                paused: false,
+        // Reset any leftover transforms from a previous engine
+        gsap.set(inner.querySelectorAll(".spotify-marquee__item"), {
+            clearProps: "transform,x,xPercent",
+        });
+        gsap.set(inner, { x: 0, clearProps: "transform" });
+
+        const speed = parseFloat(section.dataset.speed ?? "35");
+        const pps = (30 / speed) * 200; // pixels per second (same mapping as MarqueeSection)
+        const singleWidth = inner.scrollWidth / 3;
+        if (singleWidth <= 0) return null;
+
+        let pos = 0;
+        let dirTarget = 1;
+        let dir = 1;
+        let isHovering = false;
+        let wasPlaying = true;
+
+        const wrap = (v: number) => {
+            let next = v;
+            while (next < -singleWidth) next += singleWidth;
+            while (next > 0) next -= singleWidth;
+            return next;
+        };
+
+        const apply = () => {
+            pos = wrap(pos);
+            inner.style.transform = `translateX(${pos}px)`;
+        };
+
+        const tickerFn = (_time: number, deltaTime: number) => {
+            if (d?.isDragging || d?.isThrowing) return;
+
+            const vel =
+                (window as unknown as { lenis?: { velocity: number } }).lenis
+                    ?.velocity ?? 0;
+
+            if (vel > 0.5) dirTarget = 1;
+            else if (vel < -0.5) dirTarget = -1;
+
+            dir += ((isHovering ? 0 : dirTarget) - dir) * 0.08;
+            pos -= pps * (deltaTime / 1000) * dir;
+            apply();
+        };
+
+        gsap.ticker.add(tickerFn);
+
+        const proxy = document.createElement("div");
+        let startPos = 0;
+        let d: Draggable | null = null;
+
+        d = Draggable.create(proxy, {
+            trigger: inner,
+            type: "x",
+            cursor: "none",
+            activeCursor: "none",
+            inertia: true,
+            overshootTolerance: 0,
+            onPressInit() {
+                wasPlaying = !isHovering;
+                gsap.killTweensOf(proxy);
+                startPos = pos;
+                gsap.set(proxy, { x: 0 });
+            },
+            onDrag() {
+                pos = startPos + (this.x as number);
+                apply();
+            },
+            onThrowUpdate() {
+                pos = startPos + (this.x as number);
+                apply();
+            },
+            onRelease() {
+                requestAnimationFrame(() => {
+                    if (!d?.isThrowing) {
+                        // snap into continuous scroll space
+                        startPos = pos;
+                        gsap.set(proxy, { x: 0 });
+                    }
+                });
+            },
+            onThrowComplete() {
+                startPos = pos;
+                gsap.set(proxy, { x: 0 });
+            },
+        })[0];
+
+        const onEnter = () => {
+            isHovering = true;
+        };
+        const onLeave = () => {
+            isHovering = false;
+        };
+        section.addEventListener("mouseenter", onEnter);
+        section.addEventListener("mouseleave", onLeave);
+
+        return () => {
+            gsap.ticker.remove(tickerFn);
+            d?.kill();
+            section.removeEventListener("mouseenter", onEnter);
+            section.removeEventListener("mouseleave", onLeave);
+            gsap.set(inner, { clearProps: "transform" });
+            gsap.set(inner.querySelectorAll(".spotify-marquee__item"), {
+                clearProps: "transform,x,xPercent",
             });
+        };
+    }
 
-            // Draggable proxy: maps horizontal drag to timeline progress
-            const proxy = document.createElement("div");
-            const wrapProgress = gsap.utils.wrap(0, 1);
-            const ratio = 1 / tl.totalWidth;
-            let startProgress = 0;
-            let wasPlaying = false;
-            let d: Draggable | null = null;
+    const run = async () => {
+        await document.fonts.ready;
+        const imgs = Array.from(
+            document.querySelectorAll<HTMLImageElement>(
+                ".spotify-marquee__thumb"
+            )
+        );
+        await Promise.all(
+            imgs.map((img) =>
+                img.decode().catch(() => undefined)
+            )
+        );
 
-            const align = () => {
-                if (!d) return;
-                tl.progress(
-                    wrapProgress(startProgress + (d.startX - d.x) * ratio)
-                );
+        const cleanup = init();
+        if (cleanup) {
+            cleanups.push(cleanup);
+            (
+                window as unknown as { __spotifyMarqueeCleanup?: Cleanup }
+            ).__spotifyMarqueeCleanup = () => {
+                cleanups.splice(0).forEach((fn) => fn());
             };
-
-            d = Draggable.create(proxy, {
-                trigger: section.querySelector(".spotify-marquee__inner"),
-                type: "x",
-                cursor: "none",
-                activeCursor: "none",
-                onPressInit() {
-                    wasPlaying = !tl.paused();
-                    gsap.killTweensOf(tl);
-                    tl.pause();
-                    startProgress = tl.progress();
-                    gsap.set(proxy, { x: startProgress / -ratio });
-                },
-                onDrag: align,
-                onThrowUpdate: align,
-                inertia: true,
-                overshootTolerance: 0,
-                onRelease() {
-                    // No throw (e.g. simple click): resume after one tick
-                    // so isThrowing has time to be set if a throw did start
-                    requestAnimationFrame(() => {
-                        if (!d?.isThrowing && wasPlaying) tl.play();
-                    });
-                },
-                onThrowComplete() {
-                    if (wasPlaying) tl.play();
-                },
-            })[0];
-
-            // Mirror the original ticker logic: lerp direction + hover multiplier,
-            // applied as timeScale so Draggable can take over progress when needed.
-            let dirTarget = 1;
-            let dir = 1;
-            let isHovering = false;
-
-            gsap.ticker.add(() => {
-                if (d?.isDragging || d?.isThrowing) return;
-
-                const vel = (
-                    window as unknown as { lenis?: { velocity: number } }
-                ).lenis?.velocity ?? 0;
-
-                // Only update direction when actively scrolling; hold last when idle
-                if (vel > 0.5) dirTarget = 1;
-                else if (vel < -0.5) dirTarget = -1;
-
-                dir += ((isHovering ? 0 : dirTarget) - dir) * 0.08;
-                tl.timeScale(dir);
-            });
-
-            section.addEventListener("mouseenter", () => { isHovering = true; });
-            section.addEventListener("mouseleave", () => { isHovering = false; });
         }
+    };
+
+    run();
+
+    if (import.meta.hot) {
+        import.meta.hot.dispose(() => {
+            (
+                window as unknown as { __spotifyMarqueeCleanup?: Cleanup }
+            ).__spotifyMarqueeCleanup?.();
+        });
     }
 </script>
 
@@ -167,12 +241,14 @@ const {
         --marquee-rotate: 0deg;
         --marquee-x: 0px;
         --marquee-y: 0px;
+        position: relative;
+        z-index: 1;
         padding: var(--space-2xs) 0;
         display: flex;
         align-items: center;
         overflow: hidden;
         border-radius: var(--space-2xs, 0.5rem);
-        margin: 0 var(--space-2xs, 1rem) var(--space-2xs, 1rem);
+        margin: 0 var(--space-2xs) var(--space-s);
         transform: translate3d(var(--marquee-x), var(--marquee-y), 0)
             rotate(var(--marquee-rotate));
         transform-origin: center;
@@ -221,17 +297,18 @@ const {
         display: flex;
         width: max-content;
         align-items: center;
+        will-change: transform;
     }
 
     .spotify-marquee__item {
         flex-shrink: 0;
         display: inline-flex;
         align-items: center;
-        gap: var(--space-xs, 0.75rem);
-        padding-right: var(--space-xs, 0.75rem);
+        gap: var(--space-s);
+        padding-right: 1em;
         color: var(--spotify-text-color);
         text-decoration: none;
-        will-change: transform;
+        font-size: var(--step-5);
     }
 
     .spotify-marquee__item:hover {
@@ -245,22 +322,17 @@ const {
     .spotify-marquee__thumb {
         display: block;
         flex-shrink: 0;
-        width: 3em;
-        height: 3em;
-        border-radius: var(--space-3xs, 0.25rem);
+        width: 0.75em;
+        height: 0.75em;
+        border-radius: var(--space-3xs);
         object-fit: cover;
     }
 
     .spotify-marquee__text {
-        font-size: var(--step-5, clamp(3rem, 8vw, 9rem));
+        font-size: 1em;
         font-weight: 700;
         line-height: 100%;
         letter-spacing: -0.01em;
         white-space: nowrap;
-    }
-
-    .spotify-marquee__sep {
-        font-size: var(--step-5);
-        opacity: 0.4;
     }
 </style>
