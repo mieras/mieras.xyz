@@ -5,14 +5,21 @@ All notable changes to this project are documented here.
 ## [Unreleased]
 
 ### Added
+
+- AI readiness: `robots.txt` with Content Signals (`search=yes, ai-input=yes, ai-train=no`), AI crawler allow/disallow rules, and sitemap discovery
+- Dynamic `/sitemap.xml` for SSR public routes
+- Markdown content negotiation on `/` via `Accept: text/markdown` (clean Markdown from content collections)
+- `Content-Signal` response header on HTML and Markdown responses
 - Spotify marquee is now draggable/swipeable: click-drag or touch-swipe to scrub the marquee, InertiaPlugin throw on release, auto-scroll resumes afterwards
 
 ### Changed
+
 - Spotify marquee animation engine switched from custom GSAP ticker to `horizontalLoop` + `Draggable` + `InertiaPlugin`
 - `horizontalLoop.ts` extended with `totalWidth` on the return type; Draggable integration moved to the component
 - `tsconfig.json`: `forceConsistentCasingInFileNames` disabled to resolve GSAP internal type casing conflict
 
 ### Fixed
+
 - Clients and services lists now animate in with GSAP stagger when scrolling into viewport (was missing `gsap.registerPlugin(ScrollTrigger)` call)
 - Contact block moved to bottom on mobile via CSS `order: 10`
 - Spotify API 429 rate limit errors: added 5-minute in-memory cache to `getRecentlyPlayed`
@@ -26,6 +33,7 @@ All notable changes to this project are documented here.
 ## 2026-03-19 (3)
 
 ### Added
+
 - Scroll-direction control for all marquees: direction locks to last scroll direction and reverses when scrolling the other way
 - Spotify marquee smoothly decelerates to a stop on hover instead of cutting instantly
 - `--leading-body` design token for body text line-height
@@ -33,6 +41,7 @@ All notable changes to this project are documented here.
 - KVK/BTW/IBAN labels hidden by default, revealed on hover with elastic spring animation
 
 ### Changed
+
 - Marquee animation engine replaced: CSS `@keyframes` → `gsap.ticker` updating `style.transform` directly on one element per marquee
 - Body text in main upgraded from `--step--1` to `--step-0`
 
@@ -41,9 +50,11 @@ All notable changes to this project are documented here.
 ## 2026-03-19 (2)
 
 ### Added
+
 - "Now playing" label in Spotify marquee (pill, left-aligned, frosted glass)
 
 ### Fixed
+
 - Load `.env` vars into `process.env` in dev via `loadEnv` in `astro.config.mjs`
 
 ---
@@ -51,12 +62,14 @@ All notable changes to this project are documented here.
 ## 2026-03-19
 
 ### Fixed
+
 - Render date and year client-side in footer to prevent SSR hydration mismatch
 - Renamed `PUBLIC_WEATHER_API_KEY` → `WEATHER_API_KEY` (server-side secret, not exposed to client)
 - Use `process.env` instead of `import.meta.env` for server-side secrets
 - Restored `gsap.registerPlugin(ScrollTrigger)` in marquee components after SSR refactor
 
 ### Changed
+
 - Enabled SSR: migrated from static output to Netlify adapter + upgraded to Astro 6
 
 ---
@@ -64,14 +77,17 @@ All notable changes to this project are documented here.
 ## 2026-03-18
 
 ### Added
+
 - Spotify recently played marquee (`SpotifyMarquee.astro` + `/api/spotify` endpoint)
 - Weather icon next to temperature in footer
 
 ### Fixed
+
 - Marquee jank and performance issues (deduplication of `registerPlugin`, fixed `will-change`)
 - Spotify tracks now included in chaos mode shuffle
 
 ### Changed
+
 - `ThemeToggle` moved to fixed bottom-right with blur circle style
 - `ThemeToggle` component refactored for improved readability
 
@@ -80,9 +96,11 @@ All notable changes to this project are documented here.
 ## 2026-03-10
 
 ### Added
+
 - Custom shuffle cursor with GSAP follow animation, circle style, and click-to-chaos interaction
 
 ### Changed
+
 - Header refactored to 4-column CSS grid matching Figma layout
 - Mobile chaos range and marquee styles adjusted for improved layout
 

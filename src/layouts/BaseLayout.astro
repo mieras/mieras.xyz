@@ -26,6 +26,13 @@ const canonicalURL = new URL(
             rel="stylesheet"
         />
         <SeoMeta {title} {description} {canonicalURL} />
+        <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+        <link
+            rel="alternate"
+            type="text/markdown"
+            title="Markdown"
+            href={canonicalURL.toString()}
+        />
         <slot name="head" />
     </head>
     <body>
