@@ -19,6 +19,16 @@ npm run build
 
 Output goes to `dist/`. Deployed to **Netlify**: connect the repo, build command `npm run build`, publish directory `dist`.
 
+### Branches
+
+| Branch    | Deploy                                          | URL                                    |
+| --------- | ----------------------------------------------- | -------------------------------------- |
+| `main`    | Production                                      | https://mieras.xyz                     |
+| `staging` | Branch deploy (approved features, not yet live) | https://staging--mierasxyz.netlify.app |
+| PRs       | Deploy preview                                  | link in the PR                         |
+
+Features go via a PR to `staging`. Only bundled releases (PR `staging → main`) and hotfixes go to `main`. Commits that only touch docs (`*.md`, `.github/`, `.vscode/`) skip the Netlify build. See `~/Code/_standards/DEPLOY.md`.
+
 ## Environment
 
 | Variable                | Required | Description                                                                                                                   |
