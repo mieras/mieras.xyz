@@ -6,6 +6,10 @@ All notable changes to this project are documented here.
 
 ### Added
 
+- Deploy workflow per `_standards/DEPLOY.md`: features via PR to `staging` (branch deploy on `staging--mierasxyz.netlify.app`), bundled releases to `main`. Branch protection on `staging`
+- `netlify.toml` with an `ignore` rule: no build for commits that only touch docs
+- `.github/dependabot.yml`: weekly grouped updates to `staging`
+
 - AI readiness: `robots.txt` with Content Signals (`search=yes, ai-input=yes, ai-train=no`), AI crawler allow/disallow rules, and sitemap discovery
 - Dynamic `/sitemap.xml` for SSR public routes
 - Markdown content negotiation on `/` via `Accept: text/markdown` (clean Markdown from content collections)
@@ -14,6 +18,7 @@ All notable changes to this project are documented here.
 
 ### Changed
 
+- `CLAUDE.md` moved to `AGENTS.md` (`CLAUDE.md` now only imports it), workflow updated for `staging`
 - Spotify marquee animation engine switched from custom GSAP ticker to `horizontalLoop` + `Draggable` + `InertiaPlugin`
 - `horizontalLoop.ts` extended with `totalWidth` on the return type; Draggable integration moved to the component
 - `tsconfig.json`: `forceConsistentCasingInFileNames` disabled to resolve GSAP internal type casing conflict
