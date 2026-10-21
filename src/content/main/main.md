@@ -53,9 +53,9 @@ skills:
 subtitleALabel: "About"
 # Optional: markdown body for this column (overrides subtitleAText when set)
 contentAbout: |
-    I was born in Rotterdam in 1984. My first real taste of computers was in 1992. Amiga, MS-DOS, Windows 3.11, 95, XP, eventually OSX. It never really left. What draws me to design is the same thing that pulls me into a darkroom or a kitchen: process, craft, and getting things right. I shoot on film, develop my own prints, cook from scratch. There's a patience to all of it, and an honesty. Bad decisions show up eventually. 
+    I was born in Rotterdam in 1984. My first real taste of computers was in 1992. Amiga, MS-DOS, Windows 3.11, 95, XP, eventually OSX. It never really left. What draws me to design is the same thing that pulls me into a darkroom or a kitchen: process, craft, and getting things right. I shoot on film, develop my own prints, cook from scratch. There's a patience to all of it, and an honesty. Bad decisions show up eventually.
 
-    I ask a lot of questions, test assumptions early, and don't rush to solutions. I'd rather deliver one thing that genuinely works than five things that merely look good.
+    I ask a lot of questions and test assumptions early. These days I use AI for that: to check an idea, try a concept, and get to a working prototype before the design hardens. I still don't rush the decision. I'd rather deliver one thing that genuinely works than five things that merely look good.
 ---
 
 mieras.xyz is the studio of Maarten Mieras. I work as a freelancer and co-own [All This](https://allthis.digital), a design studio based in Rotterdam. What I do is straightforward: I help organisations think through complex digital problems and turn them into products that people actually understand and want to use.

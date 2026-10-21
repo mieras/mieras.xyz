@@ -202,6 +202,13 @@ const copies = Array(3).fill(null);
     }
 
     const run = async () => {
+        cleanups.splice(0).forEach((fn) => fn());
+        (
+            window as unknown as { __spotifyMarqueeCleanup?: Cleanup }
+        ).__spotifyMarqueeCleanup?.();
+
+        if (!document.querySelector(".spotify-marquee")) return;
+
         await document.fonts.ready;
         const imgs = Array.from(
             document.querySelectorAll<HTMLImageElement>(
@@ -209,9 +216,7 @@ const copies = Array(3).fill(null);
             )
         );
         await Promise.all(
-            imgs.map((img) =>
-                img.decode().catch(() => undefined)
-            )
+            imgs.map((img) => img.decode().catch(() => undefined))
         );
 
         const cleanup = init();
@@ -225,7 +230,15 @@ const copies = Array(3).fill(null);
         }
     };
 
-    run();
+    document.addEventListener("astro:page-load", () => {
+        void run();
+    });
+    document.addEventListener("astro:before-swap", () => {
+        cleanups.splice(0).forEach((fn) => fn());
+        (
+            window as unknown as { __spotifyMarqueeCleanup?: Cleanup }
+        ).__spotifyMarqueeCleanup = undefined;
+    });
 
     if (import.meta.hot) {
         import.meta.hot.dispose(() => {
