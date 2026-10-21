@@ -4,13 +4,16 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+---
+
+## 2026-10-21
+
 ### Added
 
 - `/feed` page as a sticky specsheet list (Read / Listen / Watch) with Discogs, Spotify, Mixcloud, Goodreads, Trakt+TMDB; relative timestamps; fixed centered cover on hover; CDN durable cache + Netlify Blobs API cache
 - Deploy workflow per `_standards/DEPLOY.md`: features via PR to `staging` (branch deploy on `staging--mierasxyz.netlify.app`), bundled releases to `main`. Branch protection on `staging`
 - `netlify.toml` with an `ignore` rule: no build for commits that only touch docs
 - `.github/dependabot.yml`: weekly grouped updates to `staging`
-
 - AI readiness: `robots.txt` with Content Signals (`search=yes, ai-input=yes, ai-train=no`), AI crawler allow/disallow rules, and sitemap discovery
 - Dynamic `/sitemap.xml` for SSR public routes
 - Markdown content negotiation on `/` via `Accept: text/markdown` (clean Markdown from content collections)
