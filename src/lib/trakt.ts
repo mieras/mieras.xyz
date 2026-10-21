@@ -66,7 +66,7 @@ async function fetchHistory(): Promise<WatchedItem[]> {
   }
 
   const entries = (await res.json()) as TraktHistoryEntry[];
-  const items: WatchedItem[] = [];
+  const draft: Array<WatchedItem & { tmdbId?: number }> = [];
   const seen = new Set<string>();
 
   for (const entry of entries) {
@@ -81,36 +81,46 @@ async function fetchHistory(): Promise<WatchedItem[]> {
     if (seen.has(dedupeKey)) continue;
     seen.add(dedupeKey);
 
-    let poster = "";
-    if (tmdbKey && media.ids?.tmdb) {
-      try {
-        poster = await tmdbPoster(tmdbKey, type === "movie" ? "movie" : "tv", media.ids.tmdb);
-      } catch {
-        poster = "";
-      }
-    }
-
     const path =
       type === "movie" ? `movies/${slug ?? traktId}` : `shows/${slug ?? traktId}`;
 
-    items.push({
+    draft.push({
       id: String(traktId ?? slug ?? media.title),
       title: media.title,
       year: media.year ?? null,
       type,
-      poster,
+      poster: "",
       url: `https://trakt.tv/${path}`,
       watchedAt: entry.watched_at ?? null,
+      tmdbId: media.ids?.tmdb,
     });
   }
 
-  return items;
+  if (tmdbKey) {
+    await Promise.all(
+      draft.map(async (item) => {
+        if (!item.tmdbId) return;
+        try {
+          item.poster = await tmdbPoster(
+            tmdbKey,
+            item.type === "movie" ? "movie" : "tv",
+            item.tmdbId
+          );
+        } catch {
+          item.poster = "";
+        }
+      })
+    );
+  }
+
+  return draft.map(({ tmdbId: _tmdbId, ...item }) => item);
 }
 
 export async function getRecentlyWatched(): Promise<WatchedItem[]> {
   const username = process.env.TRAKT_USERNAME ?? "anon";
   try {
-    return await cachedJson(`trakt:history:${username}`, fetchHistory);
+    // v2: bust caches written before TMDB posters were available
+    return await cachedJson(`trakt:history:v2:${username}`, fetchHistory);
   } catch (err) {
     console.error("[trakt]", err);
     return [];
