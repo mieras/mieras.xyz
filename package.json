@@ -11,7 +11,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "@astrojs/netlify": "^7.0.3",
+    "@astrojs/netlify": "^8.2.10",
     "@netlify/blobs": "^11.1.5",
     "astro": "^6.0.6",
     "gsap": "^3.14.2",
