@@ -8,6 +8,10 @@ All notable changes to this project are documented here.
 
 - `/llms.txt` endpoint (llmstxt.org) with site summary and page index; linked from `<head>`
 
+### Changed
+
+- Feed row hover: full-row 10% tint instead of title underline
+
 ---
 
 ## 2026-10-21
