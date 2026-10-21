@@ -10,6 +10,10 @@ All notable changes to this project are documented here.
 - `.nvmrc` + `NODE_VERSION=22` and security headers in `netlify.toml`
 - Page transitions: Astro `<ClientRouter />` with GSAP leave/enter (laag 3) and progress bar
 
+### Fixed
+
+- `/feed` now includes the site footer (was missing)
+
 ### Changed
 
 - About copy: AI for validating ideas, testing concepts, and getting to working prototypes

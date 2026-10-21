@@ -4,6 +4,7 @@ export const prerender = false;
 import { Image } from "astro:assets";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
 import { getEntry } from "astro:content";
 import { getShelfBooks } from "../lib/goodreads";
 import { getRecentAdditions } from "../lib/discogs";
@@ -404,6 +405,8 @@ function yearFrom(value: string | Date | null | undefined): string | null {
             }
         </section>
     </main>
+
+    <Footer />
 </BaseLayout>
 
 <style>
