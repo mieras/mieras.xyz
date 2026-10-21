@@ -1,0 +1,41 @@
+---
+/*
+  Zet direct na <body> in je BaseLayout: <PageProgress />
+  Vereist <ClientRouter /> in de head. Dunne balk bovenin tijdens paginawissels
+  die langer duren dan 150 ms. Geen dependency; kleur via --progress-color.
+  Script: src/lib/page-transitions.ts (zie TRANSITIONS.md).
+*/
+---
+<div class="page-progress" aria-hidden="true" transition:persist="page-progress"></div>
+
+<style is:global>
+  .page-progress {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 1000;
+    block-size: 2px;
+    background: var(--progress-color, currentColor);
+    transform: scaleX(0);
+    transform-origin: left;
+    opacity: 0;
+    pointer-events: none;
+  }
+  /* Loopt traag op naar 90 %: suggereert voortgang zonder te liegen over "klaar". */
+  :root[data-progress="loading"] .page-progress {
+    opacity: 1;
+    transform: scaleX(0.9);
+    transition: transform 8s cubic-bezier(0.1, 0.7, 0.2, 1);
+  }
+  :root[data-progress="done"] .page-progress {
+    opacity: 0;
+    transform: scaleX(1);
+    transition: transform 150ms ease-out, opacity 250ms 150ms ease-out;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .page-progress { transition: none !important; }
+  }
+</style>
+
+<script>
+  import "../lib/page-transitions";
+</script>

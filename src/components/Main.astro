@@ -211,6 +211,7 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
 
     let hideTimer: ReturnType<typeof setTimeout> | null = null;
     let fallTimer: ReturnType<typeof setTimeout> | null = null;
+    const copyCleanups: Array<() => void> = [];
 
     function showFeedback(value: string) {
         const feedback = document.getElementById("copy-feedback");
@@ -218,14 +219,12 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
         const pill = feedback.querySelector(".main__copy-feedback__pill");
         if (!pill) return;
 
-        // Reset any running timers and animations
         if (hideTimer) clearTimeout(hideTimer);
         if (fallTimer) clearTimeout(fallTimer);
         pill.classList.remove("is-falling");
 
         pill.textContent = value;
         feedback.hidden = false;
-        // Force reflow so re-triggering the animation works
         void (pill as HTMLElement).offsetHeight;
         pill.classList.remove("is-falling");
 
@@ -240,7 +239,7 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
 
     function setupCopy(selector: string) {
         document.querySelectorAll(selector).forEach((el) => {
-            el.addEventListener("click", async (e) => {
+            const onClick = async (e: Event) => {
                 e.preventDefault();
                 const value = (el as HTMLElement).getAttribute(
                     "data-copy-value"
@@ -251,11 +250,24 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
                     showFeedback("Copied!");
                     haptics.trigger("success");
                 } catch (_) {}
-            });
+            };
+            el.addEventListener("click", onClick);
+            copyCleanups.push(() => el.removeEventListener("click", onClick));
         });
     }
-    setupCopy(".main__copy-btn");
-    setupCopy(".main__copy-link");
+
+    function initCopy() {
+        copyCleanups.splice(0).forEach((fn) => fn());
+        setupCopy(".main__copy-btn");
+        setupCopy(".main__copy-link");
+    }
+
+    document.addEventListener("astro:page-load", initCopy);
+    document.addEventListener("astro:before-swap", () => {
+        copyCleanups.splice(0).forEach((fn) => fn());
+        if (hideTimer) clearTimeout(hideTimer);
+        if (fallTimer) clearTimeout(fallTimer);
+    });
 </script>
 
 <script>
@@ -264,37 +276,46 @@ const bank = footerEntry?.data?.bank ?? "NL11INGB0005505348";
 
     gsap.registerPlugin(ScrollTrigger);
 
+    let ctx: gsap.Context | undefined;
+
     function initListStagger() {
-        const clientItems = document.querySelectorAll(
-            ".main__clients .main__list li"
-        );
-        const serviceItems = document.querySelectorAll(
-            ".main__skills .main__list li"
-        );
+        ctx?.revert();
+        ctx = gsap.context(() => {
+            const clientItems = document.querySelectorAll(
+                ".main__clients .main__list li"
+            );
+            const serviceItems = document.querySelectorAll(
+                ".main__skills .main__list li"
+            );
 
-        const animateList = (elements: NodeListOf<Element>) => {
-            if (!elements.length) return;
-            const section = elements[0]?.closest("section");
-            if (!section) return;
-            gsap.set(elements, { opacity: 0 });
-            gsap.to(elements, {
-                opacity: 1,
-                duration: 0.5,
-                stagger: 0.08,
-                ease: "power2.out",
-                scrollTrigger: {
-                    trigger: section,
-                    start: "top 88%",
-                    toggleActions: "play none none none",
-                },
-            });
-        };
+            const animateList = (elements: NodeListOf<Element>) => {
+                if (!elements.length) return;
+                const section = elements[0]?.closest("section");
+                if (!section) return;
+                gsap.set(elements, { opacity: 0 });
+                gsap.to(elements, {
+                    opacity: 1,
+                    duration: 0.5,
+                    stagger: 0.08,
+                    ease: "power2.out",
+                    scrollTrigger: {
+                        trigger: section,
+                        start: "top 88%",
+                        toggleActions: "play none none none",
+                    },
+                });
+            };
 
-        animateList(clientItems);
-        animateList(serviceItems);
+            animateList(clientItems);
+            animateList(serviceItems);
+        });
     }
 
-    initListStagger();
+    document.addEventListener("astro:page-load", initListStagger);
+    document.addEventListener("astro:before-swap", () => {
+        ctx?.revert();
+        ctx = undefined;
+    });
 </script>
 
 <style scoped>

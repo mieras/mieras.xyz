@@ -116,72 +116,100 @@ const organizationSchema = {
 <script>
     import gsap from "gsap";
 
-    const cursor = document.getElementById("shuffle-cursor");
-    const heroWrapper = document.querySelector<HTMLElement>(".marquee-wrapper");
-    const isTouch = window.matchMedia("(pointer: coarse)").matches;
+    const cursorCleanups: Array<() => void> = [];
 
-    if (cursor && heroWrapper) {
-        if (!isTouch) {
-            // Desktop: follow mouse with GSAP delay
-            const xTo = gsap.quickTo(cursor, "x", {
-                duration: 0.5,
-                ease: "power3.out",
-            });
-            const yTo = gsap.quickTo(cursor, "y", {
-                duration: 0.5,
-                ease: "power3.out",
-            });
+    function initShuffleCursor() {
+        cursorCleanups.splice(0).forEach((fn) => fn());
 
-            window.addEventListener("mousemove", (e) => {
-                xTo(e.clientX);
-                yTo(e.clientY);
-            });
+        const cursor = document.getElementById("shuffle-cursor");
+        const heroWrapper =
+            document.querySelector<HTMLElement>(".marquee-wrapper");
+        const isTouch = window.matchMedia("(pointer: coarse)").matches;
 
-            heroWrapper.addEventListener("mouseenter", () => {
-                cursor.classList.add("is-visible");
-                heroWrapper.classList.add("cursor-active");
-            });
+        if (!cursor || !heroWrapper || isTouch) return;
 
-            heroWrapper.addEventListener("mouseleave", () => {
-                cursor.classList.remove("is-visible");
-                heroWrapper.classList.remove("cursor-active");
-            });
+        const xTo = gsap.quickTo(cursor, "x", {
+            duration: 0.5,
+            ease: "power3.out",
+        });
+        const yTo = gsap.quickTo(cursor, "y", {
+            duration: 0.5,
+            ease: "power3.out",
+        });
 
-            // Hide cursor on regular marquee links; keep visible on Spotify links
-            heroWrapper
-                .querySelectorAll<HTMLElement>("a:not(.spotify-marquee__item)")
-                .forEach((link) => {
-                    link.addEventListener("mouseenter", () =>
-                        cursor.classList.remove("is-visible")
-                    );
-                    link.addEventListener("mouseleave", () =>
-                        cursor.classList.add("is-visible")
-                    );
+        const onMove = (e: MouseEvent) => {
+            xTo(e.clientX);
+            yTo(e.clientY);
+        };
+        window.addEventListener("mousemove", onMove);
+        cursorCleanups.push(() =>
+            window.removeEventListener("mousemove", onMove)
+        );
+
+        const onEnter = () => {
+            cursor.classList.add("is-visible");
+            heroWrapper.classList.add("cursor-active");
+        };
+        const onLeave = () => {
+            cursor.classList.remove("is-visible");
+            heroWrapper.classList.remove("cursor-active");
+        };
+        heroWrapper.addEventListener("mouseenter", onEnter);
+        heroWrapper.addEventListener("mouseleave", onLeave);
+        cursorCleanups.push(() => {
+            heroWrapper.removeEventListener("mouseenter", onEnter);
+            heroWrapper.removeEventListener("mouseleave", onLeave);
+            cursor.classList.remove("is-visible", "is-play-mode");
+            heroWrapper.classList.remove("cursor-active");
+        });
+
+        heroWrapper
+            .querySelectorAll<HTMLElement>("a:not(.spotify-marquee__item)")
+            .forEach((link) => {
+                const hide = () => cursor.classList.remove("is-visible");
+                const show = () => cursor.classList.add("is-visible");
+                link.addEventListener("mouseenter", hide);
+                link.addEventListener("mouseleave", show);
+                cursorCleanups.push(() => {
+                    link.removeEventListener("mouseenter", hide);
+                    link.removeEventListener("mouseleave", show);
                 });
+            });
 
-            // Switch to play icon when hovering Spotify marquee
-            const spotifySection =
-                heroWrapper.querySelector<HTMLElement>(".spotify-marquee");
-            if (spotifySection) {
-                spotifySection.addEventListener("mouseenter", () => {
-                    cursor.classList.add("is-play-mode");
-                });
-                spotifySection.addEventListener("mouseleave", () => {
-                    cursor.classList.remove("is-play-mode");
-                });
-            }
+        const spotifySection =
+            heroWrapper.querySelector<HTMLElement>(".spotify-marquee");
+        if (spotifySection) {
+            const playOn = () => cursor.classList.add("is-play-mode");
+            const playOff = () => cursor.classList.remove("is-play-mode");
+            spotifySection.addEventListener("mouseenter", playOn);
+            spotifySection.addEventListener("mouseleave", playOff);
+            cursorCleanups.push(() => {
+                spotifySection.removeEventListener("mouseenter", playOn);
+                spotifySection.removeEventListener("mouseleave", playOff);
+            });
         }
     }
+
+    document.addEventListener("astro:page-load", initShuffleCursor);
+    document.addEventListener("astro:before-swap", () => {
+        cursorCleanups.splice(0).forEach((fn) => fn());
+    });
 </script>
 
 <script>
     const desktopMedia = window.matchMedia("(min-width: 1280px)");
-    const wrapper = document.querySelector<HTMLElement>(".marquee-wrapper");
-    const toggle = document.getElementById(
-        "marquee-refresh-toggle"
-    ) as HTMLButtonElement | null;
+    const chaosCleanups: Array<() => void> = [];
 
-    if (wrapper) {
+    function initMarqueeChaos() {
+        chaosCleanups.splice(0).forEach((fn) => fn());
+
+        const wrapper =
+            document.querySelector<HTMLElement>(".marquee-wrapper");
+        const toggle = document.getElementById(
+            "marquee-refresh-toggle"
+        ) as HTMLButtonElement | null;
+        if (!wrapper) return;
+
         const sections = Array.from(
             wrapper.querySelectorAll<HTMLElement>(
                 ".marquee-section, .spotify-marquee"
@@ -243,22 +271,30 @@ const organizationSchema = {
 
         setChaosState(false);
 
-        toggle?.addEventListener("click", () => {
+        const onToggle = () => {
             const isOn = wrapper.dataset.marqueeChaos === "on";
             setChaosState(!isOn, true);
-        });
+        };
+        toggle?.addEventListener("click", onToggle);
+        wrapper.addEventListener("click", onToggle);
 
-        wrapper.addEventListener("click", () => {
-            const isOn = wrapper.dataset.marqueeChaos === "on";
-            setChaosState(!isOn, true);
-        });
+        const onDesktopChange = () => {
+            if (wrapper.dataset.marqueeChaos === "on") applyChaos();
+        };
+        desktopMedia.addEventListener("change", onDesktopChange);
 
-        desktopMedia.addEventListener("change", () => {
-            if (wrapper.dataset.marqueeChaos === "on") {
-                applyChaos();
-            }
+        chaosCleanups.push(() => {
+            toggle?.removeEventListener("click", onToggle);
+            wrapper.removeEventListener("click", onToggle);
+            desktopMedia.removeEventListener("change", onDesktopChange);
+            resetTransforms();
         });
     }
+
+    document.addEventListener("astro:page-load", initMarqueeChaos);
+    document.addEventListener("astro:before-swap", () => {
+        chaosCleanups.splice(0).forEach((fn) => fn());
+    });
 </script>
 
 <style>

@@ -121,13 +121,16 @@ function edgeColorFromTexture(tex: THREE.Texture): THREE.Color {
     return new THREE.Color(0xc8c4bc);
 }
 
-export function initFeedPreview3D(root: ParentNode = document) {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+export function initFeedPreview3D(
+    root: ParentNode = document
+): (() => void) | undefined {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+        return undefined;
     if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches)
-        return;
+        return undefined;
 
     const host = root.querySelector<HTMLElement>("[data-feed-preview]");
-    if (!host) return;
+    if (!host) return undefined;
 
     const canvas = document.createElement("canvas");
     canvas.className = "feed-preview__canvas";
@@ -201,9 +204,8 @@ export function initFeedPreview3D(root: ParentNode = document) {
         attributes: true,
         attributeFilter: ["data-theme"],
     });
-    window
-        .matchMedia("(prefers-color-scheme: dark)")
-        .addEventListener("change", syncTheme);
+    const colorSchemeMq = window.matchMedia("(prefers-color-scheme: dark)");
+    colorSchemeMq.addEventListener("change", syncTheme);
 
     function disposeMesh() {
         if (!mesh) return;
@@ -385,13 +387,42 @@ export function initFeedPreview3D(root: ParentNode = document) {
         hideTimer = window.setTimeout(() => hide(), HIDE_GRACE_MS);
     }
 
+    type LinkHandlers = {
+        link: HTMLElement;
+        onEnter: () => void;
+        onLeave: () => void;
+    };
+    const linkHandlers: LinkHandlers[] = [];
     const links = root.querySelectorAll<HTMLElement>(".feed .row__link");
     for (const link of links) {
-        link.addEventListener("pointerenter", () => scheduleShow(link));
-        link.addEventListener("pointerleave", () => scheduleHide());
-        link.addEventListener("focus", () => scheduleShow(link));
-        link.addEventListener("blur", () => scheduleHide());
+        const onEnter = () => scheduleShow(link);
+        const onLeave = () => scheduleHide();
+        link.addEventListener("pointerenter", onEnter);
+        link.addEventListener("pointerleave", onLeave);
+        link.addEventListener("focus", onEnter);
+        link.addEventListener("blur", onLeave);
+        linkHandlers.push({ link, onEnter, onLeave });
     }
 
     document.documentElement.classList.add("feed-preview-3d");
+
+    return () => {
+        hoverGen++;
+        window.clearTimeout(showTimer);
+        window.clearTimeout(hideTimer);
+        hide();
+        themeObserver.disconnect();
+        colorSchemeMq.removeEventListener("change", syncTheme);
+        for (const { link, onEnter, onLeave } of linkHandlers) {
+            link.removeEventListener("pointerenter", onEnter);
+            link.removeEventListener("pointerleave", onLeave);
+            link.removeEventListener("focus", onEnter);
+            link.removeEventListener("blur", onLeave);
+        }
+        disposeMesh();
+        composer.dispose();
+        renderer.dispose();
+        canvas.remove();
+        document.documentElement.classList.remove("feed-preview-3d");
+    };
 }

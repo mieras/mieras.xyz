@@ -4,6 +4,7 @@ export const prerender = false;
 import { Image } from "astro:assets";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
 import { getEntry } from "astro:content";
 import { getShelfBooks } from "../lib/goodreads";
 import { getRecentAdditions } from "../lib/discogs";
@@ -404,6 +405,8 @@ function yearFrom(value: string | Date | null | undefined): string | null {
             }
         </section>
     </main>
+
+    <Footer />
 </BaseLayout>
 
 <style>
@@ -678,10 +681,9 @@ function yearFrom(value: string | Date | null | undefined): string | null {
 
     gsap.registerPlugin(ScrollTrigger);
 
-    // Code-split Three.js dither preview (only on /feed, pointer devices)
-    void import("../scripts/feed-preview-3d").then(({ initFeedPreview3D }) => {
-        initFeedPreview3D();
-    });
+    let previewCleanup: (() => void) | undefined;
+    let staggerCtx: gsap.Context | undefined;
+    let staggerMm: gsap.MatchMedia | undefined;
 
     /**
      * Per-list stagger on scroll (same idea as homepage clients/services):
@@ -690,36 +692,65 @@ function yearFrom(value: string | Date | null | undefined): string | null {
      * - prefers-reduced-motion: skip motion, show rows immediately
      */
     function initFeedListStagger() {
+        staggerMm?.revert();
+        staggerCtx?.revert();
+
         const lists =
             document.querySelectorAll<HTMLOListElement>(".feed__list");
         if (!lists.length) return;
 
-        const mm = gsap.matchMedia();
+        staggerMm = gsap.matchMedia();
 
-        mm.add("(prefers-reduced-motion: reduce)", () => {
+        staggerMm.add("(prefers-reduced-motion: reduce)", () => {
             gsap.set(".feed__list .row", { clearProps: "opacity" });
         });
 
-        mm.add("(prefers-reduced-motion: no-preference)", () => {
-            lists.forEach((list) => {
-                const items = list.querySelectorAll(".row");
-                if (!items.length) return;
+        staggerMm.add("(prefers-reduced-motion: no-preference)", () => {
+            staggerCtx = gsap.context(() => {
+                lists.forEach((list) => {
+                    const items = list.querySelectorAll(".row");
+                    if (!items.length) return;
 
-                gsap.set(items, { opacity: 0 });
-                gsap.to(items, {
-                    opacity: 1,
-                    duration: 0.5,
-                    stagger: 0.08,
-                    ease: "power2.out",
-                    scrollTrigger: {
-                        trigger: list,
-                        start: "top 90%",
-                        toggleActions: "play none none none",
-                    },
+                    gsap.set(items, { opacity: 0 });
+                    gsap.to(items, {
+                        opacity: 1,
+                        duration: 0.5,
+                        stagger: 0.08,
+                        ease: "power2.out",
+                        scrollTrigger: {
+                            trigger: list,
+                            start: "top 90%",
+                            toggleActions: "play none none none",
+                        },
+                    });
                 });
             });
         });
     }
 
-    initFeedListStagger();
+    function initFeedPreview() {
+        previewCleanup?.();
+        previewCleanup = undefined;
+        if (!document.querySelector("[data-feed-preview]")) return;
+
+        void import("../scripts/feed-preview-3d").then(
+            ({ initFeedPreview3D }) => {
+                if (!document.querySelector("[data-feed-preview]")) return;
+                previewCleanup = initFeedPreview3D() ?? undefined;
+            }
+        );
+    }
+
+    document.addEventListener("astro:page-load", () => {
+        initFeedListStagger();
+        initFeedPreview();
+    });
+    document.addEventListener("astro:before-swap", () => {
+        previewCleanup?.();
+        previewCleanup = undefined;
+        staggerMm?.revert();
+        staggerMm = undefined;
+        staggerCtx?.revert();
+        staggerCtx = undefined;
+    });
 </script>

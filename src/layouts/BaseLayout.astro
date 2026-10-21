@@ -1,13 +1,14 @@
 ---
+import { ClientRouter } from "astro:transitions";
 import "../styles/global.scss";
 import SeoMeta from "../components/SeoMeta.astro";
 import ThemeToggle from "../components/ThemeToggle.astro";
+import PageProgress from "../components/PageProgress.astro";
 
 interface Props {
     title: string;
     description?: string;
 }
-
 const {
     title,
     description = "Maarten Mieras • Digital Designer, Rotterdam. Clear and intuitive digital products.",
@@ -33,14 +34,16 @@ const canonicalURL = new URL(
             title="Markdown"
             href={canonicalURL.toString()}
         />
+        <ClientRouter />
         <slot name="head" />
     </head>
     <body>
+        <PageProgress />
         <a href="#main" class="skip-link">Skip to content</a>
-        <div class="page">
+        <div class="page" data-page>
             <slot />
         </div>
-        <div class="theme-toggle-fixed">
+        <div class="theme-toggle-fixed" transition:persist="theme-toggle">
             <ThemeToggle />
         </div>
         <style>
@@ -51,22 +54,29 @@ const canonicalURL = new URL(
                 z-index: 9999;
             }
         </style>
-        <script is:inline define:vars={{}}>
-            (function () {
-                const stored = localStorage.getItem("theme");
-                const prefersDark = window.matchMedia(
-                    "(prefers-color-scheme: dark)"
-                ).matches;
-                if (stored === "light" || stored === "dark") {
-                    document.documentElement.setAttribute("data-theme", stored);
-                } else {
-                    document.documentElement.setAttribute(
-                        "data-theme",
-                        prefersDark ? "dark" : "light"
-                    );
-                }
-
-                // React to OS theme changes only when no manual preference is set
+        <script is:inline>
+            (() => {
+                const apply = () => {
+                    try {
+                        const stored = localStorage.getItem("theme");
+                        const prefersDark = window.matchMedia(
+                            "(prefers-color-scheme: dark)"
+                        ).matches;
+                        if (stored === "light" || stored === "dark") {
+                            document.documentElement.setAttribute(
+                                "data-theme",
+                                stored
+                            );
+                        } else {
+                            document.documentElement.setAttribute(
+                                "data-theme",
+                                prefersDark ? "dark" : "light"
+                            );
+                        }
+                    } catch {}
+                };
+                apply();
+                document.addEventListener("astro:after-swap", apply);
                 window
                     .matchMedia("(prefers-color-scheme: dark)")
                     .addEventListener("change", (e) => {
@@ -83,6 +93,7 @@ const canonicalURL = new URL(
             import Lenis from "lenis";
             import gsap from "gsap";
             import { ScrollTrigger } from "gsap/ScrollTrigger";
+            import "../lib/transitions";
 
             gsap.registerPlugin(ScrollTrigger);
 
@@ -96,6 +107,12 @@ const canonicalURL = new URL(
                 requestAnimationFrame(raf);
             }
             requestAnimationFrame(raf);
+
+            document.addEventListener("astro:page-load", () => {
+                lenis.scrollTo(0, { immediate: true });
+                lenis.start();
+                ScrollTrigger.refresh();
+            });
         </script>
     </body>
 </html>
