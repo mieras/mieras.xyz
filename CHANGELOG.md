@@ -6,6 +6,7 @@ All notable changes to this project are documented here.
 
 ### Added
 
+- `/feed` page with Read (Goodreads shelf), Listen (placeholder), Watch (Trakt history + TMDB posters); CDN durable cache + Netlify Blobs API cache
 - Deploy workflow per `_standards/DEPLOY.md`: features via PR to `staging` (branch deploy on `staging--mierasxyz.netlify.app`), bundled releases to `main`. Branch protection on `staging`
 - `netlify.toml` with an `ignore` rule: no build for commits that only touch docs
 - `.github/dependabot.yml`: weekly grouped updates to `staging`
@@ -18,6 +19,7 @@ All notable changes to this project are documented here.
 
 ### Changed
 
+- Header: `info` links to `/#information` (works from subpages); added `feed` nav link
 - `CLAUDE.md` moved to `AGENTS.md` (`CLAUDE.md` now only imports it), workflow updated for `staging`
 - Spotify marquee animation engine switched from custom GSAP ticker to `horizontalLoop` + `Draggable` + `InertiaPlugin`
 - `horizontalLoop.ts` extended with `totalWidth` on the return type; Draggable integration moved to the component

@@ -9,7 +9,8 @@ const { contact = "studio@mieras.xyz" } = Astro.props;
 <header class="header" role="banner">
     <a href="/" class="header__name" rel="home">mieras.xyz</a>
     <nav class="header__nav" aria-label="Navigation">
-        <a href="#information" class="header__link">info</a>
+        <a href="/#information" class="header__link">info</a>
+        <a href="/feed" class="header__link">feed</a>
         <a href={`mailto:${contact}`} class="header__link">mail</a>
     </nav>
 </header>
@@ -38,7 +39,7 @@ const { contact = "studio@mieras.xyz" } = Astro.props;
     .header__nav {
         grid-column: 3 / 5;
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(3, 1fr);
         gap: var(--space-2xs, 2rem);
         font-size: var(--step--1);
         font-weight: 500;

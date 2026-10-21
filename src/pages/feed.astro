@@ -1,0 +1,252 @@
+---
+export const prerender = false;
+
+import { Image } from "astro:assets";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Header from "../components/Header.astro";
+import { getEntry } from "astro:content";
+import { getShelfBooks } from "../lib/goodreads";
+import { getRecentlyWatched } from "../lib/trakt";
+
+const mainEntry = await getEntry("main", "main");
+const contact = mainEntry?.data?.contact ?? "studio@mieras.xyz";
+
+const [books, watched] = await Promise.all([getShelfBooks(), getRecentlyWatched()]);
+
+// Browser revalidates every visit; Netlify CDN serves a cached copy for an hour
+Astro.response.headers.set("Cache-Control", "public, max-age=0, must-revalidate");
+Astro.response.headers.set(
+    "Netlify-CDN-Cache-Control",
+    "public, durable, s-maxage=3600, stale-while-revalidate=86400"
+);
+// Ignore query strings (utm, etc.) so they don't fragment the CDN cache
+Astro.response.headers.set("Netlify-Vary", "query");
+
+const yearFormat = new Intl.DateTimeFormat("en-GB", { year: "numeric" });
+---
+
+<BaseLayout
+    title="Feed • Maarten Mieras"
+    description="Books, listening, and watching from Maarten Mieras."
+>
+    <Header contact={contact} />
+
+    <main id="main" class="feed">
+        <header class="feed__header">
+            <h1 class="feed__title">Feed</h1>
+            <nav class="feed__jump" aria-label="Feed sections">
+                <a href="#read">Read</a>
+                <a href="#listen">Listen</a>
+                <a href="#watch">Watch</a>
+            </nav>
+        </header>
+
+        <section id="read" class="feed__section" aria-labelledby="read-heading">
+            <h2 id="read-heading" class="feed__heading">Read</h2>
+            {
+                books.length > 0 ? (
+                    <ol class="feed__grid" role="list">
+                        {books.map((book) => (
+                            <li class="card">
+                                <a
+                                    href={book.url}
+                                    class="card__link"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    {book.cover ? (
+                                        <Image
+                                            src={book.cover}
+                                            alt=""
+                                            width={400}
+                                            height={600}
+                                            loading="lazy"
+                                            class="card__media"
+                                        />
+                                    ) : (
+                                        <span class="card__media card__media--empty" aria-hidden="true" />
+                                    )}
+                                    <span class="card__title">{book.title}</span>
+                                    <span class="card__meta">
+                                        {book.author}
+                                        {book.dateRead && <> · {yearFormat.format(new Date(book.dateRead))}</>}
+                                    </span>
+                                    <span class="visually-hidden"> (opens Goodreads in a new tab)</span>
+                                </a>
+                            </li>
+                        ))}
+                    </ol>
+                ) : (
+                    <p class="feed__empty">Nothing on the shelf right now.</p>
+                )
+            }
+        </section>
+
+        <section id="listen" class="feed__section" aria-labelledby="listen-heading">
+            <h2 id="listen-heading" class="feed__heading">Listen</h2>
+            <p class="feed__empty">Soon.</p>
+        </section>
+
+        <section id="watch" class="feed__section" aria-labelledby="watch-heading">
+            <h2 id="watch-heading" class="feed__heading">Watch</h2>
+            {
+                watched.length > 0 ? (
+                    <>
+                        <ol class="feed__grid" role="list">
+                            {watched.map((item) => (
+                                <li class="card">
+                                    <a
+                                        href={item.url}
+                                        class="card__link"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        {item.poster ? (
+                                            <Image
+                                                src={item.poster}
+                                                alt=""
+                                                width={400}
+                                                height={600}
+                                                loading="lazy"
+                                                class="card__media"
+                                            />
+                                        ) : (
+                                            <span class="card__media card__media--empty" aria-hidden="true" />
+                                        )}
+                                        <span class="card__title">{item.title}</span>
+                                        <span class="card__meta">
+                                            {item.type === "movie" ? "Film" : "Serie"}
+                                            {item.year != null && <> · {item.year}</>}
+                                        </span>
+                                        <span class="visually-hidden"> (opens Trakt in a new tab)</span>
+                                    </a>
+                                </li>
+                            ))}
+                        </ol>
+                        <p class="feed__credit">
+                            This product uses the TMDB API but is not endorsed or certified by TMDB.
+                        </p>
+                    </>
+                ) : (
+                    <p class="feed__empty">Nothing watched recently.</p>
+                )
+            }
+        </section>
+    </main>
+</BaseLayout>
+
+<style>
+    .feed {
+        padding-inline: var(--space-s);
+        padding-block: var(--space-xl) var(--space-2xl);
+    }
+
+    .feed__header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--space-s);
+        margin-bottom: var(--space-xl);
+    }
+
+    .feed__title {
+        font-size: var(--step-5);
+        font-weight: 500;
+        line-height: 1;
+        margin: 0;
+    }
+
+    .feed__jump {
+        display: flex;
+        gap: var(--space-s);
+        font-size: var(--step--1);
+        font-weight: 500;
+    }
+
+    .feed__jump a {
+        color: var(--color-text);
+        text-decoration: none;
+    }
+
+    .feed__jump a:hover {
+        text-decoration: underline;
+    }
+
+    .feed__jump a:focus-visible {
+        outline: 2px solid var(--color-accent);
+        outline-offset: var(--space-3xs);
+    }
+
+    .feed__section {
+        scroll-margin-top: var(--space-l);
+    }
+
+    .feed__section + .feed__section {
+        margin-top: var(--space-2xl);
+    }
+
+    .feed__heading {
+        font-size: var(--step-3);
+        font-weight: 500;
+        line-height: 1;
+        margin: 0 0 var(--space-l);
+    }
+
+    .feed__grid {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 10rem), 1fr));
+        gap: var(--space-l) var(--space-s);
+    }
+
+    .card__link {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3xs);
+        color: var(--color-text);
+        text-decoration: none;
+    }
+
+    .card__link:focus-visible {
+        outline: 2px solid var(--color-accent);
+        outline-offset: var(--space-3xs);
+    }
+
+    .card__media {
+        display: block;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 2 / 3;
+        object-fit: cover;
+        margin-bottom: var(--space-2xs);
+        background: var(--color-border);
+    }
+
+    .card__title {
+        font-size: var(--step-0);
+        line-height: var(--leading-body);
+    }
+
+    .card__link:hover .card__title {
+        text-decoration: underline;
+    }
+
+    .card__meta {
+        font-size: var(--step--2);
+        color: var(--color-text-muted);
+    }
+
+    .feed__empty {
+        color: var(--color-text-muted);
+        margin: 0;
+    }
+
+    .feed__credit {
+        margin: var(--space-l) 0 0;
+        font-size: var(--step--2);
+        color: var(--color-text-muted);
+    }
+</style>

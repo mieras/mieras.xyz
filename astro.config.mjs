@@ -12,4 +12,13 @@ Object.assign(process.env, env);
 export default defineConfig({
   site: 'https://mieras.xyz',
   adapter: netlify(),
+  image: {
+    // Remote covers/posters via Netlify Image CDN (no third-party requests from visitors)
+    domains: [
+      'i.gr-assets.com',
+      'm.media-amazon.com',
+      'images-na.ssl-images-amazon.com',
+      'image.tmdb.org',
+    ],
+  },
 });
