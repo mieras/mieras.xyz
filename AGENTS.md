@@ -9,6 +9,7 @@ Project instructions for AI agents (Claude Code, Cursor, Codex) and developers w
 - GSAP + ScrollTrigger + Lenis for animation/scroll
 - Spotify API (recently played) + WeatherAPI (Rotterdam temperature)
 - Deployed to Netlify
+- Transities: laag 3 (GSAP leave/enter)
 
 ## Changelog
 

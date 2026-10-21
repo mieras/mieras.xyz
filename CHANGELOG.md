@@ -8,6 +8,7 @@ All notable changes to this project are documented here.
 
 - `/feed` hover preview: Three.js box (book / music / film proportions) with Bayer dither post-process
 - `.nvmrc` + `NODE_VERSION=22` and security headers in `netlify.toml`
+- Page transitions: Astro `<ClientRouter />` with GSAP leave/enter (laag 3) and progress bar
 
 ### Changed
 
