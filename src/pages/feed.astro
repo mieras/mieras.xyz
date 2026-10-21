@@ -448,7 +448,7 @@ function yearFrom(value: string | Date | null | undefined): string | null {
     .row__primary {
         display: flex;
         align-items: baseline;
-        gap: var(--space-2xs);
+        gap: var(--space-s);
         min-width: 0;
     }
 
@@ -465,17 +465,13 @@ function yearFrom(value: string | Date | null | undefined): string | null {
         font-size: var(--step--2);
         color: var(--color-text-muted);
         font-variant-numeric: tabular-nums;
+        opacity: 0;
+        transition: opacity 120ms ease;
     }
 
-    @media (hover: hover) and (pointer: fine) {
-        .row__when {
-            opacity: 0;
-        }
-
-        .row__link:hover .row__when,
-        .row__link:focus-visible .row__when {
-            opacity: 1;
-        }
+    .row__link:hover .row__when,
+    .row__link:focus-visible .row__when {
+        opacity: 1;
     }
 
     .row__meta {
