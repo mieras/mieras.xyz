@@ -1,6 +1,6 @@
 # MIERAS.XYZ
 
-Personal landing page for Maarten Mieras — Digital Designer. Built with Astro 6, SSR via Netlify adapter, brutalist design, dark mode, WeatherAPI, and Spotify integration.
+Personal landing page for Maarten Mieras — Digital Designer. Built with Astro 7, SSR via Netlify adapter, brutalist design, dark mode, WeatherAPI, and Spotify integration.
 
 ## Develop
 
