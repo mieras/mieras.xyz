@@ -11,6 +11,7 @@ All notable changes to this project are documented here.
 ### Changed
 
 - Feed 3D preview: centered, smaller, fine ink-only Bayer dither (black on light / white on dark), top z-index
+- Feed 3D preview: continuous rotation across hovers; 300ms dwell before show/swap
 
 ---
 

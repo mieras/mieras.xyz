@@ -12,42 +12,44 @@ import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 
 export type PreviewKind = "book" | "music" | "film";
 
-const CANVAS_SIZE = 640;
+const CANVAS_SIZE = 800;
 
 /** Box size by media type (Three units). Depth is fixed per kind. */
 function boxSize(kind: PreviewKind, aspect: number): THREE.Vector3 {
-  if (kind === "music") {
-    return new THREE.Vector3(1.15, 1.15, 0.045);
-  }
-  if (kind === "film") {
-    const h = 1.35;
-    const w = h * Math.min(Math.max(aspect, 0.55), 0.8);
-    return new THREE.Vector3(w, h, 0.035);
-  }
-  // book — fixed depth, aspect from cover
-  const h = 1.4;
-  const w = h * Math.min(Math.max(aspect, 0.55), 0.85);
-  return new THREE.Vector3(w, h, 0.14);
+    if (kind === "music") {
+        return new THREE.Vector3(0.95, 0.95, 0.01);
+    }
+    if (kind === "film") {
+        const h = 1.1;
+        const w = h * Math.min(Math.max(aspect, 0.55), 0.8);
+        return new THREE.Vector3(w, h, 0.01);
+    }
+    // book — fixed depth, aspect from cover
+    const h = 1.15;
+    const w = h * Math.min(Math.max(aspect, 0.55), 0.85);
+    return new THREE.Vector3(w, h, 0.12);
 }
 
 const BayerDitherShader = {
-  name: "BayerDitherShader",
-  uniforms: {
-    tDiffuse: { value: null as THREE.Texture | null },
-    resolution: { value: new THREE.Vector2(1, 1) },
-    gridSize: { value: 1.25 },
-    pixelSizeRatio: { value: 1.0 },
-    // 0 = black ink (light mode), 1 = white ink (dark mode)
-    whiteInk: { value: 0.0 },
-  },
-  vertexShader: /* glsl */ `
+    name: "BayerDitherShader",
+    uniforms: {
+        tDiffuse: { value: null as THREE.Texture | null },
+        resolution: { value: new THREE.Vector2(1, 1) },
+        /** Bayer cell — lower = finer, higher = coarser */
+        gridSize: { value: 1 },
+        /** Extra pixelation × gridSize */
+        pixelSizeRatio: { value: 0.3 },
+        /** 0 = black ink (light), 1 = white (dark); set live via theme */
+        whiteInk: { value: 0.1 },
+    },
+    vertexShader: /* glsl */ `
     varying vec2 vUv;
     void main() {
       vUv = uv;
       gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
     }
   `,
-  fragmentShader: /* glsl */ `
+    fragmentShader: /* glsl */ `
     uniform sampler2D tDiffuse;
     uniform vec2 resolution;
     uniform float gridSize;
@@ -107,242 +109,289 @@ const BayerDitherShader = {
 };
 
 function isDarkTheme(): boolean {
-  const attr = document.documentElement.getAttribute("data-theme");
-  if (attr === "dark") return true;
-  if (attr === "light") return false;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const attr = document.documentElement.getAttribute("data-theme");
+    if (attr === "dark") return true;
+    if (attr === "light") return false;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
 }
 
 function edgeColorFromTexture(tex: THREE.Texture): THREE.Color {
-  // Neutral edge; tint slightly warm/cool via average would need canvas read —
-  // keep a muted page-edge look for books.
-  return new THREE.Color(0xc8c4bc);
+    // Neutral edge; tint slightly warm/cool via average would need canvas read —
+    // keep a muted page-edge look for books.
+    return new THREE.Color(0xc8c4bc);
 }
 
 export function initFeedPreview3D(root: ParentNode = document) {
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
-
-  const host = root.querySelector<HTMLElement>("[data-feed-preview]");
-  if (!host) return;
-
-  const canvas = document.createElement("canvas");
-  canvas.className = "feed-preview__canvas";
-  canvas.width = CANVAS_SIZE;
-  canvas.height = CANVAS_SIZE;
-  canvas.setAttribute("aria-hidden", "true");
-  host.appendChild(canvas);
-
-  const renderer = new THREE.WebGLRenderer({
-    canvas,
-    alpha: true,
-    antialias: false,
-    powerPreference: "high-performance",
-  });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setSize(CANVAS_SIZE, CANVAS_SIZE, false);
-  renderer.setClearColor(0x000000, 0);
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 20);
-  camera.position.set(0, 0.15, 3.4);
-
-  const ambient = new THREE.AmbientLight(0xffffff, 0.85);
-  scene.add(ambient);
-  const key = new THREE.DirectionalLight(0xffffff, 1.1);
-  key.position.set(2.2, 3, 4);
-  scene.add(key);
-  const fill = new THREE.DirectionalLight(0xffffff, 0.35);
-  fill.position.set(-2, 0.5, 2);
-  scene.add(fill);
-
-  const loader = new THREE.TextureLoader();
-  loader.crossOrigin = "anonymous";
-
-  let mesh: THREE.Mesh | null = null;
-  let visible = false;
-  let raf = 0;
-  let rotY = 0;
-  let targetRotY = 0.35;
-  let currentSrc = "";
-  let currentKind: PreviewKind = "book";
-
-  const composer = new EffectComposer(renderer);
-  composer.addPass(new RenderPass(scene, camera));
-  const ditherPass = new ShaderPass(BayerDitherShader);
-  ditherPass.uniforms.resolution.value.set(CANVAS_SIZE, CANVAS_SIZE);
-  ditherPass.uniforms.whiteInk.value = isDarkTheme() ? 1 : 0;
-  ditherPass.material.transparent = true;
-  ditherPass.material.depthWrite = false;
-  composer.addPass(ditherPass);
-
-  function syncTheme() {
-    ditherPass.uniforms.whiteInk.value = isDarkTheme() ? 1 : 0;
-    if (visible && mesh) composer.render();
-  }
-
-  const themeObserver = new MutationObserver(syncTheme);
-  themeObserver.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ["data-theme"],
-  });
-  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", syncTheme);
-
-  function disposeMesh() {
-    if (!mesh) return;
-    scene.remove(mesh);
-    mesh.geometry.dispose();
-    const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-    const maps = new Set<THREE.Texture>();
-    for (const m of mats) {
-      const mat = m as THREE.MeshStandardMaterial;
-      if (mat.map) maps.add(mat.map);
-      mat.dispose();
-    }
-    for (const map of maps) map.dispose();
-    mesh = null;
-  }
-
-  function loadTexture(url: string): Promise<THREE.Texture> {
-    return new Promise((resolve, reject) => {
-      loader.load(
-        url,
-        (tex) => {
-          tex.colorSpace = THREE.SRGBColorSpace;
-          tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
-          tex.needsUpdate = true;
-          resolve(tex);
-        },
-        undefined,
-        reject
-      );
-    });
-  }
-
-  async function show(src: string, kind: PreviewKind, backSrc?: string | null) {
-    if (!src) return;
-    currentSrc = src;
-    currentKind = kind;
-    host.dataset.active = "true";
-    visible = true;
-
-    try {
-      const front = await loadTexture(src);
-      if (currentSrc !== src) {
-        front.dispose();
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches)
         return;
-      }
 
-      const img = front.image as HTMLImageElement;
-      const aspect = img?.width && img?.height ? img.width / img.height : 0.66;
-      const size = boxSize(kind, aspect);
+    const host = root.querySelector<HTMLElement>("[data-feed-preview]");
+    if (!host) return;
 
-      let back = front;
-      let ownBack = false;
-      if (backSrc && backSrc !== src) {
-        try {
-          back = await loadTexture(backSrc);
-          ownBack = true;
-          if (currentSrc !== src) {
-            front.dispose();
-            back.dispose();
-            return;
-          }
-        } catch {
-          back = front;
-          ownBack = false;
-        }
-      }
+    const canvas = document.createElement("canvas");
+    canvas.className = "feed-preview__canvas";
+    canvas.width = CANVAS_SIZE;
+    canvas.height = CANVAS_SIZE;
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
+    canvas.setAttribute("aria-hidden", "true");
+    host.appendChild(canvas);
 
-      disposeMesh();
+    const renderer = new THREE.WebGLRenderer({
+        canvas,
+        alpha: true,
+        antialias: false,
+        powerPreference: "high-performance",
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(CANVAS_SIZE, CANVAS_SIZE, false);
+    renderer.setClearColor(0x000000, 0);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-      const edge = new THREE.MeshStandardMaterial({
-        color: edgeColorFromTexture(front),
-        roughness: 0.85,
-        metalness: 0.05,
-      });
-      const frontMat = new THREE.MeshStandardMaterial({
-        map: front,
-        roughness: 0.7,
-        metalness: 0.02,
-      });
-      const backMat = new THREE.MeshStandardMaterial({
-        map: back,
-        roughness: 0.7,
-        metalness: 0.02,
-      });
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 20);
+    camera.position.set(0, 0, 3.2);
+    camera.lookAt(0, 0, 0);
 
-      // +X, -X, +Y, -Y, +Z (front), -Z (back)
-      const materials = [edge, edge.clone(), edge.clone(), edge.clone(), frontMat, backMat];
-      const geometry = new THREE.BoxGeometry(size.x, size.y, size.z);
-      mesh = new THREE.Mesh(geometry, materials);
-      mesh.rotation.set(-0.12, 0.45, 0.04);
-      rotY = mesh.rotation.y;
-      targetRotY = 0.45;
-      scene.add(mesh);
+    const ambient = new THREE.AmbientLight(0xffffff, 0.85);
+    scene.add(ambient);
+    const key = new THREE.DirectionalLight(0xffffff, 1.1);
+    key.position.set(2.2, 3, 4);
+    scene.add(key);
+    const fill = new THREE.DirectionalLight(0xffffff, 0.35);
+    fill.position.set(-2, 0.5, 2);
+    scene.add(fill);
 
-      // Keep front texture; dispose orphaned back only if we created a failed path — ownBack stays on mesh
-      void ownBack;
-    } catch {
-      hide();
+    const loader = new THREE.TextureLoader();
+    loader.crossOrigin = "anonymous";
+
+    const SHOW_DELAY_MS = 100;
+    const HIDE_GRACE_MS = 80;
+
+    let mesh: THREE.Mesh | null = null;
+    let visible = false;
+    let raf = 0;
+    /** Shared yaw — persists across item swaps so rotation never resets */
+    let rotY = 0.4;
+    let targetRotY = 0.4;
+    let currentSrc = "";
+    let currentKind: PreviewKind = "book";
+    let showTimer = 0;
+    let hideTimer = 0;
+    /** Bumps to cancel stale delayed show / in-flight texture loads */
+    let hoverGen = 0;
+
+    const composer = new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene, camera));
+    const ditherPass = new ShaderPass(BayerDitherShader);
+    ditherPass.uniforms.resolution.value.set(CANVAS_SIZE, CANVAS_SIZE);
+    ditherPass.uniforms.whiteInk.value = isDarkTheme() ? 1 : 0;
+    ditherPass.material.transparent = true;
+    ditherPass.material.depthWrite = false;
+    composer.addPass(ditherPass);
+
+    function syncTheme() {
+        ditherPass.uniforms.whiteInk.value = isDarkTheme() ? 1 : 0;
+        if (visible && mesh) composer.render();
     }
 
-    startLoop();
-  }
+    const themeObserver = new MutationObserver(syncTheme);
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["data-theme"],
+    });
+    window
+        .matchMedia("(prefers-color-scheme: dark)")
+        .addEventListener("change", syncTheme);
 
-  function hide() {
-    visible = false;
-    host.dataset.active = "false";
-    currentSrc = "";
-    disposeMesh();
-    renderer.clear();
-    stopLoop();
-  }
+    function disposeMesh() {
+        if (!mesh) return;
+        scene.remove(mesh);
+        mesh.geometry.dispose();
+        const mats = Array.isArray(mesh.material)
+            ? mesh.material
+            : [mesh.material];
+        const maps = new Set<THREE.Texture>();
+        for (const m of mats) {
+            const mat = m as THREE.MeshStandardMaterial;
+            if (mat.map) maps.add(mat.map);
+            mat.dispose();
+        }
+        for (const map of maps) map.dispose();
+        mesh = null;
+    }
 
-  function tick() {
-    raf = requestAnimationFrame(tick);
-    if (!visible || !mesh) return;
-    // Gentle idle yaw
-    targetRotY += 0.006;
-    rotY += (targetRotY - rotY) * 0.08;
-    mesh.rotation.y = rotY;
-    mesh.rotation.x = -0.12 + Math.sin(performance.now() * 0.0007) * 0.04;
-    composer.render();
-  }
+    function loadTexture(url: string): Promise<THREE.Texture> {
+        return new Promise((resolve, reject) => {
+            loader.load(
+                url,
+                (tex) => {
+                    tex.colorSpace = THREE.SRGBColorSpace;
+                    tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+                    tex.needsUpdate = true;
+                    resolve(tex);
+                },
+                undefined,
+                reject
+            );
+        });
+    }
 
-  function startLoop() {
-    if (raf) return;
-    tick();
-  }
+    async function show(
+        src: string,
+        kind: PreviewKind,
+        backSrc: string | null | undefined,
+        gen: number
+    ) {
+        if (!src || gen !== hoverGen) return;
+        currentSrc = src;
+        currentKind = kind;
+        host.dataset.active = "true";
+        visible = true;
 
-  function stopLoop() {
-    if (!raf) return;
-    cancelAnimationFrame(raf);
-    raf = 0;
-  }
+        try {
+            const front = await loadTexture(src);
+            if (gen !== hoverGen || currentSrc !== src) {
+                front.dispose();
+                return;
+            }
 
-  function kindFromLink(link: HTMLElement): PreviewKind {
-    const raw = link.dataset.previewKind;
-    if (raw === "book" || raw === "music" || raw === "film") return raw;
-    return "book";
-  }
+            const img = front.image as HTMLImageElement;
+            const aspect =
+                img?.width && img?.height ? img.width / img.height : 0.66;
+            const size = boxSize(kind, aspect);
 
-  function onEnter(link: HTMLElement) {
-    const img = link.querySelector<HTMLImageElement>("img.row__thumb");
-    const src = img?.currentSrc || img?.src || link.dataset.previewSrc || "";
-    const back = link.dataset.previewBack || null;
-    if (!src) return;
-    void show(src, kindFromLink(link), back);
-  }
+            let back = front;
+            let ownBack = false;
+            if (backSrc && backSrc !== src) {
+                try {
+                    back = await loadTexture(backSrc);
+                    ownBack = true;
+                    if (gen !== hoverGen || currentSrc !== src) {
+                        front.dispose();
+                        back.dispose();
+                        return;
+                    }
+                } catch {
+                    back = front;
+                    ownBack = false;
+                }
+            }
 
-  const links = root.querySelectorAll<HTMLElement>(".feed .row__link");
-  for (const link of links) {
-    link.addEventListener("pointerenter", () => onEnter(link));
-    link.addEventListener("pointerleave", () => hide());
-    link.addEventListener("focus", () => onEnter(link));
-    link.addEventListener("blur", () => hide());
-  }
+            disposeMesh();
 
-  document.documentElement.classList.add("feed-preview-3d");
+            const edge = new THREE.MeshStandardMaterial({
+                color: edgeColorFromTexture(front),
+                roughness: 0.85,
+                metalness: 0.05,
+            });
+            const frontMat = new THREE.MeshStandardMaterial({
+                map: front,
+                roughness: 0.7,
+                metalness: 0.02,
+            });
+            const backMat = new THREE.MeshStandardMaterial({
+                map: back,
+                roughness: 0.7,
+                metalness: 0.02,
+            });
+
+            // +X, -X, +Y, -Y, +Z (front), -Z (back)
+            const materials = [
+                edge,
+                edge.clone(),
+                edge.clone(),
+                edge.clone(),
+                frontMat,
+                backMat,
+            ];
+            const geometry = new THREE.BoxGeometry(size.x, size.y, size.z);
+            mesh = new THREE.Mesh(geometry, materials);
+            mesh.position.set(0, 0, 0);
+            // Continue from current yaw — do not reset rotation on hover
+            mesh.rotation.set(-0.08, rotY, 0.03);
+            scene.add(mesh);
+
+            // Keep front texture; dispose orphaned back only if we created a failed path — ownBack stays on mesh
+            void ownBack;
+        } catch {
+            hide();
+        }
+
+        startLoop();
+    }
+
+    function hide() {
+        visible = false;
+        host.dataset.active = "false";
+        currentSrc = "";
+        disposeMesh();
+        renderer.clear();
+        stopLoop();
+    }
+
+    function tick() {
+        raf = requestAnimationFrame(tick);
+        if (!visible || !mesh) return;
+        // Gentle idle yaw
+        targetRotY += 0.006;
+        rotY += (targetRotY - rotY) * 0.08;
+        mesh.rotation.y = rotY;
+        mesh.rotation.x = -0.08 + Math.sin(performance.now() * 0.0007) * 0.03;
+        composer.render();
+    }
+
+    function startLoop() {
+        if (raf) return;
+        tick();
+    }
+
+    function stopLoop() {
+        if (!raf) return;
+        cancelAnimationFrame(raf);
+        raf = 0;
+    }
+
+    function kindFromLink(link: HTMLElement): PreviewKind {
+        const raw = link.dataset.previewKind;
+        if (raw === "book" || raw === "music" || raw === "film") return raw;
+        return "book";
+    }
+
+    function scheduleShow(link: HTMLElement) {
+        window.clearTimeout(hideTimer);
+        window.clearTimeout(showTimer);
+        const gen = ++hoverGen;
+
+        const img = link.querySelector<HTMLImageElement>("img.row__thumb");
+        const src =
+            img?.currentSrc || img?.src || link.dataset.previewSrc || "";
+        const back = link.dataset.previewBack || null;
+        if (!src) return;
+
+        const kind = kindFromLink(link);
+        showTimer = window.setTimeout(() => {
+            if (gen !== hoverGen) return;
+            void show(src, kind, back, gen);
+        }, SHOW_DELAY_MS);
+    }
+
+    function scheduleHide() {
+        window.clearTimeout(showTimer);
+        hoverGen++;
+        window.clearTimeout(hideTimer);
+        // Short grace so moving to a neighbour row doesn't flash-hide
+        hideTimer = window.setTimeout(() => hide(), HIDE_GRACE_MS);
+    }
+
+    const links = root.querySelectorAll<HTMLElement>(".feed .row__link");
+    for (const link of links) {
+        link.addEventListener("pointerenter", () => scheduleShow(link));
+        link.addEventListener("pointerleave", () => scheduleHide());
+        link.addEventListener("focus", () => scheduleShow(link));
+        link.addEventListener("blur", () => scheduleHide());
+    }
+
+    document.documentElement.classList.add("feed-preview-3d");
 }
