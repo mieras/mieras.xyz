@@ -4,8 +4,8 @@
 <header class="header" role="banner">
     <a href="/" class="header__name" rel="home">mieras.xyz</a>
     <nav class="header__nav" aria-label="Navigation">
-        <a href="/#information" class="header__link">info</a>
-        <a href="/feed" class="header__link">feed</a>
+        <a href="/#information" class="header__link header__link--info">info</a>
+        <a href="/feed" class="header__link header__link--feed">feed</a>
     </nav>
 </header>
 
@@ -30,18 +30,21 @@
     .header__name:hover {
         text-decoration: underline;
     }
+    /* Children join the 4-col header grid so info/feed sit on the real column tracks */
     .header__nav {
-        grid-column: 3 / 5;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: var(--space-2xs, 2rem);
+        display: contents;
+    }
+    .header__link {
         font-size: var(--step--1);
         font-weight: 500;
         color: var(--color-text);
-    }
-    .header__link {
-        color: inherit;
         text-decoration: none;
+    }
+    .header__link--info {
+        grid-column: 3;
+    }
+    .header__link--feed {
+        grid-column: 4;
     }
     .header__link:hover {
         text-decoration: underline;
