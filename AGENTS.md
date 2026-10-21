@@ -4,7 +4,7 @@ Project instructions for AI agents (Claude Code, Cursor, Codex) and developers w
 
 ## Stack
 
-- Astro 6, SSR via Netlify adapter
+- Astro 7, SSR via Netlify adapter
 - SCSS (utopia-core-scss, no CSS-in-JS)
 - GSAP + ScrollTrigger + Lenis for animation/scroll
 - Spotify API (recently played) + WeatherAPI (Rotterdam temperature)

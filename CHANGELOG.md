@@ -7,11 +7,14 @@ All notable changes to this project are documented here.
 ### Added
 
 - `/feed` hover preview: Three.js box (book / music / film proportions) with Bayer dither post-process
+- `.nvmrc` + `NODE_VERSION=22` and security headers in `netlify.toml`
 
 ### Changed
 
 - Feed 3D preview: centered, smaller, fine ink-only Bayer dither (black on light / white on dark), top z-index
 - Feed 3D preview: continuous rotation across hovers; 300ms dwell before show/swap
+- Astro 6 → 7 and `@astrojs/netlify` 7 → 8; marked 17 → 18; patch/minor deps (gsap, lenis, sass, prettier)
+- Remaining `npm audit` findings are transitive via `@astrojs/netlify` (dev tooling / `sharp`/`ipx`); no non-breaking fix without `--force`
 
 ---
 
