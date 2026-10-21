@@ -11,9 +11,6 @@ import JsonLd from "../components/JsonLd.astro";
 import { getEntry, getCollection } from "astro:content";
 import { getRecentlyPlayed } from "../lib/spotify";
 
-const mainEntry = await getEntry("main", "main");
-const contact = mainEntry?.data?.contact ?? "studio@mieras.xyz";
-
 const marqueeEntries = await getCollection("marquee");
 const marquees = (marqueeEntries[0]?.data ?? []).sort(
     (a: { order: number }, b: { order: number }) => a.order - b.order
@@ -71,7 +68,7 @@ const organizationSchema = {
         <JsonLd data={personSchema} />
         <JsonLd data={organizationSchema} />
     </Fragment>
-    <Header contact={contact} />
+    <Header />
     <section class="marquee-wrapper">
         {
             marquees.map((m) => (

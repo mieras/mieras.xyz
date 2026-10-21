@@ -12,8 +12,9 @@ import { getRecentlyPlayed } from "../lib/spotify";
 import { getRecentlyWatched } from "../lib/trakt";
 import { formatTimeAgo } from "../lib/time-ago";
 
-const mainEntry = await getEntry("main", "main");
-const contact = mainEntry?.data?.contact ?? "studio@mieras.xyz";
+const feedEntry = await getEntry("feed", "feed");
+const title = feedEntry?.data?.title ?? "Feed";
+const subtitle = feedEntry?.data?.subtitle ?? "Stuff I read, listen and watch.";
 
 const [books, records, mixes, tracks, watched] = await Promise.all([
     getShelfBooks(),
@@ -40,14 +41,17 @@ function yearFrom(value: string | Date | null | undefined): string | null {
 ---
 
 <BaseLayout
-    title="Feed • Maarten Mieras"
-    description="Books, listening, and watching from Maarten Mieras."
+    title={`${title} • Maarten Mieras`}
+    description={subtitle}
 >
-    <Header contact={contact} />
+    <Header />
 
     <main id="main" class="feed">
         <header class="feed__header">
-            <h1 class="feed__title">Feed</h1>
+            <div class="feed__intro">
+                <h1 class="feed__title">{title}</h1>
+                <p class="feed__subtitle">{subtitle}</p>
+            </div>
             <nav class="feed__jump" aria-label="Feed sections">
                 <a href="#read">Read</a>
                 <a href="#listen">Listen</a>
@@ -80,9 +84,15 @@ function yearFrom(value: string | Date | null | undefined): string | null {
                                                 class="row__thumb"
                                             />
                                         )}
-                                        <span class="row__title">{book.title}</span>
+                                        <span class="row__primary">
+                                            <span class="row__title">{book.title}</span>
+                                        </span>
                                         <span class="row__meta">{book.author}</span>
-                                        {year && <span class="row__year">{year}</span>}
+                                        {year ? (
+                                            <span class="row__year">{year}</span>
+                                        ) : (
+                                            <span class="row__year" aria-hidden="true" />
+                                        )}
                                         <span class="visually-hidden"> (opens Goodreads in a new tab)</span>
                                     </a>
                                 </li>
@@ -123,12 +133,16 @@ function yearFrom(value: string | Date | null | undefined): string | null {
                                                     class="row__thumb"
                                                 />
                                             )}
-                                            <span class="row__title">{record.title}</span>
-                                            <span class="row__meta">
-                                                {record.artist}
-                                                {record.year != null && <> · {record.year}</>}
+                                            <span class="row__primary">
+                                                <span class="row__title">{record.title}</span>
+                                                {added && <span class="row__when">{added}</span>}
                                             </span>
-                                            {added && <span class="row__year">{added}</span>}
+                                            <span class="row__meta">{record.artist}</span>
+                                            {record.year != null ? (
+                                                <span class="row__year">{record.year}</span>
+                                            ) : (
+                                                <span class="row__year" aria-hidden="true" />
+                                            )}
                                             <span class="visually-hidden"> (opens Discogs in a new tab)</span>
                                         </a>
                                     </li>
@@ -166,9 +180,16 @@ function yearFrom(value: string | Date | null | undefined): string | null {
                                                     class="row__thumb"
                                                 />
                                             )}
-                                            <span class="row__title">{track.title}</span>
+                                            <span class="row__primary">
+                                                <span class="row__title">{track.title}</span>
+                                                {played && <span class="row__when">{played}</span>}
+                                            </span>
                                             <span class="row__meta">{track.artist}</span>
-                                            {played && <span class="row__year">{played}</span>}
+                                            {track.year != null ? (
+                                                <span class="row__year">{track.year}</span>
+                                            ) : (
+                                                <span class="row__year" aria-hidden="true" />
+                                            )}
                                             <span class="visually-hidden"> (opens Spotify in a new tab)</span>
                                         </a>
                                     </li>
@@ -206,9 +227,15 @@ function yearFrom(value: string | Date | null | undefined): string | null {
                                                     class="row__thumb"
                                                 />
                                             )}
-                                            <span class="row__title">{mix.title}</span>
+                                            <span class="row__primary">
+                                                <span class="row__title">{mix.title}</span>
+                                            </span>
                                             <span class="row__meta">Mixcloud</span>
-                                            {year && <span class="row__year">{year}</span>}
+                                            {year ? (
+                                                <span class="row__year">{year}</span>
+                                            ) : (
+                                                <span class="row__year" aria-hidden="true" />
+                                            )}
                                             <span class="visually-hidden"> (opens Mixcloud in a new tab)</span>
                                         </a>
                                     </li>
@@ -248,13 +275,19 @@ function yearFrom(value: string | Date | null | undefined): string | null {
                                                     class="row__thumb"
                                                 />
                                             )}
-                                            <span class="row__title">{item.title}</span>
+                                            <span class="row__primary">
+                                                <span class="row__title">{item.title}</span>
+                                                {watchedAgo && (
+                                                    <span class="row__when">{watchedAgo}</span>
+                                                )}
+                                            </span>
                                             <span class="row__meta">
                                                 {item.type === "movie" ? "Film" : "Serie"}
-                                                {item.year != null && <> · {item.year}</>}
                                             </span>
-                                            {watchedAgo && (
-                                                <span class="row__year">{watchedAgo}</span>
+                                            {item.year != null ? (
+                                                <span class="row__year">{item.year}</span>
+                                            ) : (
+                                                <span class="row__year" aria-hidden="true" />
                                             )}
                                             <span class="visually-hidden"> (opens Trakt in a new tab)</span>
                                         </a>
@@ -276,6 +309,14 @@ function yearFrom(value: string | Date | null | undefined): string | null {
 
 <style>
     .feed {
+        --feed-sticky-pad: var(--space-3xs);
+        --feed-sticky-line: 1.25;
+        --feed-sticky-border: 1px;
+        --feed-cat-height: calc(
+            var(--step--2) * var(--feed-sticky-line) + var(--feed-sticky-pad) * 2 +
+                var(--feed-sticky-border)
+        );
+
         padding-inline: var(--space-s);
         padding-block: var(--space-xl) var(--space-2xl);
     }
@@ -283,10 +324,16 @@ function yearFrom(value: string | Date | null | undefined): string | null {
     .feed__header {
         display: flex;
         flex-wrap: wrap;
-        align-items: baseline;
+        align-items: flex-end;
         justify-content: space-between;
         gap: var(--space-s);
         margin-bottom: var(--space-l);
+    }
+
+    .feed__intro {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3xs);
     }
 
     .feed__title {
@@ -294,6 +341,13 @@ function yearFrom(value: string | Date | null | undefined): string | null {
         font-weight: 500;
         line-height: 1;
         margin: 0;
+    }
+
+    .feed__subtitle {
+        margin: 0;
+        font-size: var(--step--1);
+        color: var(--color-text-muted);
+        line-height: var(--leading-body);
     }
 
     .feed__jump {
@@ -318,7 +372,7 @@ function yearFrom(value: string | Date | null | undefined): string | null {
     }
 
     .feed__section {
-        scroll-margin-top: var(--space-s);
+        scroll-margin-top: var(--feed-cat-height);
     }
 
     .feed__section + .feed__section {
@@ -328,42 +382,54 @@ function yearFrom(value: string | Date | null | undefined): string | null {
     .feed__cat,
     .feed__sub {
         position: sticky;
-        z-index: 5;
         margin: 0;
-        padding-block: var(--space-3xs);
+        padding-block: var(--feed-sticky-pad);
         font-size: var(--step--2);
         font-weight: 500;
-        line-height: 1.2;
+        line-height: var(--feed-sticky-line);
         letter-spacing: 0.04em;
         text-transform: uppercase;
         background: var(--color-bg);
-        border-bottom: 1px solid var(--color-border);
+        border-bottom: var(--feed-sticky-border) solid var(--color-border);
     }
 
     .feed__cat {
         top: 0;
-        z-index: 6;
+        z-index: 4;
     }
 
     .feed__sub {
-        top: 1.75rem;
+        top: var(--feed-cat-height);
+        z-index: 3;
         color: var(--color-text-muted);
         font-weight: 450;
     }
 
+    .feed__block {
+        position: relative;
+        z-index: 0;
+    }
+
     .feed__block + .feed__block {
-        margin-top: var(--space-s);
+        margin-top: 0;
     }
 
     .feed__list {
         list-style: none;
         margin: 0;
         padding: 0;
+        position: relative;
+        z-index: 0;
+    }
+
+    .row {
+        position: relative;
+        z-index: 0;
     }
 
     .row__link {
         display: grid;
-        grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) 7ch;
+        grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) 4.5ch;
         gap: var(--space-2xs) var(--space-s);
         align-items: baseline;
         padding-block: var(--space-3xs);
@@ -379,11 +445,37 @@ function yearFrom(value: string | Date | null | undefined): string | null {
         outline-offset: calc(var(--space-3xs) * -1);
     }
 
+    .row__primary {
+        display: flex;
+        align-items: baseline;
+        gap: var(--space-2xs);
+        min-width: 0;
+    }
+
     .row__title {
         min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+    }
+
+    .row__when {
+        flex-shrink: 0;
+        font-family: var(--font-mono);
+        font-size: var(--step--2);
+        color: var(--color-text-muted);
+        font-variant-numeric: tabular-nums;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        .row__when {
+            opacity: 0;
+        }
+
+        .row__link:hover .row__when,
+        .row__link:focus-visible .row__when {
+            opacity: 1;
+        }
     }
 
     .row__meta {
@@ -408,7 +500,6 @@ function yearFrom(value: string | Date | null | undefined): string | null {
         text-decoration: underline;
     }
 
-    /* Fixed centered cover on hover — only when a real pointer hover exists */
     .row__thumb {
         display: none;
     }
@@ -451,7 +542,7 @@ function yearFrom(value: string | Date | null | undefined): string | null {
 
     @media (max-width: 40rem) {
         .row__link {
-            grid-template-columns: minmax(0, 1fr) 7ch;
+            grid-template-columns: minmax(0, 1fr) 4.5ch;
         }
 
         .row__meta {

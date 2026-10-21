@@ -19,7 +19,7 @@ All notable changes to this project are documented here.
 
 ### Changed
 
-- Header: `info` links to `/#information` (works from subpages); added `feed` nav link
+- Header nav is `info` + `feed` (`info` → `/#information`); mail removed from header
 - `CLAUDE.md` moved to `AGENTS.md` (`CLAUDE.md` now only imports it), workflow updated for `staging`
 - Spotify marquee animation engine switched from custom GSAP ticker to `horizontalLoop` + `Draggable` + `InertiaPlugin`
 - `horizontalLoop.ts` extended with `totalWidth` on the return type; Draggable integration moved to the component
