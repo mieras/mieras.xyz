@@ -14,6 +14,12 @@ export const GET: APIRoute = async ({ site }) => {
 
     const person = seo!.data.person;
     const org = seo!.data.organization;
+    const addr = org.address;
+    const location = [
+        addr.streetAddress,
+        `${addr.postalCode} ${addr.addressLocality}`,
+    ].join(", ");
+    const linkedIn = "https://linkedin.com/in/mieras";
 
     const pages: { title: string; path: string; description?: string }[] = [
         {
@@ -41,7 +47,13 @@ export const GET: APIRoute = async ({ site }) => {
         "",
         org.description,
         "",
+        "Also co-owns [All This](https://allthis.digital), a design studio based in Rotterdam.",
+        "",
+        "Focus: UX, product design, and visual craft — clear, intuitive digital products.",
+        "",
+        `Location: ${location}`,
         `Contact: ${org.email}`,
+        `LinkedIn: ${linkedIn}`,
         "",
         "## Pages",
         "",
