@@ -25,6 +25,8 @@ All notable changes to this project are documented here.
 
 ### Fixed
 
+- Intro `padding-right` only from 2-col breakpoint (`40rem`), not on mobile
+- Marquee wrapper: tighter strip gap (`--space-2xs`) and `padding-block` on mobile
 - Clients and services lists now animate in with GSAP stagger when scrolling into viewport (was missing `gsap.registerPlugin(ScrollTrigger)` call)
 - Contact block moved to bottom on mobile via CSS `order: 10`
 - Spotify API 429 rate limit errors: added 5-minute in-memory cache to `getRecentlyPlayed`
