@@ -127,5 +127,5 @@ export function buildRobotsTxt(site: URL | string): string {
 
 /** Public URLs that should appear in the sitemap (absolute). */
 export function getPublicSitemapPaths(): string[] {
-    return ["/"];
+    return ["/", "/feed"];
 }

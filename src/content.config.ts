@@ -6,6 +6,14 @@ const footer = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/footer' }),
 });
 
+const feed = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/feed' }),
+  schema: z.object({
+    title: z.string(),
+    subtitle: z.string(),
+  }),
+});
+
 const main = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/main' }),
   schema: z.object({
@@ -78,4 +86,4 @@ const seo = defineCollection({
   }),
 });
 
-export const collections = { footer, main, marquee, seo };
+export const collections = { footer, feed, main, marquee, seo };

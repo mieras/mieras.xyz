@@ -1,0 +1,3 @@
+[build]
+  # exit 0 = build overslaan: alleen .md, .github/ of .vscode/ gewijzigd (zie _standards/DEPLOY.md)
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ':(exclude)*.md' ':(exclude).github/' ':(exclude).vscode/'"

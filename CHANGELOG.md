@@ -4,8 +4,16 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+---
+
+## 2026-10-21
+
 ### Added
 
+- `/feed` page as a sticky specsheet list (Read / Listen / Watch) with Discogs, Spotify, Mixcloud, Goodreads, Trakt+TMDB; relative timestamps; fixed centered cover on hover; CDN durable cache + Netlify Blobs API cache
+- Deploy workflow per `_standards/DEPLOY.md`: features via PR to `staging` (branch deploy on `staging--mierasxyz.netlify.app`), bundled releases to `main`. Branch protection on `staging`
+- `netlify.toml` with an `ignore` rule: no build for commits that only touch docs
+- `.github/dependabot.yml`: weekly grouped updates to `staging`
 - AI readiness: `robots.txt` with Content Signals (`search=yes, ai-input=yes, ai-train=no`), AI crawler allow/disallow rules, and sitemap discovery
 - Dynamic `/sitemap.xml` for SSR public routes
 - Markdown content negotiation on `/` via `Accept: text/markdown` (clean Markdown from content collections)
@@ -14,12 +22,16 @@ All notable changes to this project are documented here.
 
 ### Changed
 
+- Header nav is `info` + `feed` (`info` → `/#information`); mail removed from header
+- `CLAUDE.md` moved to `AGENTS.md` (`CLAUDE.md` now only imports it), workflow updated for `staging`
 - Spotify marquee animation engine switched from custom GSAP ticker to `horizontalLoop` + `Draggable` + `InertiaPlugin`
 - `horizontalLoop.ts` extended with `totalWidth` on the return type; Draggable integration moved to the component
 - `tsconfig.json`: `forceConsistentCasingInFileNames` disabled to resolve GSAP internal type casing conflict
 
 ### Fixed
 
+- Intro `padding-right` only from 2-col breakpoint (`40rem`), not on mobile
+- Marquee wrapper: tighter strip gap (`--space-2xs`) and `padding-block` on mobile
 - Clients and services lists now animate in with GSAP stagger when scrolling into viewport (was missing `gsap.registerPlugin(ScrollTrigger)` call)
 - Contact block moved to bottom on mobile via CSS `order: 10`
 - Spotify API 429 rate limit errors: added 5-minute in-memory cache to `getRecentlyPlayed`
