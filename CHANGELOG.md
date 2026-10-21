@@ -8,6 +8,10 @@ All notable changes to this project are documented here.
 
 - `/feed` hover preview: Three.js box (book / music / film proportions) with Bayer dither post-process
 
+### Changed
+
+- Feed 3D preview sits behind the list (`z-index: 0`, centered, max-width), binary B/W dither, inverts with dark mode
+
 ---
 
 ## 2026-10-21

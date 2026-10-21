@@ -88,12 +88,16 @@ const BayerDitherShader = {
       float pixelSize = max(gridSize * pixelSizeRatio, 1.0);
       vec2 pixelatedUV = floor(fragCoord / pixelSize) * pixelSize / resolution;
       vec4 tex = texture2D(tDiffuse, pixelatedUV);
+      if (tex.a < 0.01) {
+        gl_FragColor = vec4(0.0);
+        return;
+      }
       float luminance = dot(tex.rgb, vec3(0.299, 0.587, 0.114));
       // Binary Bayer: black / white (flip for dark mode)
       bool ink = getValue(luminance, fragCoord);
       if (invertColor > 0.5) ink = !ink;
       vec3 bw = ink ? vec3(0.0) : vec3(1.0);
-      gl_FragColor = vec4(bw, tex.a);
+      gl_FragColor = vec4(bw, 1.0);
     }
   `,
 };
@@ -169,6 +173,7 @@ export function initFeedPreview3D(root: ParentNode = document) {
 
   function syncTheme() {
     ditherPass.uniforms.invertColor.value = isDarkTheme() ? 1 : 0;
+    if (visible && mesh) composer.render();
   }
 
   const themeObserver = new MutationObserver(syncTheme);
