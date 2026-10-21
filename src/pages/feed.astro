@@ -1,0 +1,593 @@
+---
+export const prerender = false;
+
+import { Image } from "astro:assets";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Header from "../components/Header.astro";
+import { getEntry } from "astro:content";
+import { getShelfBooks } from "../lib/goodreads";
+import { getRecentAdditions } from "../lib/discogs";
+import { getCloudcasts } from "../lib/mixcloud";
+import { getRecentlyPlayed } from "../lib/spotify";
+import { getRecentlyWatched } from "../lib/trakt";
+import { formatTimeAgo } from "../lib/time-ago";
+
+const feedEntry = await getEntry("feed", "feed");
+const title = feedEntry?.data?.title ?? "Feed";
+const subtitle = feedEntry?.data?.subtitle ?? "Stuff I read, listen and watch.";
+
+const [books, records, mixes, tracks, watched] = await Promise.all([
+    getShelfBooks(),
+    getRecentAdditions(),
+    getCloudcasts(),
+    getRecentlyPlayed(24),
+    getRecentlyWatched(),
+]);
+
+Astro.response.headers.set("Cache-Control", "public, max-age=0, must-revalidate");
+Astro.response.headers.set(
+    "Netlify-CDN-Cache-Control",
+    "public, durable, s-maxage=3600, stale-while-revalidate=86400"
+);
+Astro.response.headers.set("Netlify-Vary", "query");
+
+const yearFormat = new Intl.DateTimeFormat("en-GB", { year: "numeric" });
+
+function yearFrom(value: string | Date | null | undefined): string | null {
+    if (!value) return null;
+    const d = value instanceof Date ? value : new Date(value);
+    return Number.isNaN(d.getTime()) ? null : yearFormat.format(d);
+}
+---
+
+<BaseLayout
+    title={`${title} • Maarten Mieras`}
+    description={subtitle}
+>
+    <Header />
+
+    <main id="main" class="feed">
+        <header class="feed__header">
+            <div class="feed__intro">
+                <h1 class="feed__title">{title}</h1>
+                <p class="feed__subtitle">{subtitle}</p>
+            </div>
+            <nav class="feed__jump" aria-label="Feed sections">
+                <a href="#read">Read</a>
+                <a href="#listen">Listen</a>
+                <a href="#watch">Watch</a>
+            </nav>
+        </header>
+
+        <section id="read" class="feed__section" aria-labelledby="read-heading">
+            <h2 id="read-heading" class="feed__cat">Read</h2>
+            {
+                books.length > 0 ? (
+                    <ol class="feed__list" role="list">
+                        {books.map((book) => {
+                            const year = yearFrom(book.dateRead) ?? (book.published || null);
+                            return (
+                                <li class="row">
+                                    <a
+                                        href={book.url}
+                                        class="row__link"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        {book.cover && (
+                                            <Image
+                                                src={book.cover}
+                                                alt=""
+                                                width={600}
+                                                height={900}
+                                                loading="lazy"
+                                                class="row__thumb"
+                                            />
+                                        )}
+                                        <span class="row__primary">
+                                            <span class="row__title">{book.title}</span>
+                                        </span>
+                                        <span class="row__meta">{book.author}</span>
+                                        {year ? (
+                                            <span class="row__year">{year}</span>
+                                        ) : (
+                                            <span class="row__year" aria-hidden="true" />
+                                        )}
+                                        <span class="visually-hidden"> (opens Goodreads in a new tab)</span>
+                                    </a>
+                                </li>
+                            );
+                        })}
+                    </ol>
+                ) : (
+                    <p class="feed__empty">Nothing on the shelf right now.</p>
+                )
+            }
+        </section>
+
+        <section id="listen" class="feed__section" aria-labelledby="listen-heading">
+            <h2 id="listen-heading" class="feed__cat">Listen</h2>
+
+            <div class="feed__block" id="records">
+                <h3 class="feed__sub">Records</h3>
+                {
+                    records.length > 0 ? (
+                        <ol class="feed__list" role="list">
+                            {records.map((record) => {
+                                const added = formatTimeAgo(record.added);
+                                return (
+                                    <li class="row">
+                                        <a
+                                            href={record.url}
+                                            class="row__link"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {record.cover && (
+                                                <Image
+                                                    src={record.cover}
+                                                    alt=""
+                                                    width={600}
+                                                    height={600}
+                                                    loading="lazy"
+                                                    class="row__thumb"
+                                                />
+                                            )}
+                                            <span class="row__primary">
+                                                <span class="row__title">{record.title}</span>
+                                                {added && <span class="row__when">{added}</span>}
+                                            </span>
+                                            <span class="row__meta">{record.artist}</span>
+                                            {record.year != null ? (
+                                                <span class="row__year">{record.year}</span>
+                                            ) : (
+                                                <span class="row__year" aria-hidden="true" />
+                                            )}
+                                            <span class="visually-hidden"> (opens Discogs in a new tab)</span>
+                                        </a>
+                                    </li>
+                                );
+                            })}
+                        </ol>
+                    ) : (
+                        <p class="feed__empty">No recent additions.</p>
+                    )
+                }
+            </div>
+
+            <div class="feed__block" id="spotify">
+                <h3 class="feed__sub">Spotify</h3>
+                {
+                    tracks.length > 0 ? (
+                        <ol class="feed__list" role="list">
+                            {tracks.map((track) => {
+                                const played = formatTimeAgo(track.playedAt);
+                                return (
+                                    <li class="row">
+                                        <a
+                                            href={track.trackUrl || "https://open.spotify.com"}
+                                            class="row__link"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {track.albumArt && (
+                                                <Image
+                                                    src={track.albumArt}
+                                                    alt=""
+                                                    width={600}
+                                                    height={600}
+                                                    loading="lazy"
+                                                    class="row__thumb"
+                                                />
+                                            )}
+                                            <span class="row__primary">
+                                                <span class="row__title">{track.title}</span>
+                                                {played && <span class="row__when">{played}</span>}
+                                            </span>
+                                            <span class="row__meta">{track.artist}</span>
+                                            {track.year != null ? (
+                                                <span class="row__year">{track.year}</span>
+                                            ) : (
+                                                <span class="row__year" aria-hidden="true" />
+                                            )}
+                                            <span class="visually-hidden"> (opens Spotify in a new tab)</span>
+                                        </a>
+                                    </li>
+                                );
+                            })}
+                        </ol>
+                    ) : (
+                        <p class="feed__empty">No recent plays.</p>
+                    )
+                }
+            </div>
+
+            <div class="feed__block" id="mixes">
+                <h3 class="feed__sub">Mixes</h3>
+                {
+                    mixes.length > 0 ? (
+                        <ol class="feed__list" role="list">
+                            {mixes.map((mix) => {
+                                const year = yearFrom(mix.created);
+                                return (
+                                    <li class="row">
+                                        <a
+                                            href={mix.url}
+                                            class="row__link"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {mix.cover && (
+                                                <Image
+                                                    src={mix.cover}
+                                                    alt=""
+                                                    width={600}
+                                                    height={600}
+                                                    loading="lazy"
+                                                    class="row__thumb"
+                                                />
+                                            )}
+                                            <span class="row__primary">
+                                                <span class="row__title">{mix.title}</span>
+                                            </span>
+                                            <span class="row__meta">Mixcloud</span>
+                                            {year ? (
+                                                <span class="row__year">{year}</span>
+                                            ) : (
+                                                <span class="row__year" aria-hidden="true" />
+                                            )}
+                                            <span class="visually-hidden"> (opens Mixcloud in a new tab)</span>
+                                        </a>
+                                    </li>
+                                );
+                            })}
+                        </ol>
+                    ) : (
+                        <p class="feed__empty">No mixtapes yet.</p>
+                    )
+                }
+            </div>
+        </section>
+
+        <section id="watch" class="feed__section" aria-labelledby="watch-heading">
+            <h2 id="watch-heading" class="feed__cat">Watch</h2>
+            {
+                watched.length > 0 ? (
+                    <>
+                        <ol class="feed__list" role="list">
+                            {watched.map((item) => {
+                                const watchedAgo = formatTimeAgo(item.watchedAt);
+                                return (
+                                    <li class="row">
+                                        <a
+                                            href={item.url}
+                                            class="row__link"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {item.poster && (
+                                                <Image
+                                                    src={item.poster}
+                                                    alt=""
+                                                    width={600}
+                                                    height={900}
+                                                    loading="lazy"
+                                                    class="row__thumb"
+                                                />
+                                            )}
+                                            <span class="row__primary">
+                                                <span class="row__title">{item.title}</span>
+                                                {watchedAgo && (
+                                                    <span class="row__when">{watchedAgo}</span>
+                                                )}
+                                            </span>
+                                            <span class="row__meta">
+                                                {item.type === "movie" ? "Film" : "Serie"}
+                                            </span>
+                                            {item.year != null ? (
+                                                <span class="row__year">{item.year}</span>
+                                            ) : (
+                                                <span class="row__year" aria-hidden="true" />
+                                            )}
+                                            <span class="visually-hidden"> (opens Trakt in a new tab)</span>
+                                        </a>
+                                    </li>
+                                );
+                            })}
+                        </ol>
+                        <p class="feed__credit">
+                            This product uses the TMDB API but is not endorsed or certified by TMDB.
+                        </p>
+                    </>
+                ) : (
+                    <p class="feed__empty">Nothing watched recently.</p>
+                )
+            }
+        </section>
+    </main>
+</BaseLayout>
+
+<style>
+    .feed {
+        --feed-sticky-pad: var(--space-3xs);
+        --feed-sticky-line: 1.25;
+        --feed-sticky-border: 1px;
+        --feed-cat-height: calc(
+            var(--step--2) * var(--feed-sticky-line) + var(--feed-sticky-pad) * 2 +
+                var(--feed-sticky-border)
+        );
+
+        padding-inline: var(--space-s);
+        padding-block: var(--space-xl) var(--space-2xl);
+    }
+
+    .feed__header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: var(--space-s);
+        margin-bottom: var(--space-l);
+    }
+
+    .feed__intro {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3xs);
+    }
+
+    .feed__title {
+        font-size: var(--step-3);
+        font-weight: 500;
+        line-height: 1;
+        margin: 0;
+    }
+
+    .feed__subtitle {
+        margin: 0;
+        font-size: var(--step--1);
+        color: var(--color-text-muted);
+        line-height: var(--leading-body);
+    }
+
+    .feed__jump {
+        display: flex;
+        gap: var(--space-s);
+        font-size: var(--step--2);
+        font-weight: 500;
+    }
+
+    .feed__jump a {
+        color: var(--color-text);
+        text-decoration: none;
+    }
+
+    .feed__jump a:hover {
+        text-decoration: underline;
+    }
+
+    .feed__jump a:focus-visible {
+        outline: 2px solid var(--color-accent);
+        outline-offset: var(--space-3xs);
+    }
+
+    .feed__section {
+        scroll-margin-top: var(--feed-cat-height);
+    }
+
+    .feed__section + .feed__section {
+        margin-top: var(--space-l);
+    }
+
+    .feed__cat,
+    .feed__sub {
+        position: sticky;
+        margin: 0;
+        padding-block: var(--feed-sticky-pad);
+        font-size: var(--step--2);
+        font-weight: 500;
+        line-height: var(--feed-sticky-line);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        background: var(--color-bg);
+        border-bottom: var(--feed-sticky-border) solid var(--color-border);
+    }
+
+    .feed__cat {
+        top: 0;
+        z-index: 4;
+    }
+
+    .feed__sub {
+        top: var(--feed-cat-height);
+        z-index: 3;
+        color: var(--color-text-muted);
+        font-weight: 450;
+    }
+
+    .feed__block + .feed__block {
+        margin-top: 0;
+    }
+
+    .feed__list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Elevate the hovered row so its fixed thumb isn't sliced by sibling rows'
+       stacking contexts (z-index on every .row trapped the preview). */
+    .row {
+        position: relative;
+    }
+
+    .row:hover,
+    .row:focus-within {
+        z-index: 1100;
+    }
+
+    .row__link {
+        display: grid;
+        grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) 4.5ch;
+        gap: var(--space-2xs) var(--space-s);
+        align-items: baseline;
+        padding-block: var(--space-3xs);
+        border-bottom: 1px solid var(--color-border);
+        color: var(--color-text);
+        text-decoration: none;
+        font-size: var(--step--1);
+        line-height: 1.25;
+    }
+
+    .row__link:focus-visible {
+        outline: 2px solid var(--color-accent);
+        outline-offset: calc(var(--space-3xs) * -1);
+    }
+
+    .row__primary {
+        display: flex;
+        align-items: baseline;
+        gap: var(--space-s);
+        min-width: 0;
+    }
+
+    .row__title {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .row__when {
+        flex-shrink: 0;
+        font-family: var(--font-mono);
+        font-size: var(--step--2);
+        color: var(--color-text-muted);
+        font-variant-numeric: tabular-nums;
+        opacity: 0;
+        transition: opacity 120ms ease;
+    }
+
+    .row__link:hover .row__when,
+    .row__link:focus-visible .row__when {
+        opacity: 1;
+    }
+
+    .row__meta {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--color-text-muted);
+        text-align: right;
+    }
+
+    .row__year {
+        font-family: var(--font-mono);
+        font-size: var(--step--2);
+        color: var(--color-text-muted);
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .row__link:hover .row__title,
+    .row__link:focus-visible .row__title {
+        text-decoration: underline;
+    }
+
+    .row__thumb {
+        display: none;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        .row__thumb {
+            display: block;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            translate: -50% -50%;
+            width: min(40vw, 18rem);
+            height: auto;
+            max-height: 70vh;
+            object-fit: contain;
+            z-index: 1;
+            opacity: 0;
+            pointer-events: none;
+            box-shadow: 0 0 0 1px var(--color-border);
+            background: var(--color-bg);
+        }
+
+        .row__link:hover .row__thumb,
+        .row__link:focus-visible .row__thumb {
+            opacity: 1;
+        }
+    }
+
+    .feed__empty {
+        color: var(--color-text-muted);
+        margin: var(--space-2xs) 0 0;
+        font-size: var(--step--1);
+    }
+
+    .feed__credit {
+        margin: var(--space-m) 0 0;
+        font-size: var(--step--2);
+        color: var(--color-text-muted);
+    }
+
+    @media (max-width: 40rem) {
+        .row__link {
+            grid-template-columns: minmax(0, 1fr) 4.5ch;
+        }
+
+        .row__meta {
+            display: none;
+        }
+    }
+</style>
+
+<script>
+    import gsap from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    /**
+     * Per-list stagger on scroll (same idea as homepage clients/services):
+     * - gsap.set hides rows (opacity 0)
+     * - when the list top hits ~90% of the viewport, rows fade in with stagger
+     * - prefers-reduced-motion: skip motion, show rows immediately
+     */
+    function initFeedListStagger() {
+        const lists = document.querySelectorAll<HTMLOListElement>(".feed__list");
+        if (!lists.length) return;
+
+        const mm = gsap.matchMedia();
+
+        mm.add("(prefers-reduced-motion: reduce)", () => {
+            gsap.set(".feed__list .row", { clearProps: "opacity" });
+        });
+
+        mm.add("(prefers-reduced-motion: no-preference)", () => {
+            lists.forEach((list) => {
+                const items = list.querySelectorAll(".row");
+                if (!items.length) return;
+
+                gsap.set(items, { opacity: 0 });
+                gsap.to(items, {
+                    opacity: 1,
+                    duration: 0.5,
+                    stagger: 0.08,
+                    ease: "power2.out",
+                    scrollTrigger: {
+                        trigger: list,
+                        start: "top 90%",
+                        toggleActions: "play none none none",
+                    },
+                });
+            });
+        });
+    }
+
+    initFeedListStagger();
+</script>

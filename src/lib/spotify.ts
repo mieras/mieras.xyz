@@ -4,6 +4,8 @@ export interface SpotifyTrack {
   title: string;
   albumArt: string;
   trackUrl: string;
+  year: number | null;
+  playedAt: string | null;
 }
 
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
@@ -70,12 +72,17 @@ export async function getRecentlyPlayed(limit = 10): Promise<SpotifyTrack[]> {
         track.album?.images?.[track.album.images.length - 1]?.url ??
         "";
 
+      const release = track.album?.release_date as string | undefined;
+      const year = release ? Number(release.slice(0, 4)) || null : null;
+
       tracks.push({
         id: track.id,
         artist: track.artists?.map((a: { name: string }) => a.name).join(", ") ?? "",
         title: track.name ?? "",
         albumArt,
         trackUrl: track.external_urls?.spotify ?? "",
+        year,
+        playedAt: typeof item.played_at === "string" ? item.played_at : null,
       });
     }
 
