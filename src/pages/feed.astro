@@ -405,11 +405,6 @@ function yearFrom(value: string | Date | null | undefined): string | null {
         font-weight: 450;
     }
 
-    .feed__block {
-        position: relative;
-        z-index: 0;
-    }
-
     .feed__block + .feed__block {
         margin-top: 0;
     }
@@ -418,13 +413,17 @@ function yearFrom(value: string | Date | null | undefined): string | null {
         list-style: none;
         margin: 0;
         padding: 0;
-        position: relative;
-        z-index: 0;
     }
 
+    /* Elevate the hovered row so its fixed thumb isn't sliced by sibling rows'
+       stacking contexts (z-index on every .row trapped the preview). */
     .row {
         position: relative;
-        z-index: 0;
+    }
+
+    .row:hover,
+    .row:focus-within {
+        z-index: 1100;
     }
 
     .row__link {
@@ -511,7 +510,7 @@ function yearFrom(value: string | Date | null | undefined): string | null {
             height: auto;
             max-height: 70vh;
             object-fit: contain;
-            z-index: 1100;
+            z-index: 1;
             opacity: 0;
             pointer-events: none;
             box-shadow: 0 0 0 1px var(--color-border);
