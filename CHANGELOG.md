@@ -4,6 +4,10 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- `/feed` hover preview: Three.js box (book / music / film proportions) with Bayer dither post-process
+
 ---
 
 ## 2026-10-21

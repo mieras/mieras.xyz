@@ -46,6 +46,8 @@ function yearFrom(value: string | Date | null | undefined): string | null {
 >
     <Header />
 
+    <div class="feed-preview" data-feed-preview data-active="false" aria-hidden="true"></div>
+
     <main id="main" class="feed">
         <header class="feed__header">
             <div class="feed__intro">
@@ -71,6 +73,7 @@ function yearFrom(value: string | Date | null | undefined): string | null {
                                     <a
                                         href={book.url}
                                         class="row__link"
+                                        data-preview-kind="book"
                                         target="_blank"
                                         rel="noopener noreferrer"
                                     >
@@ -120,6 +123,7 @@ function yearFrom(value: string | Date | null | undefined): string | null {
                                         <a
                                             href={record.url}
                                             class="row__link"
+                                            data-preview-kind="music"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                         >
@@ -167,6 +171,7 @@ function yearFrom(value: string | Date | null | undefined): string | null {
                                         <a
                                             href={track.trackUrl || "https://open.spotify.com"}
                                             class="row__link"
+                                            data-preview-kind="music"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                         >
@@ -214,6 +219,7 @@ function yearFrom(value: string | Date | null | undefined): string | null {
                                         <a
                                             href={mix.url}
                                             class="row__link"
+                                            data-preview-kind="music"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                         >
@@ -262,6 +268,7 @@ function yearFrom(value: string | Date | null | undefined): string | null {
                                         <a
                                             href={item.url}
                                             class="row__link"
+                                            data-preview-kind="film"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                         >
@@ -495,13 +502,42 @@ function yearFrom(value: string | Date | null | undefined): string | null {
         text-decoration: underline;
     }
 
+    /* Source for Three textures — kept in DOM but not shown (3D canvas replaces hover) */
     .row__thumb {
-        display: none;
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+        pointer-events: none;
+        overflow: hidden;
     }
 
+    .feed-preview {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        translate: -50% -50%;
+        width: min(70vw, 32rem);
+        height: min(70vw, 32rem);
+        z-index: 1100;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 160ms ease;
+    }
+
+    .feed-preview[data-active="true"] {
+        opacity: 1;
+    }
+
+    .feed-preview__canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Fallback flat thumb if 3D init skipped (touch / reduced motion) */
     @media (hover: hover) and (pointer: fine) {
-        .row__thumb {
-            display: block;
+        html:not(.feed-preview-3d) .row__thumb {
             position: fixed;
             top: 50%;
             left: 50%;
@@ -512,13 +548,16 @@ function yearFrom(value: string | Date | null | undefined): string | null {
             object-fit: contain;
             z-index: 1;
             opacity: 0;
-            pointer-events: none;
-            box-shadow: 0 0 0 1px var(--color-border);
-            background: var(--color-bg);
+            overflow: visible;
         }
 
-        .row__link:hover .row__thumb,
-        .row__link:focus-visible .row__thumb {
+        html:not(.feed-preview-3d) .row:hover,
+        html:not(.feed-preview-3d) .row:focus-within {
+            z-index: 1100;
+        }
+
+        html:not(.feed-preview-3d) .row__link:hover .row__thumb,
+        html:not(.feed-preview-3d) .row__link:focus-visible .row__thumb {
             opacity: 1;
         }
     }
@@ -551,6 +590,11 @@ function yearFrom(value: string | Date | null | undefined): string | null {
     import { ScrollTrigger } from "gsap/ScrollTrigger";
 
     gsap.registerPlugin(ScrollTrigger);
+
+    // Code-split Three.js dither preview (only on /feed, pointer devices)
+    void import("../scripts/feed-preview-3d").then(({ initFeedPreview3D }) => {
+        initFeedPreview3D();
+    });
 
     /**
      * Per-list stagger on scroll (same idea as homepage clients/services):
