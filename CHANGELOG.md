@@ -4,6 +4,10 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Added
+
+- `/llms.txt` endpoint (llmstxt.org) with site summary and page index; linked from `<head>`
+
 ---
 
 ## 2026-10-21
