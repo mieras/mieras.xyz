@@ -24,7 +24,10 @@ const [books, records, mixes, tracks, watched] = await Promise.all([
     getRecentlyWatched(),
 ]);
 
-Astro.response.headers.set("Cache-Control", "public, max-age=0, must-revalidate");
+Astro.response.headers.set(
+    "Cache-Control",
+    "public, max-age=0, must-revalidate"
+);
 Astro.response.headers.set(
     "Netlify-CDN-Cache-Control",
     "public, durable, s-maxage=3600, stale-while-revalidate=86400"
@@ -40,11 +43,16 @@ function yearFrom(value: string | Date | null | undefined): string | null {
 }
 ---
 
-<BaseLayout
-    title={`${title} • Maarten Mieras`}
-    description={subtitle}
->
+<BaseLayout title={`${title} • Maarten Mieras`} description={subtitle}>
     <Header />
+
+    <div
+        class="feed-preview"
+        data-feed-preview
+        data-active="false"
+        aria-hidden="true"
+    >
+    </div>
 
     <main id="main" class="feed">
         <header class="feed__header">
@@ -65,12 +73,15 @@ function yearFrom(value: string | Date | null | undefined): string | null {
                 books.length > 0 ? (
                     <ol class="feed__list" role="list">
                         {books.map((book) => {
-                            const year = yearFrom(book.dateRead) ?? (book.published || null);
+                            const year =
+                                yearFrom(book.dateRead) ??
+                                (book.published || null);
                             return (
                                 <li class="row">
                                     <a
                                         href={book.url}
                                         class="row__link"
+                                        data-preview-kind="book"
                                         target="_blank"
                                         rel="noopener noreferrer"
                                     >
@@ -85,15 +96,27 @@ function yearFrom(value: string | Date | null | undefined): string | null {
                                             />
                                         )}
                                         <span class="row__primary">
-                                            <span class="row__title">{book.title}</span>
+                                            <span class="row__title">
+                                                {book.title}
+                                            </span>
                                         </span>
-                                        <span class="row__meta">{book.author}</span>
+                                        <span class="row__meta">
+                                            {book.author}
+                                        </span>
                                         {year ? (
-                                            <span class="row__year">{year}</span>
+                                            <span class="row__year">
+                                                {year}
+                                            </span>
                                         ) : (
-                                            <span class="row__year" aria-hidden="true" />
+                                            <span
+                                                class="row__year"
+                                                aria-hidden="true"
+                                            />
                                         )}
-                                        <span class="visually-hidden"> (opens Goodreads in a new tab)</span>
+                                        <span class="visually-hidden">
+                                            {" "}
+                                            (opens Goodreads in a new tab)
+                                        </span>
                                     </a>
                                 </li>
                             );
@@ -105,7 +128,11 @@ function yearFrom(value: string | Date | null | undefined): string | null {
             }
         </section>
 
-        <section id="listen" class="feed__section" aria-labelledby="listen-heading">
+        <section
+            id="listen"
+            class="feed__section"
+            aria-labelledby="listen-heading"
+        >
             <h2 id="listen-heading" class="feed__cat">Listen</h2>
 
             <div class="feed__block" id="records">
@@ -120,6 +147,7 @@ function yearFrom(value: string | Date | null | undefined): string | null {
                                         <a
                                             href={record.url}
                                             class="row__link"
+                                            data-preview-kind="music"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                         >
@@ -134,16 +162,32 @@ function yearFrom(value: string | Date | null | undefined): string | null {
                                                 />
                                             )}
                                             <span class="row__primary">
-                                                <span class="row__title">{record.title}</span>
-                                                {added && <span class="row__when">{added}</span>}
+                                                <span class="row__title">
+                                                    {record.title}
+                                                </span>
+                                                {added && (
+                                                    <span class="row__when">
+                                                        {added}
+                                                    </span>
+                                                )}
                                             </span>
-                                            <span class="row__meta">{record.artist}</span>
+                                            <span class="row__meta">
+                                                {record.artist}
+                                            </span>
                                             {record.year != null ? (
-                                                <span class="row__year">{record.year}</span>
+                                                <span class="row__year">
+                                                    {record.year}
+                                                </span>
                                             ) : (
-                                                <span class="row__year" aria-hidden="true" />
+                                                <span
+                                                    class="row__year"
+                                                    aria-hidden="true"
+                                                />
                                             )}
-                                            <span class="visually-hidden"> (opens Discogs in a new tab)</span>
+                                            <span class="visually-hidden">
+                                                {" "}
+                                                (opens Discogs in a new tab)
+                                            </span>
                                         </a>
                                     </li>
                                 );
@@ -165,8 +209,12 @@ function yearFrom(value: string | Date | null | undefined): string | null {
                                 return (
                                     <li class="row">
                                         <a
-                                            href={track.trackUrl || "https://open.spotify.com"}
+                                            href={
+                                                track.trackUrl ||
+                                                "https://open.spotify.com"
+                                            }
                                             class="row__link"
+                                            data-preview-kind="music"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                         >
@@ -181,16 +229,32 @@ function yearFrom(value: string | Date | null | undefined): string | null {
                                                 />
                                             )}
                                             <span class="row__primary">
-                                                <span class="row__title">{track.title}</span>
-                                                {played && <span class="row__when">{played}</span>}
+                                                <span class="row__title">
+                                                    {track.title}
+                                                </span>
+                                                {played && (
+                                                    <span class="row__when">
+                                                        {played}
+                                                    </span>
+                                                )}
                                             </span>
-                                            <span class="row__meta">{track.artist}</span>
+                                            <span class="row__meta">
+                                                {track.artist}
+                                            </span>
                                             {track.year != null ? (
-                                                <span class="row__year">{track.year}</span>
+                                                <span class="row__year">
+                                                    {track.year}
+                                                </span>
                                             ) : (
-                                                <span class="row__year" aria-hidden="true" />
+                                                <span
+                                                    class="row__year"
+                                                    aria-hidden="true"
+                                                />
                                             )}
-                                            <span class="visually-hidden"> (opens Spotify in a new tab)</span>
+                                            <span class="visually-hidden">
+                                                {" "}
+                                                (opens Spotify in a new tab)
+                                            </span>
                                         </a>
                                     </li>
                                 );
@@ -214,6 +278,7 @@ function yearFrom(value: string | Date | null | undefined): string | null {
                                         <a
                                             href={mix.url}
                                             class="row__link"
+                                            data-preview-kind="music"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                         >
@@ -228,15 +293,27 @@ function yearFrom(value: string | Date | null | undefined): string | null {
                                                 />
                                             )}
                                             <span class="row__primary">
-                                                <span class="row__title">{mix.title}</span>
+                                                <span class="row__title">
+                                                    {mix.title}
+                                                </span>
                                             </span>
-                                            <span class="row__meta">Mixcloud</span>
+                                            <span class="row__meta">
+                                                Mixcloud
+                                            </span>
                                             {year ? (
-                                                <span class="row__year">{year}</span>
+                                                <span class="row__year">
+                                                    {year}
+                                                </span>
                                             ) : (
-                                                <span class="row__year" aria-hidden="true" />
+                                                <span
+                                                    class="row__year"
+                                                    aria-hidden="true"
+                                                />
                                             )}
-                                            <span class="visually-hidden"> (opens Mixcloud in a new tab)</span>
+                                            <span class="visually-hidden">
+                                                {" "}
+                                                (opens Mixcloud in a new tab)
+                                            </span>
                                         </a>
                                     </li>
                                 );
@@ -249,19 +326,26 @@ function yearFrom(value: string | Date | null | undefined): string | null {
             </div>
         </section>
 
-        <section id="watch" class="feed__section" aria-labelledby="watch-heading">
+        <section
+            id="watch"
+            class="feed__section"
+            aria-labelledby="watch-heading"
+        >
             <h2 id="watch-heading" class="feed__cat">Watch</h2>
             {
                 watched.length > 0 ? (
                     <>
                         <ol class="feed__list" role="list">
                             {watched.map((item) => {
-                                const watchedAgo = formatTimeAgo(item.watchedAt);
+                                const watchedAgo = formatTimeAgo(
+                                    item.watchedAt
+                                );
                                 return (
                                     <li class="row">
                                         <a
                                             href={item.url}
                                             class="row__link"
+                                            data-preview-kind="film"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                         >
@@ -276,27 +360,42 @@ function yearFrom(value: string | Date | null | undefined): string | null {
                                                 />
                                             )}
                                             <span class="row__primary">
-                                                <span class="row__title">{item.title}</span>
+                                                <span class="row__title">
+                                                    {item.title}
+                                                </span>
                                                 {watchedAgo && (
-                                                    <span class="row__when">{watchedAgo}</span>
+                                                    <span class="row__when">
+                                                        {watchedAgo}
+                                                    </span>
                                                 )}
                                             </span>
                                             <span class="row__meta">
-                                                {item.type === "movie" ? "Film" : "Serie"}
+                                                {item.type === "movie"
+                                                    ? "Film"
+                                                    : "Serie"}
                                             </span>
                                             {item.year != null ? (
-                                                <span class="row__year">{item.year}</span>
+                                                <span class="row__year">
+                                                    {item.year}
+                                                </span>
                                             ) : (
-                                                <span class="row__year" aria-hidden="true" />
+                                                <span
+                                                    class="row__year"
+                                                    aria-hidden="true"
+                                                />
                                             )}
-                                            <span class="visually-hidden"> (opens Trakt in a new tab)</span>
+                                            <span class="visually-hidden">
+                                                {" "}
+                                                (opens Trakt in a new tab)
+                                            </span>
                                         </a>
                                     </li>
                                 );
                             })}
                         </ol>
                         <p class="feed__credit">
-                            This product uses the TMDB API but is not endorsed or certified by TMDB.
+                            This product uses the TMDB API but is not endorsed
+                            or certified by TMDB.
                         </p>
                     </>
                 ) : (
@@ -313,8 +412,8 @@ function yearFrom(value: string | Date | null | undefined): string | null {
         --feed-sticky-line: 1.25;
         --feed-sticky-border: 1px;
         --feed-cat-height: calc(
-            var(--step--2) * var(--feed-sticky-line) + var(--feed-sticky-pad) * 2 +
-                var(--feed-sticky-border)
+            var(--step--2) * var(--feed-sticky-line) + var(--feed-sticky-pad) *
+                2 + var(--feed-sticky-border)
         );
 
         padding-inline: var(--space-s);
@@ -415,15 +514,8 @@ function yearFrom(value: string | Date | null | undefined): string | null {
         padding: 0;
     }
 
-    /* Elevate the hovered row so its fixed thumb isn't sliced by sibling rows'
-       stacking contexts (z-index on every .row trapped the preview). */
     .row {
         position: relative;
-    }
-
-    .row:hover,
-    .row:focus-within {
-        z-index: 1100;
     }
 
     .row__link {
@@ -495,30 +587,64 @@ function yearFrom(value: string | Date | null | undefined): string | null {
         text-decoration: underline;
     }
 
+    /* Source for Three textures — kept in DOM but not shown (3D canvas replaces hover) */
     .row__thumb {
-        display: none;
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+        pointer-events: none;
+        overflow: hidden;
     }
 
+    .feed-preview {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        translate: -50% -50%;
+        /* size on screen — tweak these */
+        width: min(50vw, 70rem);
+        height: min(50vw, 70rem);
+        z-index: 2000;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 160ms ease;
+    }
+
+    .feed-preview[data-active="true"] {
+        opacity: 1;
+    }
+
+    .feed-preview__canvas {
+        display: block;
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    /* Fallback flat thumb if 3D init skipped (touch / reduced motion) */
     @media (hover: hover) and (pointer: fine) {
-        .row__thumb {
-            display: block;
+        html:not(.feed-preview-3d) .row__thumb {
             position: fixed;
             top: 50%;
             left: 50%;
             translate: -50% -50%;
-            width: min(40vw, 18rem);
+            width: min(28vw, 11rem);
             height: auto;
-            max-height: 70vh;
+            max-height: 40vh;
             object-fit: contain;
             z-index: 1;
             opacity: 0;
-            pointer-events: none;
-            box-shadow: 0 0 0 1px var(--color-border);
-            background: var(--color-bg);
+            overflow: visible;
         }
 
-        .row__link:hover .row__thumb,
-        .row__link:focus-visible .row__thumb {
+        /* Elevate hovered row only for flat-thumb fallback (not with 3D canvas) */
+        html:not(.feed-preview-3d) .row:hover,
+        html:not(.feed-preview-3d) .row:focus-within {
+            z-index: 1100;
+        }
+
+        html:not(.feed-preview-3d) .row__link:hover .row__thumb,
+        html:not(.feed-preview-3d) .row__link:focus-visible .row__thumb {
             opacity: 1;
         }
     }
@@ -552,6 +678,11 @@ function yearFrom(value: string | Date | null | undefined): string | null {
 
     gsap.registerPlugin(ScrollTrigger);
 
+    // Code-split Three.js dither preview (only on /feed, pointer devices)
+    void import("../scripts/feed-preview-3d").then(({ initFeedPreview3D }) => {
+        initFeedPreview3D();
+    });
+
     /**
      * Per-list stagger on scroll (same idea as homepage clients/services):
      * - gsap.set hides rows (opacity 0)
@@ -559,7 +690,8 @@ function yearFrom(value: string | Date | null | undefined): string | null {
      * - prefers-reduced-motion: skip motion, show rows immediately
      */
     function initFeedListStagger() {
-        const lists = document.querySelectorAll<HTMLOListElement>(".feed__list");
+        const lists =
+            document.querySelectorAll<HTMLOListElement>(".feed__list");
         if (!lists.length) return;
 
         const mm = gsap.matchMedia();
