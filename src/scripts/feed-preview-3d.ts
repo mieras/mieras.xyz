@@ -12,7 +12,7 @@ import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 
 export type PreviewKind = "book" | "music" | "film";
 
-const CANVAS_SIZE = 520;
+const CANVAS_SIZE = 640;
 
 /** Box size by media type (Three units). Depth is fixed per kind. */
 function boxSize(kind: PreviewKind, aspect: number): THREE.Vector3 {
@@ -35,9 +35,10 @@ const BayerDitherShader = {
   uniforms: {
     tDiffuse: { value: null as THREE.Texture | null },
     resolution: { value: new THREE.Vector2(1, 1) },
-    gridSize: { value: 3.0 },
-    pixelSizeRatio: { value: 1.25 },
-    invertColor: { value: 0.0 },
+    gridSize: { value: 1.25 },
+    pixelSizeRatio: { value: 1.0 },
+    // 0 = black ink (light mode), 1 = white ink (dark mode)
+    whiteInk: { value: 0.0 },
   },
   vertexShader: /* glsl */ `
     varying vec2 vUv;
@@ -51,7 +52,7 @@ const BayerDitherShader = {
     uniform vec2 resolution;
     uniform float gridSize;
     uniform float pixelSizeRatio;
-    uniform float invertColor;
+    uniform float whiteInk;
     varying vec2 vUv;
 
     bool getValue(float brightness, vec2 pos) {
@@ -93,11 +94,14 @@ const BayerDitherShader = {
         return;
       }
       float luminance = dot(tex.rgb, vec3(0.299, 0.587, 0.114));
-      // Binary Bayer: black / white (flip for dark mode)
+      // Ink-only Bayer: black (light) or white (dark); gaps stay transparent
       bool ink = getValue(luminance, fragCoord);
-      if (invertColor > 0.5) ink = !ink;
-      vec3 bw = ink ? vec3(0.0) : vec3(1.0);
-      gl_FragColor = vec4(bw, 1.0);
+      if (!ink) {
+        gl_FragColor = vec4(0.0);
+        return;
+      }
+      float c = whiteInk > 0.5 ? 1.0 : 0.0;
+      gl_FragColor = vec4(c, c, c, 1.0);
     }
   `,
 };
@@ -168,11 +172,13 @@ export function initFeedPreview3D(root: ParentNode = document) {
   composer.addPass(new RenderPass(scene, camera));
   const ditherPass = new ShaderPass(BayerDitherShader);
   ditherPass.uniforms.resolution.value.set(CANVAS_SIZE, CANVAS_SIZE);
-  ditherPass.uniforms.invertColor.value = isDarkTheme() ? 1 : 0;
+  ditherPass.uniforms.whiteInk.value = isDarkTheme() ? 1 : 0;
+  ditherPass.material.transparent = true;
+  ditherPass.material.depthWrite = false;
   composer.addPass(ditherPass);
 
   function syncTheme() {
-    ditherPass.uniforms.invertColor.value = isDarkTheme() ? 1 : 0;
+    ditherPass.uniforms.whiteInk.value = isDarkTheme() ? 1 : 0;
     if (visible && mesh) composer.render();
   }
 

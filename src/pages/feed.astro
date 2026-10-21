@@ -515,7 +515,7 @@ function yearFrom(value: string | Date | null | undefined): string | null {
     .feed-preview {
         position: fixed;
         inset: 0;
-        z-index: 0;
+        z-index: 1100;
         display: grid;
         place-items: center;
         pointer-events: none;
@@ -529,16 +529,10 @@ function yearFrom(value: string | Date | null | undefined): string | null {
 
     .feed-preview__canvas {
         display: block;
-        width: min(70vw, 28rem);
-        height: min(70vw, 28rem);
-        max-width: 28rem;
-        max-height: 70vh;
-    }
-
-    /* Keep list / sticky heads above the ambient preview */
-    .feed {
-        position: relative;
-        z-index: 1;
+        width: min(42vw, 16rem);
+        height: min(42vw, 16rem);
+        max-width: 16rem;
+        max-height: 50vh;
     }
 
     /* Fallback flat thumb if 3D init skipped (touch / reduced motion) */

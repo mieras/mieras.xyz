@@ -10,7 +10,7 @@ All notable changes to this project are documented here.
 
 ### Changed
 
-- Feed 3D preview sits behind the list (`z-index: 0`, centered, max-width), binary B/W dither, inverts with dark mode
+- Feed 3D preview: centered, smaller, fine ink-only Bayer dither (black on light / white on dark), top z-index
 
 ---
 
