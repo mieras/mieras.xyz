@@ -37,7 +37,7 @@ const BayerDitherShader = {
     resolution: { value: new THREE.Vector2(1, 1) },
     gridSize: { value: 3.0 },
     pixelSizeRatio: { value: 1.25 },
-    grayscaleOnly: { value: 0.0 },
+    invertColor: { value: 0.0 },
   },
   vertexShader: /* glsl */ `
     varying vec2 vUv;
@@ -51,7 +51,7 @@ const BayerDitherShader = {
     uniform vec2 resolution;
     uniform float gridSize;
     uniform float pixelSizeRatio;
-    uniform float grayscaleOnly;
+    uniform float invertColor;
     varying vec2 vUv;
 
     bool getValue(float brightness, vec2 pos) {
@@ -87,17 +87,23 @@ const BayerDitherShader = {
       vec2 fragCoord = vUv * resolution;
       float pixelSize = max(gridSize * pixelSizeRatio, 1.0);
       vec2 pixelatedUV = floor(fragCoord / pixelSize) * pixelSize / resolution;
-      vec3 baseColor = texture2D(tDiffuse, pixelatedUV).rgb;
-      float luminance = dot(baseColor, vec3(0.299, 0.587, 0.114));
-      if (grayscaleOnly > 0.5) {
-        baseColor = vec3(luminance);
-      }
-      bool dithered = getValue(luminance, fragCoord);
-      vec3 ditherColor = dithered ? vec3(0.0) : baseColor;
-      gl_FragColor = vec4(ditherColor, 1.0);
+      vec4 tex = texture2D(tDiffuse, pixelatedUV);
+      float luminance = dot(tex.rgb, vec3(0.299, 0.587, 0.114));
+      // Binary Bayer: black / white (flip for dark mode)
+      bool ink = getValue(luminance, fragCoord);
+      if (invertColor > 0.5) ink = !ink;
+      vec3 bw = ink ? vec3(0.0) : vec3(1.0);
+      gl_FragColor = vec4(bw, tex.a);
     }
   `,
 };
+
+function isDarkTheme(): boolean {
+  const attr = document.documentElement.getAttribute("data-theme");
+  if (attr === "dark") return true;
+  if (attr === "light") return false;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+}
 
 function edgeColorFromTexture(tex: THREE.Texture): THREE.Color {
   // Neutral edge; tint slightly warm/cool via average would need canvas read —
@@ -158,7 +164,19 @@ export function initFeedPreview3D(root: ParentNode = document) {
   composer.addPass(new RenderPass(scene, camera));
   const ditherPass = new ShaderPass(BayerDitherShader);
   ditherPass.uniforms.resolution.value.set(CANVAS_SIZE, CANVAS_SIZE);
+  ditherPass.uniforms.invertColor.value = isDarkTheme() ? 1 : 0;
   composer.addPass(ditherPass);
+
+  function syncTheme() {
+    ditherPass.uniforms.invertColor.value = isDarkTheme() ? 1 : 0;
+  }
+
+  const themeObserver = new MutationObserver(syncTheme);
+  themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["data-theme"],
+  });
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", syncTheme);
 
   function disposeMesh() {
     if (!mesh) return;
