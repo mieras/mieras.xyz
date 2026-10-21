@@ -6,12 +6,19 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import Header from "../components/Header.astro";
 import { getEntry } from "astro:content";
 import { getShelfBooks } from "../lib/goodreads";
+import { getRecentAdditions } from "../lib/discogs";
+import { getCloudcasts } from "../lib/mixcloud";
 import { getRecentlyWatched } from "../lib/trakt";
 
 const mainEntry = await getEntry("main", "main");
 const contact = mainEntry?.data?.contact ?? "studio@mieras.xyz";
 
-const [books, watched] = await Promise.all([getShelfBooks(), getRecentlyWatched()]);
+const [books, records, mixes, watched] = await Promise.all([
+    getShelfBooks(),
+    getRecentAdditions(),
+    getCloudcasts(),
+    getRecentlyWatched(),
+]);
 
 // Browser revalidates every visit; Netlify CDN serves a cached copy for an hour
 Astro.response.headers.set("Cache-Control", "public, max-age=0, must-revalidate");
@@ -84,7 +91,93 @@ const yearFormat = new Intl.DateTimeFormat("en-GB", { year: "numeric" });
 
         <section id="listen" class="feed__section" aria-labelledby="listen-heading">
             <h2 id="listen-heading" class="feed__heading">Listen</h2>
-            <p class="feed__empty">Soon.</p>
+
+            <div class="feed__block" id="records">
+                <h3 class="feed__subheading">Records</h3>
+                {
+                    records.length > 0 ? (
+                        <ol class="feed__grid" role="list">
+                            {records.map((record) => (
+                                <li class="card">
+                                    <a
+                                        href={record.url}
+                                        class="card__link"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        {record.cover ? (
+                                            <Image
+                                                src={record.cover}
+                                                alt=""
+                                                width={400}
+                                                height={400}
+                                                loading="lazy"
+                                                class="card__media card__media--square"
+                                            />
+                                        ) : (
+                                            <span
+                                                class="card__media card__media--square card__media--empty"
+                                                aria-hidden="true"
+                                            />
+                                        )}
+                                        <span class="card__title">{record.title}</span>
+                                        <span class="card__meta">
+                                            {record.artist}
+                                            {record.year != null && <> · {record.year}</>}
+                                        </span>
+                                        <span class="visually-hidden"> (opens Discogs in a new tab)</span>
+                                    </a>
+                                </li>
+                            ))}
+                        </ol>
+                    ) : (
+                        <p class="feed__empty">No recent additions.</p>
+                    )
+                }
+            </div>
+
+            <div class="feed__block" id="mixes">
+                <h3 class="feed__subheading">Mixes</h3>
+                {
+                    mixes.length > 0 ? (
+                        <ol class="feed__grid" role="list">
+                            {mixes.map((mix) => (
+                                <li class="card">
+                                    <a
+                                        href={mix.url}
+                                        class="card__link"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        {mix.cover ? (
+                                            <Image
+                                                src={mix.cover}
+                                                alt=""
+                                                width={400}
+                                                height={400}
+                                                loading="lazy"
+                                                class="card__media card__media--square"
+                                            />
+                                        ) : (
+                                            <span
+                                                class="card__media card__media--square card__media--empty"
+                                                aria-hidden="true"
+                                            />
+                                        )}
+                                        <span class="card__title">{mix.title}</span>
+                                        <span class="card__meta">
+                                            {mix.created && yearFormat.format(new Date(mix.created))}
+                                        </span>
+                                        <span class="visually-hidden"> (opens Mixcloud in a new tab)</span>
+                                    </a>
+                                </li>
+                            ))}
+                        </ol>
+                    ) : (
+                        <p class="feed__empty">No mixtapes yet.</p>
+                    )
+                }
+            </div>
         </section>
 
         <section id="watch" class="feed__section" aria-labelledby="watch-heading">
@@ -193,6 +286,17 @@ const yearFormat = new Intl.DateTimeFormat("en-GB", { year: "numeric" });
         margin: 0 0 var(--space-l);
     }
 
+    .feed__block + .feed__block {
+        margin-top: var(--space-xl);
+    }
+
+    .feed__subheading {
+        font-size: var(--step-1);
+        font-weight: 500;
+        line-height: 1;
+        margin: 0 0 var(--space-m);
+    }
+
     .feed__grid {
         list-style: none;
         margin: 0;
@@ -223,6 +327,10 @@ const yearFormat = new Intl.DateTimeFormat("en-GB", { year: "numeric" });
         object-fit: cover;
         margin-bottom: var(--space-2xs);
         background: var(--color-border);
+    }
+
+    .card__media--square {
+        aspect-ratio: 1 / 1;
     }
 
     .card__title {

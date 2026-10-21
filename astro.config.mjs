@@ -19,6 +19,8 @@ export default defineConfig({
       'm.media-amazon.com',
       'images-na.ssl-images-amazon.com',
       'image.tmdb.org',
+      'i.discogs.com',
+      'thumbnailer.mixcloud.com',
     ],
   },
 });
