@@ -10,6 +10,7 @@ import { getRecentAdditions } from "../lib/discogs";
 import { getCloudcasts } from "../lib/mixcloud";
 import { getRecentlyPlayed } from "../lib/spotify";
 import { getRecentlyWatched } from "../lib/trakt";
+import { formatTimeAgo } from "../lib/time-ago";
 
 const mainEntry = await getEntry("main", "main");
 const contact = mainEntry?.data?.contact ?? "studio@mieras.xyz";
@@ -102,33 +103,37 @@ function yearFrom(value: string | Date | null | undefined): string | null {
                 {
                     records.length > 0 ? (
                         <ol class="feed__list" role="list">
-                            {records.map((record) => (
-                                <li class="row">
-                                    <a
-                                        href={record.url}
-                                        class="row__link"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        {record.cover && (
-                                            <Image
-                                                src={record.cover}
-                                                alt=""
-                                                width={600}
-                                                height={600}
-                                                loading="lazy"
-                                                class="row__thumb"
-                                            />
-                                        )}
-                                        <span class="row__title">{record.title}</span>
-                                        <span class="row__meta">{record.artist}</span>
-                                        {record.year != null && (
-                                            <span class="row__year">{record.year}</span>
-                                        )}
-                                        <span class="visually-hidden"> (opens Discogs in a new tab)</span>
-                                    </a>
-                                </li>
-                            ))}
+                            {records.map((record) => {
+                                const added = formatTimeAgo(record.added);
+                                return (
+                                    <li class="row">
+                                        <a
+                                            href={record.url}
+                                            class="row__link"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {record.cover && (
+                                                <Image
+                                                    src={record.cover}
+                                                    alt=""
+                                                    width={600}
+                                                    height={600}
+                                                    loading="lazy"
+                                                    class="row__thumb"
+                                                />
+                                            )}
+                                            <span class="row__title">{record.title}</span>
+                                            <span class="row__meta">
+                                                {record.artist}
+                                                {record.year != null && <> · {record.year}</>}
+                                            </span>
+                                            {added && <span class="row__year">{added}</span>}
+                                            <span class="visually-hidden"> (opens Discogs in a new tab)</span>
+                                        </a>
+                                    </li>
+                                );
+                            })}
                         </ol>
                     ) : (
                         <p class="feed__empty">No recent additions.</p>
@@ -141,33 +146,34 @@ function yearFrom(value: string | Date | null | undefined): string | null {
                 {
                     tracks.length > 0 ? (
                         <ol class="feed__list" role="list">
-                            {tracks.map((track) => (
-                                <li class="row">
-                                    <a
-                                        href={track.trackUrl || "https://open.spotify.com"}
-                                        class="row__link"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        {track.albumArt && (
-                                            <Image
-                                                src={track.albumArt}
-                                                alt=""
-                                                width={600}
-                                                height={600}
-                                                loading="lazy"
-                                                class="row__thumb"
-                                            />
-                                        )}
-                                        <span class="row__title">{track.title}</span>
-                                        <span class="row__meta">{track.artist}</span>
-                                        {track.year != null && (
-                                            <span class="row__year">{track.year}</span>
-                                        )}
-                                        <span class="visually-hidden"> (opens Spotify in a new tab)</span>
-                                    </a>
-                                </li>
-                            ))}
+                            {tracks.map((track) => {
+                                const played = formatTimeAgo(track.playedAt);
+                                return (
+                                    <li class="row">
+                                        <a
+                                            href={track.trackUrl || "https://open.spotify.com"}
+                                            class="row__link"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {track.albumArt && (
+                                                <Image
+                                                    src={track.albumArt}
+                                                    alt=""
+                                                    width={600}
+                                                    height={600}
+                                                    loading="lazy"
+                                                    class="row__thumb"
+                                                />
+                                            )}
+                                            <span class="row__title">{track.title}</span>
+                                            <span class="row__meta">{track.artist}</span>
+                                            {played && <span class="row__year">{played}</span>}
+                                            <span class="visually-hidden"> (opens Spotify in a new tab)</span>
+                                        </a>
+                                    </li>
+                                );
+                            })}
                         </ol>
                     ) : (
                         <p class="feed__empty">No recent plays.</p>
@@ -222,35 +228,39 @@ function yearFrom(value: string | Date | null | undefined): string | null {
                 watched.length > 0 ? (
                     <>
                         <ol class="feed__list" role="list">
-                            {watched.map((item) => (
-                                <li class="row">
-                                    <a
-                                        href={item.url}
-                                        class="row__link"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        {item.poster && (
-                                            <Image
-                                                src={item.poster}
-                                                alt=""
-                                                width={600}
-                                                height={900}
-                                                loading="lazy"
-                                                class="row__thumb"
-                                            />
-                                        )}
-                                        <span class="row__title">{item.title}</span>
-                                        <span class="row__meta">
-                                            {item.type === "movie" ? "Film" : "Serie"}
-                                        </span>
-                                        {item.year != null && (
-                                            <span class="row__year">{item.year}</span>
-                                        )}
-                                        <span class="visually-hidden"> (opens Trakt in a new tab)</span>
-                                    </a>
-                                </li>
-                            ))}
+                            {watched.map((item) => {
+                                const watchedAgo = formatTimeAgo(item.watchedAt);
+                                return (
+                                    <li class="row">
+                                        <a
+                                            href={item.url}
+                                            class="row__link"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {item.poster && (
+                                                <Image
+                                                    src={item.poster}
+                                                    alt=""
+                                                    width={600}
+                                                    height={900}
+                                                    loading="lazy"
+                                                    class="row__thumb"
+                                                />
+                                            )}
+                                            <span class="row__title">{item.title}</span>
+                                            <span class="row__meta">
+                                                {item.type === "movie" ? "Film" : "Serie"}
+                                                {item.year != null && <> · {item.year}</>}
+                                            </span>
+                                            {watchedAgo && (
+                                                <span class="row__year">{watchedAgo}</span>
+                                            )}
+                                            <span class="visually-hidden"> (opens Trakt in a new tab)</span>
+                                        </a>
+                                    </li>
+                                );
+                            })}
                         </ol>
                         <p class="feed__credit">
                             This product uses the TMDB API but is not endorsed or certified by TMDB.
@@ -353,7 +363,7 @@ function yearFrom(value: string | Date | null | undefined): string | null {
 
     .row__link {
         display: grid;
-        grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) 4.5ch;
+        grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) 7ch;
         gap: var(--space-2xs) var(--space-s);
         align-items: baseline;
         padding-block: var(--space-3xs);
@@ -441,7 +451,7 @@ function yearFrom(value: string | Date | null | undefined): string | null {
 
     @media (max-width: 40rem) {
         .row__link {
-            grid-template-columns: minmax(0, 1fr) 4.5ch;
+            grid-template-columns: minmax(0, 1fr) 7ch;
         }
 
         .row__meta {

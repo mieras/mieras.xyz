@@ -112,11 +112,9 @@ async function fetchHistory(): Promise<WatchedItem[]> {
       })
     );
 
-    const withTmdb = draft.filter((item) => item.tmdbId);
-    const withPoster = withTmdb.filter((item) => item.poster);
-    // Don't poison the shared cache with an empty-poster response (e.g. bad/missing key)
-    if (withTmdb.length > 0 && withPoster.length === 0) {
-      throw new Error("TMDB returned no posters — refusing to cache empty result");
+    const withPoster = draft.filter((item) => item.tmdbId && item.poster);
+    if (draft.some((item) => item.tmdbId) && withPoster.length === 0) {
+      console.warn("[trakt] TMDB returned no posters — check TMDB_API_KEY.");
     }
   }
 
@@ -126,8 +124,8 @@ async function fetchHistory(): Promise<WatchedItem[]> {
 export async function getRecentlyWatched(): Promise<WatchedItem[]> {
   const username = process.env.TRAKT_USERNAME ?? "anon";
   try {
-    // v2: bust caches written before TMDB posters were available
-    return await cachedJson(`trakt:history:v2:${username}`, fetchHistory);
+    // v3: after env-load fix (file .env wins over stale shell TMDB key)
+    return await cachedJson(`trakt:history:v3:${username}`, fetchHistory);
   } catch (err) {
     console.error("[trakt]", err);
     return [];

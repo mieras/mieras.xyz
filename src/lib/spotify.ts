@@ -5,6 +5,7 @@ export interface SpotifyTrack {
   albumArt: string;
   trackUrl: string;
   year: number | null;
+  playedAt: string | null;
 }
 
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
@@ -81,6 +82,7 @@ export async function getRecentlyPlayed(limit = 10): Promise<SpotifyTrack[]> {
         albumArt,
         trackUrl: track.external_urls?.spotify ?? "",
         year,
+        playedAt: typeof item.played_at === "string" ? item.played_at : null,
       });
     }
 
