@@ -111,6 +111,13 @@ async function fetchHistory(): Promise<WatchedItem[]> {
         }
       })
     );
+
+    const withTmdb = draft.filter((item) => item.tmdbId);
+    const withPoster = withTmdb.filter((item) => item.poster);
+    // Don't poison the shared cache with an empty-poster response (e.g. bad/missing key)
+    if (withTmdb.length > 0 && withPoster.length === 0) {
+      throw new Error("TMDB returned no posters — refusing to cache empty result");
+    }
   }
 
   return draft.map(({ tmdbId: _tmdbId, ...item }) => item);
