@@ -21,6 +21,8 @@ export default defineConfig({
       'image.tmdb.org',
       'i.discogs.com',
       'thumbnailer.mixcloud.com',
+      'i.scdn.co',
+      'mosaic.scdn.co',
     ],
   },
 });

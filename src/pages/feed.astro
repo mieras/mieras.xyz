@@ -8,28 +8,34 @@ import { getEntry } from "astro:content";
 import { getShelfBooks } from "../lib/goodreads";
 import { getRecentAdditions } from "../lib/discogs";
 import { getCloudcasts } from "../lib/mixcloud";
+import { getRecentlyPlayed } from "../lib/spotify";
 import { getRecentlyWatched } from "../lib/trakt";
 
 const mainEntry = await getEntry("main", "main");
 const contact = mainEntry?.data?.contact ?? "studio@mieras.xyz";
 
-const [books, records, mixes, watched] = await Promise.all([
+const [books, records, mixes, tracks, watched] = await Promise.all([
     getShelfBooks(),
     getRecentAdditions(),
     getCloudcasts(),
+    getRecentlyPlayed(24),
     getRecentlyWatched(),
 ]);
 
-// Browser revalidates every visit; Netlify CDN serves a cached copy for an hour
 Astro.response.headers.set("Cache-Control", "public, max-age=0, must-revalidate");
 Astro.response.headers.set(
     "Netlify-CDN-Cache-Control",
     "public, durable, s-maxage=3600, stale-while-revalidate=86400"
 );
-// Ignore query strings (utm, etc.) so they don't fragment the CDN cache
 Astro.response.headers.set("Netlify-Vary", "query");
 
 const yearFormat = new Intl.DateTimeFormat("en-GB", { year: "numeric" });
+
+function yearFrom(value: string | Date | null | undefined): string | null {
+    if (!value) return null;
+    const d = value instanceof Date ? value : new Date(value);
+    return Number.isNaN(d.getTime()) ? null : yearFormat.format(d);
+}
 ---
 
 <BaseLayout
@@ -49,39 +55,38 @@ const yearFormat = new Intl.DateTimeFormat("en-GB", { year: "numeric" });
         </header>
 
         <section id="read" class="feed__section" aria-labelledby="read-heading">
-            <h2 id="read-heading" class="feed__heading">Read</h2>
+            <h2 id="read-heading" class="feed__cat">Read</h2>
             {
                 books.length > 0 ? (
-                    <ol class="feed__grid" role="list">
-                        {books.map((book) => (
-                            <li class="card">
-                                <a
-                                    href={book.url}
-                                    class="card__link"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    {book.cover ? (
-                                        <Image
-                                            src={book.cover}
-                                            alt=""
-                                            width={400}
-                                            height={600}
-                                            loading="lazy"
-                                            class="card__media"
-                                        />
-                                    ) : (
-                                        <span class="card__media card__media--empty" aria-hidden="true" />
-                                    )}
-                                    <span class="card__title">{book.title}</span>
-                                    <span class="card__meta">
-                                        {book.author}
-                                        {book.dateRead && <> · {yearFormat.format(new Date(book.dateRead))}</>}
-                                    </span>
-                                    <span class="visually-hidden"> (opens Goodreads in a new tab)</span>
-                                </a>
-                            </li>
-                        ))}
+                    <ol class="feed__list" role="list">
+                        {books.map((book) => {
+                            const year = yearFrom(book.dateRead) ?? (book.published || null);
+                            return (
+                                <li class="row">
+                                    <a
+                                        href={book.url}
+                                        class="row__link"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        {book.cover && (
+                                            <Image
+                                                src={book.cover}
+                                                alt=""
+                                                width={600}
+                                                height={900}
+                                                loading="lazy"
+                                                class="row__thumb"
+                                            />
+                                        )}
+                                        <span class="row__title">{book.title}</span>
+                                        <span class="row__meta">{book.author}</span>
+                                        {year && <span class="row__year">{year}</span>}
+                                        <span class="visually-hidden"> (opens Goodreads in a new tab)</span>
+                                    </a>
+                                </li>
+                            );
+                        })}
                     </ol>
                 ) : (
                     <p class="feed__empty">Nothing on the shelf right now.</p>
@@ -90,41 +95,36 @@ const yearFormat = new Intl.DateTimeFormat("en-GB", { year: "numeric" });
         </section>
 
         <section id="listen" class="feed__section" aria-labelledby="listen-heading">
-            <h2 id="listen-heading" class="feed__heading">Listen</h2>
+            <h2 id="listen-heading" class="feed__cat">Listen</h2>
 
             <div class="feed__block" id="records">
-                <h3 class="feed__subheading">Records</h3>
+                <h3 class="feed__sub">Records</h3>
                 {
                     records.length > 0 ? (
-                        <ol class="feed__grid" role="list">
+                        <ol class="feed__list" role="list">
                             {records.map((record) => (
-                                <li class="card">
+                                <li class="row">
                                     <a
                                         href={record.url}
-                                        class="card__link"
+                                        class="row__link"
                                         target="_blank"
                                         rel="noopener noreferrer"
                                     >
-                                        {record.cover ? (
+                                        {record.cover && (
                                             <Image
                                                 src={record.cover}
                                                 alt=""
-                                                width={400}
-                                                height={400}
+                                                width={600}
+                                                height={600}
                                                 loading="lazy"
-                                                class="card__media card__media--square"
-                                            />
-                                        ) : (
-                                            <span
-                                                class="card__media card__media--square card__media--empty"
-                                                aria-hidden="true"
+                                                class="row__thumb"
                                             />
                                         )}
-                                        <span class="card__title">{record.title}</span>
-                                        <span class="card__meta">
-                                            {record.artist}
-                                            {record.year != null && <> · {record.year}</>}
-                                        </span>
+                                        <span class="row__title">{record.title}</span>
+                                        <span class="row__meta">{record.artist}</span>
+                                        {record.year != null && (
+                                            <span class="row__year">{record.year}</span>
+                                        )}
                                         <span class="visually-hidden"> (opens Discogs in a new tab)</span>
                                     </a>
                                 </li>
@@ -136,42 +136,78 @@ const yearFormat = new Intl.DateTimeFormat("en-GB", { year: "numeric" });
                 }
             </div>
 
-            <div class="feed__block" id="mixes">
-                <h3 class="feed__subheading">Mixes</h3>
+            <div class="feed__block" id="spotify">
+                <h3 class="feed__sub">Spotify</h3>
                 {
-                    mixes.length > 0 ? (
-                        <ol class="feed__grid" role="list">
-                            {mixes.map((mix) => (
-                                <li class="card">
+                    tracks.length > 0 ? (
+                        <ol class="feed__list" role="list">
+                            {tracks.map((track) => (
+                                <li class="row">
                                     <a
-                                        href={mix.url}
-                                        class="card__link"
+                                        href={track.trackUrl || "https://open.spotify.com"}
+                                        class="row__link"
                                         target="_blank"
                                         rel="noopener noreferrer"
                                     >
-                                        {mix.cover ? (
+                                        {track.albumArt && (
                                             <Image
-                                                src={mix.cover}
+                                                src={track.albumArt}
                                                 alt=""
-                                                width={400}
-                                                height={400}
+                                                width={600}
+                                                height={600}
                                                 loading="lazy"
-                                                class="card__media card__media--square"
-                                            />
-                                        ) : (
-                                            <span
-                                                class="card__media card__media--square card__media--empty"
-                                                aria-hidden="true"
+                                                class="row__thumb"
                                             />
                                         )}
-                                        <span class="card__title">{mix.title}</span>
-                                        <span class="card__meta">
-                                            {mix.created && yearFormat.format(new Date(mix.created))}
-                                        </span>
-                                        <span class="visually-hidden"> (opens Mixcloud in a new tab)</span>
+                                        <span class="row__title">{track.title}</span>
+                                        <span class="row__meta">{track.artist}</span>
+                                        {track.year != null && (
+                                            <span class="row__year">{track.year}</span>
+                                        )}
+                                        <span class="visually-hidden"> (opens Spotify in a new tab)</span>
                                     </a>
                                 </li>
                             ))}
+                        </ol>
+                    ) : (
+                        <p class="feed__empty">No recent plays.</p>
+                    )
+                }
+            </div>
+
+            <div class="feed__block" id="mixes">
+                <h3 class="feed__sub">Mixes</h3>
+                {
+                    mixes.length > 0 ? (
+                        <ol class="feed__list" role="list">
+                            {mixes.map((mix) => {
+                                const year = yearFrom(mix.created);
+                                return (
+                                    <li class="row">
+                                        <a
+                                            href={mix.url}
+                                            class="row__link"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {mix.cover && (
+                                                <Image
+                                                    src={mix.cover}
+                                                    alt=""
+                                                    width={600}
+                                                    height={600}
+                                                    loading="lazy"
+                                                    class="row__thumb"
+                                                />
+                                            )}
+                                            <span class="row__title">{mix.title}</span>
+                                            <span class="row__meta">Mixcloud</span>
+                                            {year && <span class="row__year">{year}</span>}
+                                            <span class="visually-hidden"> (opens Mixcloud in a new tab)</span>
+                                        </a>
+                                    </li>
+                                );
+                            })}
                         </ol>
                     ) : (
                         <p class="feed__empty">No mixtapes yet.</p>
@@ -181,36 +217,36 @@ const yearFormat = new Intl.DateTimeFormat("en-GB", { year: "numeric" });
         </section>
 
         <section id="watch" class="feed__section" aria-labelledby="watch-heading">
-            <h2 id="watch-heading" class="feed__heading">Watch</h2>
+            <h2 id="watch-heading" class="feed__cat">Watch</h2>
             {
                 watched.length > 0 ? (
                     <>
-                        <ol class="feed__grid" role="list">
+                        <ol class="feed__list" role="list">
                             {watched.map((item) => (
-                                <li class="card">
+                                <li class="row">
                                     <a
                                         href={item.url}
-                                        class="card__link"
+                                        class="row__link"
                                         target="_blank"
                                         rel="noopener noreferrer"
                                     >
-                                        {item.poster ? (
+                                        {item.poster && (
                                             <Image
                                                 src={item.poster}
                                                 alt=""
-                                                width={400}
-                                                height={600}
+                                                width={600}
+                                                height={900}
                                                 loading="lazy"
-                                                class="card__media"
+                                                class="row__thumb"
                                             />
-                                        ) : (
-                                            <span class="card__media card__media--empty" aria-hidden="true" />
                                         )}
-                                        <span class="card__title">{item.title}</span>
-                                        <span class="card__meta">
+                                        <span class="row__title">{item.title}</span>
+                                        <span class="row__meta">
                                             {item.type === "movie" ? "Film" : "Serie"}
-                                            {item.year != null && <> · {item.year}</>}
                                         </span>
+                                        {item.year != null && (
+                                            <span class="row__year">{item.year}</span>
+                                        )}
                                         <span class="visually-hidden"> (opens Trakt in a new tab)</span>
                                     </a>
                                 </li>
@@ -232,6 +268,7 @@ const yearFormat = new Intl.DateTimeFormat("en-GB", { year: "numeric" });
     .feed {
         padding-inline: var(--space-s);
         padding-block: var(--space-xl) var(--space-2xl);
+        max-width: 56rem;
     }
 
     .feed__header {
@@ -240,11 +277,11 @@ const yearFormat = new Intl.DateTimeFormat("en-GB", { year: "numeric" });
         align-items: baseline;
         justify-content: space-between;
         gap: var(--space-s);
-        margin-bottom: var(--space-xl);
+        margin-bottom: var(--space-l);
     }
 
     .feed__title {
-        font-size: var(--step-5);
+        font-size: var(--step-3);
         font-weight: 500;
         line-height: 1;
         margin: 0;
@@ -253,7 +290,7 @@ const yearFormat = new Intl.DateTimeFormat("en-GB", { year: "numeric" });
     .feed__jump {
         display: flex;
         gap: var(--space-s);
-        font-size: var(--step--1);
+        font-size: var(--step--2);
         font-weight: 500;
     }
 
@@ -272,89 +309,144 @@ const yearFormat = new Intl.DateTimeFormat("en-GB", { year: "numeric" });
     }
 
     .feed__section {
-        scroll-margin-top: var(--space-l);
+        scroll-margin-top: var(--space-s);
     }
 
     .feed__section + .feed__section {
-        margin-top: var(--space-2xl);
+        margin-top: var(--space-l);
     }
 
-    .feed__heading {
-        font-size: var(--step-3);
+    .feed__cat,
+    .feed__sub {
+        position: sticky;
+        z-index: 5;
+        margin: 0;
+        padding-block: var(--space-3xs);
+        font-size: var(--step--2);
         font-weight: 500;
-        line-height: 1;
-        margin: 0 0 var(--space-l);
+        line-height: 1.2;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        background: var(--color-bg);
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .feed__cat {
+        top: 0;
+        z-index: 6;
+    }
+
+    .feed__sub {
+        top: 1.75rem;
+        color: var(--color-text-muted);
+        font-weight: 450;
     }
 
     .feed__block + .feed__block {
-        margin-top: var(--space-xl);
+        margin-top: var(--space-s);
     }
 
-    .feed__subheading {
-        font-size: var(--step-1);
-        font-weight: 500;
-        line-height: 1;
-        margin: 0 0 var(--space-m);
-    }
-
-    .feed__grid {
+    .feed__list {
         list-style: none;
         margin: 0;
         padding: 0;
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(min(100%, 10rem), 1fr));
-        gap: var(--space-l) var(--space-s);
     }
 
-    .card__link {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-3xs);
+    .row__link {
+        display: grid;
+        grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) 4.5ch;
+        gap: var(--space-2xs) var(--space-s);
+        align-items: baseline;
+        padding-block: var(--space-3xs);
+        border-bottom: 1px solid var(--color-border);
         color: var(--color-text);
         text-decoration: none;
+        font-size: var(--step--1);
+        line-height: 1.25;
     }
 
-    .card__link:focus-visible {
+    .row__link:focus-visible {
         outline: 2px solid var(--color-accent);
-        outline-offset: var(--space-3xs);
+        outline-offset: calc(var(--space-3xs) * -1);
     }
 
-    .card__media {
-        display: block;
-        width: 100%;
-        height: auto;
-        aspect-ratio: 2 / 3;
-        object-fit: cover;
-        margin-bottom: var(--space-2xs);
-        background: var(--color-border);
+    .row__title {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
-    .card__media--square {
-        aspect-ratio: 1 / 1;
+    .row__meta {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--color-text-muted);
+        text-align: right;
     }
 
-    .card__title {
-        font-size: var(--step-0);
-        line-height: var(--leading-body);
+    .row__year {
+        font-family: var(--font-mono);
+        font-size: var(--step--2);
+        color: var(--color-text-muted);
+        text-align: right;
+        font-variant-numeric: tabular-nums;
     }
 
-    .card__link:hover .card__title {
+    .row__link:hover .row__title,
+    .row__link:focus-visible .row__title {
         text-decoration: underline;
     }
 
-    .card__meta {
-        font-size: var(--step--2);
-        color: var(--color-text-muted);
+    /* Fixed centered cover on hover — only when a real pointer hover exists */
+    .row__thumb {
+        display: none;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        .row__thumb {
+            display: block;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            translate: -50% -50%;
+            width: min(40vw, 18rem);
+            height: auto;
+            max-height: 70vh;
+            object-fit: contain;
+            z-index: 40;
+            opacity: 0;
+            pointer-events: none;
+            box-shadow: 0 0 0 1px var(--color-border);
+            background: var(--color-bg);
+        }
+
+        .row__link:hover .row__thumb,
+        .row__link:focus-visible .row__thumb {
+            opacity: 1;
+        }
     }
 
     .feed__empty {
         color: var(--color-text-muted);
-        margin: 0;
+        margin: var(--space-2xs) 0 0;
+        font-size: var(--step--1);
     }
 
     .feed__credit {
-        margin: var(--space-l) 0 0;
+        margin: var(--space-m) 0 0;
         font-size: var(--step--2);
         color: var(--color-text-muted);
+    }
+
+    @media (max-width: 40rem) {
+        .row__link {
+            grid-template-columns: minmax(0, 1fr) 4.5ch;
+        }
+
+        .row__meta {
+            display: none;
+        }
     }
 </style>

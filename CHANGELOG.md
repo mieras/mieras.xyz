@@ -6,7 +6,7 @@ All notable changes to this project are documented here.
 
 ### Added
 
-- `/feed` page with Read (Goodreads shelf), Listen (Discogs collection + Mixcloud mixtapes), Watch (Trakt history + TMDB posters); CDN durable cache + Netlify Blobs API cache
+- `/feed` page as a sticky specsheet list (Read / Listen / Watch) with Discogs, Spotify, Mixcloud, Goodreads, Trakt+TMDB; fixed centered cover on hover; CDN durable cache + Netlify Blobs API cache
 - Deploy workflow per `_standards/DEPLOY.md`: features via PR to `staging` (branch deploy on `staging--mierasxyz.netlify.app`), bundled releases to `main`. Branch protection on `staging`
 - `netlify.toml` with an `ignore` rule: no build for commits that only touch docs
 - `.github/dependabot.yml`: weekly grouped updates to `staging`
