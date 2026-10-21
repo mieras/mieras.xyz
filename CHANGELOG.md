@@ -4,30 +4,15 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
-### Added
-
-- `/feed` hover preview: Three.js box (book / music / film proportions) with Bayer dither post-process
-- `.nvmrc` + `NODE_VERSION=22` and security headers in `netlify.toml`
-- Page transitions: Astro `<ClientRouter />` with GSAP leave/enter (laag 3) and progress bar
-
-### Fixed
-
-- `/feed` now includes the site footer (was missing)
-
-### Changed
-
-- About copy: AI for validating ideas, testing concepts, and getting to working prototypes
-- Feed 3D preview: centered, smaller, fine ink-only Bayer dither (black on light / white on dark), top z-index
-- Feed 3D preview: continuous rotation across hovers; 300ms dwell before show/swap
-- Astro 6 → 7 and `@astrojs/netlify` 7 → 8; marked 17 → 18; patch/minor deps (gsap, lenis, sass, prettier)
-- Remaining `npm audit` findings are transitive via `@astrojs/netlify` (dev tooling / `sharp`/`ipx`); no non-breaking fix without `--force`
-
 ---
 
 ## 2026-10-21
 
 ### Added
 
+- `/feed` hover preview: Three.js box (book / music / film proportions) with Bayer dither post-process
+- `.nvmrc` + `NODE_VERSION=22` and security headers in `netlify.toml`
+- Page transitions: Astro `<ClientRouter />` with GSAP leave/enter (laag 3) and progress bar
 - `/feed` page as a sticky specsheet list (Read / Listen / Watch) with Discogs, Spotify, Mixcloud, Goodreads, Trakt+TMDB; relative timestamps; fixed centered cover on hover; CDN durable cache + Netlify Blobs API cache
 - Deploy workflow per `_standards/DEPLOY.md`: features via PR to `staging` (branch deploy on `staging--mierasxyz.netlify.app`), bundled releases to `main`. Branch protection on `staging`
 - `netlify.toml` with an `ignore` rule: no build for commits that only touch docs
@@ -40,6 +25,11 @@ All notable changes to this project are documented here.
 
 ### Changed
 
+- About copy: AI for validating ideas, testing concepts, and getting to working prototypes
+- Feed 3D preview: centered, smaller, fine ink-only Bayer dither (black on light / white on dark), top z-index
+- Feed 3D preview: continuous rotation across hovers; 300ms dwell before show/swap
+- Astro 6 → 7 and `@astrojs/netlify` 7 → 8; marked 17 → 18; patch/minor deps (gsap, lenis, sass, prettier)
+- Remaining `npm audit` findings are transitive via `@astrojs/netlify` (dev tooling / `sharp`/`ipx`); no non-breaking fix without `--force`
 - Header nav is `info` + `feed` (`info` → `/#information`); mail removed from header
 - `CLAUDE.md` moved to `AGENTS.md` (`CLAUDE.md` now only imports it), workflow updated for `staging`
 - Spotify marquee animation engine switched from custom GSAP ticker to `horizontalLoop` + `Draggable` + `InertiaPlugin`
@@ -48,6 +38,7 @@ All notable changes to this project are documented here.
 
 ### Fixed
 
+- `/feed` now includes the site footer (was missing)
 - Intro `padding-right` only from 2-col breakpoint (`40rem`), not on mobile
 - Marquee wrapper: tighter strip gap (`--space-2xs`) and `padding-block` on mobile
 - Clients and services lists now animate in with GSAP stagger when scrolling into viewport (was missing `gsap.registerPlugin(ScrollTrigger)` call)
