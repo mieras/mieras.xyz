@@ -4,20 +4,13 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
-### Added
-
-- `/llms.txt` endpoint (llmstxt.org) with site summary and page index; linked from `<head>`
-
-### Changed
-
-- Feed row hover: full-row 10% tint instead of title underline
-
 ---
 
 ## 2026-10-21
 
 ### Added
 
+- `/llms.txt` endpoint (llmstxt.org) with site summary and page index; linked from `<head>`
 - `/feed` hover preview: Three.js box (book / music / film proportions) with Bayer dither post-process
 - `.nvmrc` + `NODE_VERSION=22` and security headers in `netlify.toml`
 - Page transitions: Astro `<ClientRouter />` with GSAP leave/enter (laag 3) and progress bar
@@ -33,6 +26,7 @@ All notable changes to this project are documented here.
 
 ### Changed
 
+- Feed row hover: full-row 10% tint instead of title underline
 - About copy: AI for validating ideas, testing concepts, and getting to working prototypes
 - Feed 3D preview: centered, smaller, fine ink-only Bayer dither (black on light / white on dark), top z-index
 - Feed 3D preview: continuous rotation across hovers; 300ms dwell before show/swap
