@@ -62,9 +62,10 @@ These preferences are expressed in `robots.txt` and the `Content-Signal` HTTP he
 | --------------------------------------------------------------- | ----------------------------------------------------- |
 | `/robots.txt`                                                   | Crawl rules, Content Signals Policy, sitemap URL      |
 | `/sitemap.xml`                                                  | Public URL map (SSR-friendly; not `@astrojs/sitemap`) |
+| `/llms.txt`                                                     | Site summary + page index for AI assistants (llmstxt.org) |
 | `Accept: text/markdown` on `/`                                  | Clean Markdown for agents; browsers still get HTML    |
 | `Content-Signal` header                                         | Same policy on HTML + Markdown responses              |
-| `<link rel="sitemap">` + `rel="alternate" type="text/markdown"` | Discovery hints in `<head>`                           |
+| `<link rel="sitemap">` + `rel="alternate"` (markdown + llms.txt) | Discovery hints in `<head>`                          |
 
 Policy and crawler lists live in one place: [`src/lib/ai-policy.ts`](src/lib/ai-policy.ts).
 
@@ -80,6 +81,9 @@ curl -sS https://mieras.xyz/robots.txt
 
 # sitemap
 curl -sS https://mieras.xyz/sitemap.xml
+
+# llms.txt
+curl -sS https://mieras.xyz/llms.txt
 
 # HTML (browser default)
 curl -sSI https://mieras.xyz/ | grep -iE 'content-type|content-signal|vary'

@@ -527,11 +527,24 @@ function yearFrom(value: string | Date | null | undefined): string | null {
         gap: var(--space-2xs) var(--space-s);
         align-items: baseline;
         padding-block: var(--space-3xs);
+        padding-inline: var(--space-3xs);
+        margin-inline: calc(var(--space-3xs) * -1);
         border-bottom: 1px solid var(--color-border);
         color: var(--color-text);
         text-decoration: none;
         font-size: var(--step--1);
         line-height: 1.25;
+        transition: background-color 120ms ease;
+    }
+
+    .row__link:hover,
+    .row__link:focus-visible {
+        /* ~10% tint toward text on the page background */
+        background-color: color-mix(
+            in oklch,
+            var(--color-text) 10%,
+            var(--color-bg)
+        );
     }
 
     .row__link:focus-visible {
@@ -583,11 +596,6 @@ function yearFrom(value: string | Date | null | undefined): string | null {
         color: var(--color-text-muted);
         text-align: right;
         font-variant-numeric: tabular-nums;
-    }
-
-    .row__link:hover .row__title,
-    .row__link:focus-visible .row__title {
-        text-decoration: underline;
     }
 
     /* Source for Three textures — kept in DOM but not shown (3D canvas replaces hover) */

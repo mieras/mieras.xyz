@@ -125,7 +125,10 @@ export function buildRobotsTxt(site: URL | string): string {
     return lines.join("\n");
 }
 
-/** Public URLs that should appear in the sitemap (absolute). */
+/**
+ * Public URLs for sitemap (and mirrored in `/llms.txt`).
+ * When adding a public route: update this list and `src/pages/llms.txt.ts`.
+ */
 export function getPublicSitemapPaths(): string[] {
     return ["/", "/feed"];
 }
